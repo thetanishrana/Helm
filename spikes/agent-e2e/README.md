@@ -32,3 +32,25 @@ Run: `npm install && MODE=config HOLD_MS=12000 node e2e.mjs` (modes: `delay`, `c
 
 ### 3. Missing request-class header
 - Not fixed at the source. Side requests can be told apart by body shape instead: the tap records `nTools` and the user prompt per request, and all three requests in this run were main-conversation turns. Needs a check on a longer session that triggers title or compaction requests.
+
+## Third pass: hold at the model tap (`e2e-gate.mjs`)
+
+The model tap now withholds a gated `tool_use` block from the stream (while sending its own SSE `ping` events) until a policy resolves, so the agent cannot run the command yet. The CDP tap only logs here. Policy used: any `playwright-cli click <ref>`; the ref is resolved to the element label from the snapshot already in the request (`e4` -> `button "Refresh"`).
+
+| Run | Setup | Result |
+| --- | --- | --- |
+| Hold + pings | 25 s simulated user, Claude Code byte watchdog shrunk to 10 s, CLI action timeout left at its 5 s default | Click executed 0.3 s after approval (at 43.5 s), agent completed, 5 requests, no errors |
+| Control, no pings | same | Claude Code aborted the stalled stream ("The response stalled before a response was produced"), re-sent the request 3 times, re-triggering the gate each time, and failed. No click ever executed. |
+| Deny + pings | user denies after 8 s | No click executed. The tool_use was replaced by a text block with the Helm message and `stop_reason` rewritten to `end_turn`; the agent's turn ended showing that message. |
+
+**What this settles**
+- The hold no longer touches the CLI's 5 s timeout, because the command has not started. It works for any browser client the model drives through a shell command, as long as the policy can tell what the command does.
+- Pings are necessary, not decorative: without them the hold fails (shown by the control).
+- The CDP-level hold remains useful as a backstop for actions the model-tap policy did not recognize, but there it is bounded by the client's timeout.
+
+**Limits and open issues**
+- The policy is a regex for one CLI. A general version must classify arbitrary commands, scripts, and other tools (MCP calls, code execution) from the tool_use input plus context.
+- Retries re-run the policy. If Claude Code re-sends a request, the same action is gated again. A real implementation needs to dedupe by action fingerprint so one approval covers the retry.
+- Maximum hold length is untested beyond 25 s. Anthropic's network docs say pings reset the byte watchdog and extend the event-level watchdog for a limited time (about 5 more minutes when bytes arrive at least every 10 s), so the ceiling is likely several minutes. Needs measuring.
+- Deny returns the Helm message as the final text and ends the turn, so the agent does not get to adapt. Returning it as a `tool_result`-style failure instead (so the agent continues the task without the action) is not tried.
+- Only tested on one haiku sample per run, one tool call per turn, with a trivial page.
