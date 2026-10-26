@@ -1,0 +1,18 @@
+# Decision log
+
+| Date | Decision | Reason |
+| --- | --- | --- |
+| 2026-10-26 | Keep the core thesis (real vs apparent visibility). USP is the live, plain-language "this page caused it" explanation plus a user study. | User confirmed; activation-probe novelty is gone (see `00-brief-review.md` section 2). |
+| 2026-10-26 | Activations are an optional detector (Gate 4), not the headline. | Probes for agent injection already published (2608.02657, 2606.22864). |
+| 2026-10-26 | Closed-model agent is Claude Code + Playwright CLI on the existing subscription, through a custom passthrough proxy. | $0 cost. Pending spike 1 to confirm OAuth passthrough works. |
+| 2026-10-26 | Model tap sets only `ANTHROPIC_BASE_URL`, never a credential variable, and forwards `anthropic-beta` verbatim and streams SSE unbuffered. | Anthropic's gateway docs: the subscription login stays active only in that configuration; stripping the beta header gives 401. |
+| 2026-10-26 | The proxy never persists or logs credential headers, binds to localhost, and the tool tells each user to use their own login. | Anthropic's compliance page bars intermediating Claude.ai credentials; local passthrough is the closest permitted configuration. |
+| 2026-10-26 | Study sessions use replayed recordings (or a local model), not participants driving live runs on the researcher's subscription. | That would look like routing requests through one plan on behalf of others. A paid API key would need user approval. |
+| 2026-10-26 | Group model turns by the `x-claude-code-prompt-id` and `x-claude-code-session-id` headers. | Documented in the gateway compatibility guide; avoids parsing bodies. |
+| 2026-10-26 | Write our own SSE-aware proxy instead of using LiteLLM. | Need to see and correlate raw requests; the proxy is small. |
+| 2026-10-26 | Fara1.5-9B is the candidate local agent model. | Open weights, MIT, 63.4 on Online-Mind2Web. Speed and activations on M5 unverified. |
+| 2026-10-26 | Viewer is a local web UI served by the proxy process, not Tauri. | The study runs in a browser anyway; avoids a build step. |
+| 2026-10-26 | Cut the JEPA world model and Codex support from the MVP. | Crowded area / fragile auth path; neither is needed for the headline. |
+| 2026-10-26 | Treat the study as an informal personal usability study; consent and debrief, no IRB for now. | Personal project outside NYU channels. Revisit if targeting a peer-reviewed venue. |
+| 2026-10-26 | Success is defined by gates, not dates (`00-success-criteria.md`). | User has no deadline and wants all role signals. |
+| 2026-10-26 | After a bad pilot: one redesign round, then report honestly. | User's stated preference. |
