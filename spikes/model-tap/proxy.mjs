@@ -3,6 +3,7 @@
 import http from 'node:http';
 import https from 'node:https';
 import { appendFileSync } from 'node:fs';
+import { parseSse, analyzeRequest } from './turns.mjs';
 
 const PORT = Number(process.env.PORT || 8787);
 const UPSTREAM = 'api.anthropic.com';
@@ -16,6 +17,7 @@ const log = (rec) => appendFileSync(LOG, JSON.stringify(rec) + '\n');
 http
   .createServer((req, res) => {
     const t0 = Date.now();
+    const reqStart = t0;
     const chunks = [];
     req.on('data', (c) => chunks.push(c));
     req.on('end', () => {
@@ -23,7 +25,8 @@ http
       // Ask upstream for identity encoding so SSE can be counted without a decoder.
       const headers = { ...req.headers, host: UPSTREAM, 'accept-encoding': 'identity' };
       const rec = {
-        t: new Date().toISOString(),
+        t: new Date(t0).toISOString(),
+        reqStartMs: t0,
         method: req.method,
         path: req.url,
         reqHeaders: redact(req.headers),
@@ -36,6 +39,7 @@ http
         rec.model = j.model;
         rec.stream = j.stream;
         rec.nMessages = Array.isArray(j.messages) ? j.messages.length : undefined;
+        rec.req = analyzeRequest(j);
       } catch {}
 
       const up = https.request(
@@ -48,17 +52,21 @@ http
           let first = null;
           let bytes = 0;
           let events = 0;
+          let sse = '';
           let pings = 0;
           ur.on('data', (c) => {
             if (first === null) first = Date.now() - t0;
             bytes += c.length;
             const s = c.toString('utf8');
+            sse += s;
             events += (s.match(/^event: /gm) || []).length;
             pings += (s.match(/^event: ping/gm) || []).length;
             res.write(c); // relay immediately, no buffering
           });
           ur.on('end', () => {
             res.end();
+            rec.respEndMs = Date.now();
+            if (/event-stream/.test(rec.contentType || '')) rec.resp = parseSse(sse);
             Object.assign(rec, { respBytes: bytes, sseEvents: events, pings, ttfbMs: first, totalMs: Date.now() - t0 });
             log(rec);
           });

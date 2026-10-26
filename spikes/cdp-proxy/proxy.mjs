@@ -3,7 +3,13 @@
 import http from 'node:http';
 import { WebSocketServer, WebSocket } from 'ws';
 
-export function startProxy({ listen = 9333, chrome = 9222, holdMs = 0, onEvent = () => {} } = {}) {
+// gate(rec) may return a promise for { action: 'allow' } or { action: 'deny', message }.
+// Default gate holds a gated action for holdMs, then allows it.
+export function startProxy({ listen = 9333, chrome = 9222, holdMs = 0, gate, onEvent = () => {} } = {}) {
+  gate ??= async (rec) => {
+    if (holdMs) { rec.heldMs = holdMs; await new Promise((ok) => setTimeout(ok, holdMs)); }
+    return { action: 'allow' };
+  };
   const INTERNAL = 1_000_000_000; // ids we inject ourselves; never forwarded to the client
   const rewrite = (s) => s.replaceAll(`127.0.0.1:${chrome}`, `127.0.0.1:${listen}`);
 
@@ -44,17 +50,19 @@ export function startProxy({ listen = 9333, chrome = 9222, holdMs = 0, onEvent =
           await opened;
           const raw = data.toString();
           let m; try { m = JSON.parse(raw); } catch { return up.send(raw); }
-          const rec = { dir: 'c2b', id: m.id, method: m.method, sessionId: m.sessionId };
+          const rec = { dir: 'c2b', id: m.id, method: m.method, sessionId: m.sessionId, params: m.params?.type ? { type: m.params.type } : undefined };
           if (m.method === 'Input.dispatchMouseEvent' && m.params?.type === 'mousePressed') {
             const r = await lookup(m.sessionId, m.params.x, m.params.y);
             rec.semantic = r?.result?.result?.value ?? null;
-            if (holdMs) {
-              rec.heldMs = holdMs;
-              onEvent({ ...rec, note: 'HOLD start' });
-              await new Promise((ok) => setTimeout(ok, holdMs));
+            onEvent({ ...rec, at: Date.now(), note: 'GATE start' });
+            const v = await gate(rec);
+            rec.verdict = v.action;
+            if (v.action === 'deny') {
+              onEvent({ ...rec, at: Date.now() });
+              return client.send(JSON.stringify({ id: m.id, sessionId: m.sessionId, error: { code: -32000, message: v.message } }));
             }
           }
-          onEvent(rec);
+          onEvent({ ...rec, at: Date.now() });
           up.send(raw);
         });
       });
