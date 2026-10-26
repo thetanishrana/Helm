@@ -6,6 +6,7 @@ import http from 'node:http';
 import https from 'node:https';
 import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
+import { createHash } from 'node:crypto';
 import { parseSse, analyzeRequest } from './turns.mjs';
 
 const UPSTREAM = 'api.anthropic.com';
@@ -13,8 +14,15 @@ const SECRET = /^(authorization|x-api-key|cookie|proxy-authorization)$/i;
 const redact = (h) => Object.fromEntries(Object.entries(h).map(([k, v]) => [k, SECRET.test(k) ? '[redacted]' : v]));
 const frameOf = (event, data) => `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 
-// policy(toolUse, req) -> { action: 'allow' } | { action: 'hold', wait: Promise<{allow:boolean,message?:string}> }
-export function startTap({ port = 8787, log = () => {}, policy = null, pingMs = 5000, pings = true, onGate = () => {} } = {}) {
+// policy(toolUse, req) -> { action: 'allow' } | { action: 'deny', message } | { action: 'hold', wait: Promise<{allow:boolean,message?:string}> }
+// A deny result may set rewrite:true to turn the tool call into a harmless `echo` of the message
+// (Bash only), so the agent receives it as a tool result and can carry on with the task.
+// Decisions are remembered by action fingerprint, so a client retry of the same request reuses
+// the pending or settled decision instead of asking again. faultDropHoldMs drops the first held
+// connection after that long, to force such a retry in tests.
+export function startTap({ port = 8787, log = () => {}, policy = null, pingMs = 5000, pings = true, onGate = () => {}, faultDropHoldMs = 0, ttlMs = 15 * 60_000 } = {}) {
+  const registry = new Map(); let faultDone = false;
+  const fingerprint = (tu, req) => createHash('sha256').update(JSON.stringify([tu.name, tu.input, req?.nMessages, req?.userPrompt?.text])).digest('hex').slice(0, 16);
   const server = http.createServer((req, res) => {
     const t0 = Date.now();
     const chunks = [];
@@ -43,7 +51,8 @@ export function startTap({ port = 8787, log = () => {}, policy = null, pingMs = 
 
         // --- frame-level gate -------------------------------------------------
         let pending = ''; let held = null; let chain = Promise.resolve(); let denied = false; let allowedToolUses = 0;
-        const send = (s) => res.write(s);
+        let closed = false; res.on('close', () => { closed = true; });
+        const send = (s) => { if (!closed) res.write(s); };
         const process1 = async (frame) => {
           const dataLine = frame.split('\n').find((l) => l.startsWith('data: '));
           let e = null; try { e = dataLine && JSON.parse(dataLine.slice(6)); } catch {}
@@ -57,19 +66,39 @@ export function startTap({ port = 8787, log = () => {}, policy = null, pingMs = 
             if (e.type === 'content_block_stop' && e.index === held.index) {
               let input = {}; try { input = JSON.parse(held.json || '{}'); } catch {}
               const toolUse = { id: held.block.id, name: held.block.name, input };
-              const verdict = (await policy(toolUse, rec.req)) || { action: 'allow' };
-              let allow = verdict.action !== 'hold' && verdict.action !== 'deny';
-              let message = verdict.message;
-              if (verdict.action === 'hold') {
+              const key = fingerprint(toolUse, rec.req);
+              let entry = registry.get(key);
+              if (entry && Date.now() - entry.at > ttlMs) entry = null;
+              if (!entry) {
+                const v = (await policy(toolUse, rec.req)) || { action: 'allow' };
+                entry = { at: Date.now(), result: null, wait: null, rewrite: Boolean(v.rewrite) };
+                if (v.action === 'hold') entry.wait = Promise.resolve(v.wait).then((r) => (entry.result = r));
+                else entry.result = v.action === 'deny' ? { allow: false, message: v.message } : { allow: true };
+                registry.set(key, entry); onGate({ phase: 'decide', key, action: v.action, toolUse, at: Date.now() });
+              } else onGate({ phase: 'reuse', key, state: entry.result ? 'settled' : 'pending', at: Date.now() });
+              let allow, message;
+              if (entry.result) ({ allow, message } = entry.result);
+              else {
                 const t = Date.now(); onGate({ phase: 'hold', toolUse, at: t });
-                const timer = pings ? setInterval(() => send(frameOf('ping', { type: 'ping' })), pingMs) : null;
-                const r = await verdict.wait; if (timer) clearInterval(timer);
-                allow = r.allow; message = r.message; onGate({ phase: 'resolved', toolUse, allow, heldMs: Date.now() - t, at: Date.now() });
-              } else if (verdict.action === 'deny') { allow = false; onGate({ phase: 'deny', toolUse, at: Date.now() }); }
+                const timer = pings ? setInterval(() => { if (!closed) send(frameOf('ping', { type: 'ping' })); }, pingMs) : null;
+                const drop = faultDropHoldMs && !faultDone ? setTimeout(() => { faultDone = true; onGate({ phase: 'fault-drop', at: Date.now() }); res.destroy(); }, faultDropHoldMs) : null;
+                await entry.wait; if (timer) clearInterval(timer); if (drop) clearTimeout(drop);
+                ({ allow, message } = entry.result); onGate({ phase: 'resolved', toolUse, allow, heldMs: Date.now() - t, at: Date.now() });
+              }
+              if (closed) { held = null; return; }
               if (allow) { allowedToolUses++; for (const f of held.frames) send(f); }
               else {
-                denied = true;
                 const text = message || 'Helm: the user declined this action.';
+                if (entry.rewrite && toolUse.name === 'Bash') {
+                  // keep the tool call, but make it print the refusal instead of acting
+                  allowedToolUses++;
+                  const cmd = `echo '${text.replace(/'/g, "'\\''")}'`;
+                  send(frameOf('content_block_start', { type: 'content_block_start', index: held.index, content_block: held.block }));
+                  send(frameOf('content_block_delta', { type: 'content_block_delta', index: held.index, delta: { type: 'input_json_delta', partial_json: JSON.stringify({ ...toolUse.input, command: cmd }) } }));
+                  send(frameOf('content_block_stop', { type: 'content_block_stop', index: held.index }));
+                  held = null; return;
+                }
+                denied = true;
                 send(frameOf('content_block_start', { type: 'content_block_start', index: held.index, content_block: { type: 'text', text: '' } }));
                 send(frameOf('content_block_delta', { type: 'content_block_delta', index: held.index, delta: { type: 'text_delta', text } }));
                 send(frameOf('content_block_stop', { type: 'content_block_stop', index: held.index }));
@@ -92,11 +121,11 @@ export function startTap({ port = 8787, log = () => {}, policy = null, pingMs = 
           if (first === null) first = Date.now() - t0;
           bytes += c.length;
           const s = c.toString('utf8'); sse += s; events += (s.match(/^event: /gm) || []).length;
-          if (gating) feed(s); else res.write(c);
+          if (gating) feed(s); else if (!closed) res.write(c);
         });
         ur.on('end', () => {
           const finish = () => {
-            res.end(); rec.respEndMs = Date.now();
+            if (!closed) res.end(); rec.respEndMs = Date.now();
             if (isSse) rec.resp = parseSse(sse);
             Object.assign(rec, { respBytes: bytes, sseEvents: events, ttfbMs: first, totalMs: Date.now() - t0, gated: gating, denied });
             log(rec);
