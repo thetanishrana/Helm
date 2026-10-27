@@ -31,7 +31,7 @@ export function startTap({ port = 8787, log = () => {}, policy = null, pingMs = 
     req.on('data', (c) => chunks.push(c));
     req.on('end', () => {
       const body = Buffer.concat(chunks);
-      const headers = { ...req.headers, host: UPSTREAM, 'accept-encoding': 'identity' };
+      const headers = { ...req.headers, host: upstream ? `${upstream.host}:${upstream.port}` : UPSTREAM, 'accept-encoding': 'identity' };
       const rec = {
         t: new Date(t0).toISOString(), reqStartMs: t0, method: req.method, path: req.url,
         reqHeaders: redact(req.headers), hasAuth: Boolean(req.headers.authorization || req.headers['x-api-key']),
