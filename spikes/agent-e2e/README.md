@@ -54,3 +54,31 @@ The model tap now withholds a gated `tool_use` block from the stream (while send
 - Maximum hold length is untested beyond 25 s. Anthropic's network docs say pings reset the byte watchdog and extend the event-level watchdog for a limited time (about 5 more minutes when bytes arrive at least every 10 s), so the ceiling is likely several minutes. Needs measuring.
 - Deny returns the Helm message as the final text and ends the turn, so the agent does not get to adapt. Returning it as a `tool_result`-style failure instead (so the agent continues the task without the action) is not tried.
 - Only tested on one haiku sample per run, one tool call per turn, with a trivial page.
+
+## Fourth pass: the open issues from the third pass
+
+### Retries re-asking the user: fixed
+- A client retry re-samples the model, so the raw command can differ. Keying remembered decisions on the tool input plus message count failed: 2 of 3 retry runs asked the policy twice (one run lasted 280 s).
+- The policy now supplies a **semantic key**: what is being done to what (`click button "Refresh"`) plus the id of the last `tool_result` (so a retry of the same step matches, while a genuine later repeat does not). With that, 3 of 3 runs showed one ask, one reused pending decision, and exactly one click. The first connection was killed mid-hold by fault injection (`FAULT_DROP_MS`), so this proves re-attachment, not a natural timeout retry.
+
+### General policy: done for the commands we can classify
+- `model-tap/policy.mjs` classifies a `tool_use` as read, navigate, interact, or opaque. It covers `playwright-cli` and `agent-browser` (including `@refs`, `batch`, `find ... click --name`), MCP-style `browser_*` tools, computer-use clicks and keys, `curl` with a body, and scripts that mention a browser driver. Refs are resolved to element labels from snapshots already in the request.
+- 14 unit tests pass (`node --test model-tap/policy.test.mjs`). Only `playwright-cli` was exercised live. The `agent-browser`, MCP, and computer-use rows are tested against my reading of their docs, not against real runs. Anything the classifier cannot parse (shell indirection, aliases, a script that builds commands at run time) is a miss, and the CDP tap is the backstop.
+
+### Maximum hold: about 10 minutes per attempt
+- A 660 s hold with pings every 5 s: Claude Code gave up on the stream about 602 s after it started and retried, which matches the roughly 5 + 5 minutes implied by Anthropic's network docs. The decision resolved later (at 660 s) but the retry had already been issued.
+- With the semantic key a retry re-attaches to the pending decision, so the effective ceiling is "as long as retries keep arriving", but I did not run a hold across a natural 10-minute retry boundary end to end. Treat anything past 10 minutes as unverified.
+
+### Deny: ending the turn works, rewriting does not
+- Rewriting the denied command into an `echo` of the refusal (so the agent could adapt) went badly. The agent saw its own history showing an `echo` it never wrote, concluded it had fabricated the message, retried the click 3-4 times, and finally told the user "You didn't decline anything", which is false. Auto-denying repeats did not stop the retries within a turn.
+- Replacing the tool call with a text block and ending the turn (`DENY_MODE=text`) is honest and deterministic: 5 of 5 runs executed no click and reported the block.
+- Default: deny ends the turn with the Helm message. Letting the agent continue after a deny needs a different mechanism (for example the user replying) and is not solved.
+
+### Sample sizes (Claude Code 2.1.308, haiku, one page each)
+| Scenario | Runs | Outcome |
+| --- | --- | --- |
+| Approve, refresh task | 3 | 3/3 one click executed after approval, no errors |
+| Approve, form task | 3 (+1 later) | 4/4 completed; an agent chaining fill+click gated as one action |
+| Deny (text mode) | 5 (+1 later) | 6/6 no click executed, block reported |
+| Retry via connection drop | 3 (after fix) | 3/3 one ask, one click |
+Small samples on a trivial page and one model; they show the mechanism works, not how often agents cooperate with it.

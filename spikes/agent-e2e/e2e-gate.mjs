@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import http from 'node:http';
+import { createHash } from 'node:crypto';
 import { startProxy } from '../cdp-proxy/proxy.mjs';
 import { startTap } from '../model-tap/proxy.mjs';
 import { classify } from '../model-tap/policy.mjs';
@@ -54,10 +55,10 @@ const tap = await startTap({ pings: PINGS, pingMs: 5000, faultDropHoldMs: FAULT,
       events.push({ ms: rel(), src: 'tap', what: `auto-deny repeat #${n}: ${c.summary}` });
       return { action: 'deny', rewrite: DENY_MODE === 'rewrite', message: `Helm: the user already declined to ${c.summary} (attempt ${n + 1}). It was NOT done and will not be allowed. STOP trying this action. Tell the user it was blocked and finish your reply now.` };
     }
-    policyCalls++;
+    const key = createHash('sha256').update(JSON.stringify([c.summary, req.toolResults.at(-1)?.toolUseId ?? null])).digest('hex').slice(0, 12);
     events.push({ ms: rel(), src: 'tap', what: `intercepted [${c.risk}] ${c.summary}; untrusted tool results in context: ${req.toolResults.length}` });
-    return { action: 'hold', rewrite: DENY_MODE === 'rewrite', wait: new Promise((ok) => setTimeout(() => ok(DECISION === 'approve'
-      ? { allow: true } : (declined.set(c.summary, 0), { allow: false, message: `Helm: the user declined to ${c.summary}. It was NOT done. Do not try again; tell the user it was blocked and continue with any remaining safe steps.` })), APPROVE_MS)) };
+    return { action: 'hold', key, rewrite: DENY_MODE === 'rewrite', ask: () => (policyCalls++, new Promise((ok) => setTimeout(() => ok(DECISION === 'approve'
+      ? { allow: true } : (declined.set(c.summary, 0), { allow: false, message: `Helm: the user declined to ${c.summary}. It was NOT done. Do not try again; tell the user it was blocked and continue with any remaining safe steps.` })), APPROVE_MS))) };
   } });
 turns.length = 0;
 
@@ -82,5 +83,5 @@ for (const e of events) console.log(String(e.ms).padStart(6), e.src.padEnd(4), e
 const autoDenied = events.filter((e) => e.what.startsWith('auto-deny')).length;
 const holds = events.filter((e) => e.what.startsWith('hold')).length;
 const reuse = events.filter((e) => e.what.startsWith('reuse')).length;
-console.log('RESULT ' + JSON.stringify({ task: TASK, decision: DECISION, executedClicks: executed.length, policyCalls, holds, reuse, autoDenied, requests: turns.filter(t => t.nMessages).length, apiError: /API Error|stalled/i.test(text), mentionsBlocked: /declin|block|not done|denied/i.test(text), ms: rel() }));
+console.log('RESULT ' + JSON.stringify({ task: TASK, decision: DECISION, executedClicks: executed.length, policyCalls, holds, reuse, autoDenied, requests: turns.filter(t => t.nMessages).length, msgs: turns.filter(t => t.nMessages).map(t => t.nMessages).join('/'), apiError: /API Error|stalled/i.test(text), mentionsBlocked: /declin|block|not done|denied/i.test(text), ms: rel() }));
 tap.close(); cdp.close(); page.close(); chrome.kill(); process.exit(0);

@@ -14,7 +14,7 @@ const SECRET = /^(authorization|x-api-key|cookie|proxy-authorization)$/i;
 const redact = (h) => Object.fromEntries(Object.entries(h).map(([k, v]) => [k, SECRET.test(k) ? '[redacted]' : v]));
 const frameOf = (event, data) => `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 
-// policy(toolUse, req) -> { action: 'allow' } | { action: 'deny', message } | { action: 'hold', wait: Promise<{allow:boolean,message?:string}> }
+// policy(toolUse, req) -> { action: 'allow' } | { action: 'deny', message, key? } | { action: 'hold', key?, ask: () => Promise<{allow:boolean,message?:string}> }
 // A deny result may set rewrite:true to turn the tool call into a harmless `echo` of the message
 // (Bash only), so the agent receives it as a tool result and can carry on with the task.
 // Decisions are remembered by action fingerprint, so a client retry of the same request reuses
@@ -66,14 +66,18 @@ export function startTap({ port = 8787, log = () => {}, policy = null, pingMs = 
             if (e.type === 'content_block_stop' && e.index === held.index) {
               let input = {}; try { input = JSON.parse(held.json || '{}'); } catch {}
               const toolUse = { id: held.block.id, name: held.block.name, input };
-              const key = fingerprint(toolUse, rec.req);
-              let entry = registry.get(key);
+              // Classify first (cheap), then look up a remembered decision for the same action. A
+              // client retry re-samples the model, so the raw input may differ; the policy supplies a
+              // semantic key (what is being done to what) that survives that.
+              const v = (await policy(toolUse, rec.req)) || { action: 'allow' };
+              const key = v.key ?? fingerprint(toolUse, rec.req);
+              let entry = v.action === 'allow' ? null : registry.get(key);
               if (entry && Date.now() - entry.at > ttlMs) entry = null;
-              if (!entry) {
-                const v = (await policy(toolUse, rec.req)) || { action: 'allow' };
+              if (v.action === 'allow') entry = { at: Date.now(), result: { allow: true } };
+              else if (!entry) {
                 entry = { at: Date.now(), result: null, wait: null, rewrite: Boolean(v.rewrite) };
-                if (v.action === 'hold') entry.wait = Promise.resolve(v.wait).then((r) => (entry.result = r));
-                else entry.result = v.action === 'deny' ? { allow: false, message: v.message } : { allow: true };
+                if (v.action === 'hold') entry.wait = Promise.resolve(v.wait ?? v.ask()).then((r) => (entry.result = r));
+                else entry.result = { allow: false, message: v.message };
                 registry.set(key, entry); onGate({ phase: 'decide', key, action: v.action, toolUse, at: Date.now() });
               } else onGate({ phase: 'reuse', key, state: entry.result ? 'settled' : 'pending', at: Date.now() });
               let allow, message;

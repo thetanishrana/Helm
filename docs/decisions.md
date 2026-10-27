@@ -18,3 +18,6 @@
 | 2026-10-26 | Treat the study as an informal personal usability study; consent and debrief, no IRB for now. | Personal project outside NYU channels. Revisit if targeting a peer-reviewed venue. |
 | 2026-10-26 | Success is defined by gates, not dates (`00-success-criteria.md`). | User has no deadline and wants all role signals. |
 | 2026-10-26 | After a bad pilot: one redesign round, then report honestly. | User's stated preference. |
+| 2026-10-26 | Remember gate decisions by a semantic key (action + target label + last tool_result id), not by raw tool input. | Retries re-sample the model; raw-input keys asked the user twice in 2 of 3 runs, semantic keys 0 of 3. |
+| 2026-10-26 | Deny ends the turn with a Helm text message; do not rewrite the tool call into an `echo`. | Rewrite made the agent believe it had fabricated the refusal and tell the user nothing was declined. |
+| 2026-10-26 | Plan for holds up to about 10 minutes per attempt; longer needs retry re-attachment, untested end to end. | Measured: Claude Code abandoned the stream at about 602 s despite pings. |
