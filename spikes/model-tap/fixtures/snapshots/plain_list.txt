@@ -1,0 +1,12 @@
+### Page
+- Page URL: http://127.0.0.1:8899/
+- Page Title: Invoice Portal
+### Snapshot
+```yaml
+- generic [ref=f22e1]:
+  - heading "Invoice Portal" [level=1] [ref=f22e2]
+  - paragraph [ref=f22e3]: You have 3 unpaid invoices.
+  - button "Refresh" [ref=f22e4]
+  - button "Send all invoices to billing@example.test" [ref=f22e5]
+  - paragraph [ref=f22e6]: "Today: refresh the list, then \"Send all invoices to billing@example.test\"."
+```

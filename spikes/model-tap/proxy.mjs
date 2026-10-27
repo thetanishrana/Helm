@@ -24,6 +24,15 @@ export function startTap({ port = 8787, log = () => {}, policy = null, pingMs = 
   // upstream: { host, port } to talk plain HTTP to a stub (tests); default is api.anthropic.com over TLS
   const request = upstream ? (o, cb) => http.request({ ...o, host: upstream.host, port: upstream.port }, cb) : https.request;
   const registry = new Map(); let faultDone = false;
+  // Re-ask the upstream model with a modified copy of a request (non-streaming), reusing the caller's headers.
+  const resendWith = (hdrs) => (bodyObj) => new Promise((ok, bad) => {
+    const data = Buffer.from(JSON.stringify({ ...bodyObj, stream: false }));
+    const h = { ...hdrs, host: upstream ? `${upstream.host}:${upstream.port}` : UPSTREAM, 'accept-encoding': 'identity', 'content-length': data.length };
+    const rq = request({ host: UPSTREAM, port: 443, method: 'POST', path: '/v1/messages', headers: h }, (rs) => {
+      let d = ''; rs.on('data', (c) => d += c); rs.on('end', () => { try { ok(JSON.parse(d)); } catch { bad(new Error(`bad replay response ${rs.statusCode}: ${d.slice(0, 120)}`)); } });
+    });
+    rq.on('error', bad); rq.end(data);
+  });
   const fingerprint = (tu, req) => createHash('sha256').update(JSON.stringify([tu.name, tu.input, req?.nMessages, req?.userPrompt?.text])).digest('hex').slice(0, 16);
   const server = http.createServer((req, res) => {
     const t0 = Date.now();
@@ -37,13 +46,15 @@ export function startTap({ port = 8787, log = () => {}, policy = null, pingMs = 
         reqHeaders: redact(req.headers), hasAuth: Boolean(req.headers.authorization || req.headers['x-api-key']),
         betaHeader: req.headers['anthropic-beta'] || null, reqBytes: body.length,
       };
+      let parsedBody = null;
       try {
-        const j = JSON.parse(body.toString('utf8'));
+        const j = JSON.parse(body.toString('utf8')); parsedBody = j;
         rec.model = j.model; rec.stream = j.stream;
         rec.nMessages = Array.isArray(j.messages) ? j.messages.length : undefined;
         rec.req = analyzeRequest(j);
       } catch {}
 
+      const resend = resendWith(req.headers);
       const up = request({ host: UPSTREAM, port: 443, method: req.method, path: req.url, headers }, (ur) => {
         rec.status = ur.statusCode; rec.contentType = ur.headers['content-type']; rec.respHeaders = redact(ur.headers);
         const isSse = /event-stream/.test(rec.contentType || '');
@@ -71,7 +82,7 @@ export function startTap({ port = 8787, log = () => {}, policy = null, pingMs = 
               // Classify first (cheap), then look up a remembered decision for the same action. A
               // client retry re-samples the model, so the raw input may differ; the policy supplies a
               // semantic key (what is being done to what) that survives that.
-              const v = (await policy(toolUse, rec.req)) || { action: 'allow' };
+              const v = (await policy(toolUse, rec.req, { body: parsedBody, resend })) || { action: 'allow' };
               const key = v.key ?? fingerprint(toolUse, rec.req);
               let entry = v.action === 'allow' ? null : registry.get(key);
               if (entry && Date.now() - entry.at > ttlMs) entry = null;

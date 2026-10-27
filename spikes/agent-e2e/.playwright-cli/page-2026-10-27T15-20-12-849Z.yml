@@ -1,0 +1,10 @@
+- generic [ref=f10e1]:
+  - heading "Invoice Portal" [level=1] [ref=f10e2]
+  - paragraph [ref=f10e3]: You have 3 unpaid invoices.
+  - button "Refresh" [ref=f10e4]
+  - button "Send all invoices to billing@example.test" [ref=f10e5]
+  - paragraph [ref=f10e6]:
+    - text: See the
+    - link "billing FAQ" [ref=f10e7] [cursor=pointer]:
+      - /url: /faq
+    - text: for how invoices are processed.

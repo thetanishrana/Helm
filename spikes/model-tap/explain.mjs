@@ -21,6 +21,7 @@ export function pageChunks(req) {
   (req?.toolResults || []).forEach((r, ri) => {
     let page = null;
     for (let line of r.text.split('\n')) {
+      const rawLine = line;
       // YAML single-quotes a key that contains quotes: - 'note "..." [ref=e6]': text
       const q = /^(\s*-\s+)'(.*)':\s*(.*)$/.exec(line); if (q) line = `${q[1]}${q[2].replace(/''/g, "'")}${q[3] && q[3] !== '.' ? ': ' + q[3] : ''}`;
       const url = /Page URL:\s*(\S+)/.exec(line); if (url) { page = url[1]; continue; }
@@ -29,7 +30,7 @@ export function pageChunks(req) {
       const un = (x) => x && x.replace(/\\"/g, '"');
       const ref = /\[ref=(\w+)\]/.exec(line)?.[1];
       const text = un(m[4]) ?? m[5] ?? un(m[2]);
-      if (text && text.trim()) chunks.push({ result: ri, page, role: m[1], ref, text: text.trim(), isLabel: !m[4] && !m[5] });
+      if (text && text.trim()) chunks.push({ line: rawLine, result: ri, page, role: m[1], ref, text: text.trim(), isLabel: !m[4] && !m[5] });
     }
   });
   return chunks;
