@@ -69,3 +69,14 @@ test('unresolvable ref still gates, without a label', () => {
 test('summary is human readable', () => {
   assert.equal(gate('playwright-cli click e4').summary, 'click button "Refresh"');
 });
+test('invented selectors still yield a label', () => {
+  assert.equal(gate('playwright-cli click \'button:text("Send all invoices")\'').actions[0].label, 'Send all invoices');
+  assert.equal(gate('playwright-cli click "Refresh"').actions[0].label, 'Refresh');
+  assert.equal(gate('playwright-cli click text=Docs').actions[0].label, 'Docs');
+  assert.equal(gate('playwright-cli click "#send"').actions[0].label, undefined);
+});
+test('frame-prefixed refs (f14e5) resolve like plain ones', () => {
+  const r = { toolResults: [{ text: '- button "Send" [ref=f14e5]' }] };
+  const c = classify({ name: 'Bash', input: { command: 'playwright-cli click f14e5' } }, r);
+  assert.equal(c.gate, true); assert.equal(c.actions[0].label, 'Send');
+});

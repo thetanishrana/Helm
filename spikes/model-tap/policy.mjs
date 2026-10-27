@@ -39,6 +39,14 @@ export function segments(line) {
 
 const base = (w) => w.split('/').pop();
 
+// A selector the agent invented (instead of a snapshot ref) often still names the control by its text.
+export function labelFromSelector(sel) {
+  const m = /:(?:text|has-text|text-is)\(\s*(['"])(.*?)\1\s*\)/.exec(sel) || /^(?:text|name)=['"]?(.+?)['"]?$/.exec(sel) || /\[(?:name|aria-label|title)=['"](.+?)['"]\]/.exec(sel);
+  if (m) return m[m.length - 1];
+  if (/^[\w][\w .,'@:/-]*$/.test(sel) && /[a-z]/i.test(sel) && !/^[.#]/.test(sel) && !/^(f\d+)?e\d+$/.test(sel) && sel.length < 80) return sel;   // plain words: "Refresh"
+  return null;
+}
+
 // Find the element a ref points at, using snapshots already in the request.
 export function resolveRef(ref, req) {
   const id = ref.replace(/^@/, '');
@@ -72,9 +80,9 @@ function classifySegment(words, req, out) {
   if ((BATCHES[cli] || []).includes(verb)) { for (const inner of args) for (const s of segments(inner)) classifySegment([cli, ...s], req, out); return; }
   let risk = spec.interact.includes(verb) ? 'interact' : spec.opaque.includes(verb) ? 'opaque' : spec.navigate.includes(verb) ? 'navigate' : 'read';
   const entry = { risk, cli, verb };
-  const target = args.find((a) => /^@?e\d+$/.test(a));
+  const target = args.find((a) => /^@?(f\d+)?e\d+$/.test(a));
   if (target) Object.assign(entry, { ref: target }, resolveRef(target, req) || {});
-  else if (args[0] && risk !== 'read') entry.selector = args[0];
+  else if (args[0] && risk !== 'read') { entry.selector = args[0]; const l = labelFromSelector(args[0]); if (l) entry.label = l; }
   // `agent-browser find role button click --name "X"` style
   if (verb === 'find' && rest.includes('click')) { entry.risk = 'interact'; entry.verb = 'find-click'; const n = rest.indexOf('--name'); if (n >= 0) entry.label = rest[n + 1]; }
   out.push(entry);

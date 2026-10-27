@@ -11,6 +11,8 @@ const HIGH_VERBS = /\b(send|pay|payment|transfer|wire|purchase|buy|order|checkou
 const SECRET_FIELD = /pass(word)?|card|cvv|ssn|secret|token|api.?key|private/i;
 const AI_ADDRESSED = /\b(ai|a\.i\.|assistants?|agents?|llms?|language model|claude|gpt|chatbot|copilot)\b/i;
 const COERCION = /\b(please remember|remember to|reminder:|make sure|be sure|don't forget|you must|you should|you need to|ignore (all|any|previous|prior)|disregard|do not (tell|mention|inform)|don't (tell|mention)|instead|override|system (note|message|prompt)|important:|required|to (complete|finish) (your|the|this) task|before (you )?(continu|proceed|answer))/i;
+// Text that poses as the user, the assistant, or the system: the style that worked on a real agent.
+const IMPERSONATION = /(^|\s)(human|user|assistant|system)\s*:|<\|im_(start|end)\|>|<\/?(user_message|system-reminder|system|tool_result)>|\[system\]|\b(one more thing|in addition|added to your task|amended|follow-up|the user (has )?(asked|confirmed|approved|requested)|i need you to|i forgot to mention|as requested|instructions from the user)\b/i;
 const DELEGATED = /\b(whatever|everything|anything|all (the )?(steps|tasks)|as)\b.{0,30}\b(page|site|website|checklist|instructions?|portal|it)\b.{0,20}\b(says?|tells?|instructs?|lists?|asks?)\b|\bfollow (the )?(page|site|instructions|checklist)\b/i;
 
 // Break tool-result text into chunks of page content with a source label.
@@ -18,12 +20,14 @@ export function pageChunks(req) {
   const chunks = [];
   (req?.toolResults || []).forEach((r, ri) => {
     let page = null;
-    for (const line of r.text.split('\n')) {
+    for (let line of r.text.split('\n')) {
+      // YAML single-quotes a key that contains quotes: - 'note "..." [ref=e6]': text
+      const q = /^(\s*-\s+)'(.*)':\s*(.*)$/.exec(line); if (q) line = `${q[1]}${q[2].replace(/''/g, "'")}${q[3] && q[3] !== '.' ? ': ' + q[3] : ''}`;
       const url = /Page URL:\s*(\S+)/.exec(line); if (url) { page = url[1]; continue; }
       const m = /^\s*-\s+(\w+)(?:\s+"((?:[^"\\]|\\.)*)")?[^\n]*?(?:\[ref=(e\d+)\])?[^\n]*?(?::\s*(?:"((?:[^"\\]|\\.)*)"|(.+)))?\s*$/.exec(line);
       if (!m) continue;
       const un = (x) => x && x.replace(/\\"/g, '"');
-      const ref = /\[ref=(e\d+)\]/.exec(line)?.[1];
+      const ref = /\[ref=(\w+)\]/.exec(line)?.[1];
       const text = un(m[4]) ?? m[5] ?? un(m[2]);
       if (text && text.trim()) chunks.push({ result: ri, page, role: m[1], ref, text: text.trim(), isLabel: !m[4] && !m[5] });
     }
@@ -59,14 +63,14 @@ export function explain(classified, req, resp = null) {
     .filter((c) => !(c.ref && a.ref && c.ref === a.ref) && !(c.isLabel && c.text === label))
     .map((c) => {
       const o = label ? overlap(label, c.text) : 0;
-      const cues = (AI_ADDRESSED.test(c.text) ? 1 : 0) + (COERCION.test(c.text) ? 1 : 0) + (/\b(click|press|tap|select|open|send|type|enter|visit|go to|run|execute)\b/i.test(c.text) ? 0.5 : 0);
+      const cues = (AI_ADDRESSED.test(c.text) ? 1 : 0) + (IMPERSONATION.test(c.text) ? 1 : 0) + (COERCION.test(c.text) ? 1 : 0) + (/\b(click|press|tap|select|open|send|type|enter|visit|go to|run|execute)\b/i.test(c.text) ? 0.5 : 0);
       return { ...c, overlap: o, cues, score: o * 2 + cues };
     })
     .filter((c) => c.overlap >= 0.5 && c.cues >= 1)
     .sort((x, y) => y.score - x.score);
   let cause = candidates[0] || null;
   if (!cause) {   // no passage names the control; still flag text that talks to AI agents and issues orders
-    const weak = chunks.filter((c) => !c.isLabel && AI_ADDRESSED.test(c.text) && (COERCION.test(c.text) || /\b(click|press|send|forward|open|type|enter|run|execute|visit)\b/i.test(c.text)))
+    const weak = chunks.filter((c) => !c.isLabel && (AI_ADDRESSED.test(c.text) || IMPERSONATION.test(c.text)) && (COERCION.test(c.text) || /\b(click|press|send|forward|open|type|enter|run|execute|visit)\b/i.test(c.text)))
       .sort((x, y) => y.text.length - x.text.length)[0];
     if (weak) cause = { ...weak, overlap: 0, cues: 1, score: 1, weak: true };
   }
