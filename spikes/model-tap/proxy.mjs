@@ -20,7 +20,9 @@ const frameOf = (event, data) => `event: ${event}\ndata: ${JSON.stringify(data)}
 // Decisions are remembered by action fingerprint, so a client retry of the same request reuses
 // the pending or settled decision instead of asking again. faultDropHoldMs drops the first held
 // connection after that long, to force such a retry in tests.
-export function startTap({ port = 8787, log = () => {}, policy = null, pingMs = 5000, pings = true, onGate = () => {}, faultDropHoldMs = 0, ttlMs = 15 * 60_000 } = {}) {
+export function startTap({ port = 8787, log = () => {}, policy = null, pingMs = 5000, pings = true, onGate = () => {}, faultDropHoldMs = 0, ttlMs = 15 * 60_000, upstream = null } = {}) {
+  // upstream: { host, port } to talk plain HTTP to a stub (tests); default is api.anthropic.com over TLS
+  const request = upstream ? (o, cb) => http.request({ ...o, host: upstream.host, port: upstream.port }, cb) : https.request;
   const registry = new Map(); let faultDone = false;
   const fingerprint = (tu, req) => createHash('sha256').update(JSON.stringify([tu.name, tu.input, req?.nMessages, req?.userPrompt?.text])).digest('hex').slice(0, 16);
   const server = http.createServer((req, res) => {
@@ -42,7 +44,7 @@ export function startTap({ port = 8787, log = () => {}, policy = null, pingMs = 
         rec.req = analyzeRequest(j);
       } catch {}
 
-      const up = https.request({ host: UPSTREAM, port: 443, method: req.method, path: req.url, headers }, (ur) => {
+      const up = request({ host: UPSTREAM, port: 443, method: req.method, path: req.url, headers }, (ur) => {
         rec.status = ur.statusCode; rec.contentType = ur.headers['content-type']; rec.respHeaders = redact(ur.headers);
         const isSse = /event-stream/.test(rec.contentType || '');
         res.writeHead(ur.statusCode, ur.headers);

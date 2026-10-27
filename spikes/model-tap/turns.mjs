@@ -30,13 +30,13 @@ const textOf = (c) => (typeof c === 'string' ? c : (c || []).map((x) => x.text |
 // What did the request contain: the user's own words vs. tool output (untrusted).
 export function analyzeRequest(j) {
   const msgs = Array.isArray(j.messages) ? j.messages : [];
-  let userPrompt = null; const toolResults = [];
+  let userPrompt = null; const userPrompts = []; const toolResults = [];
   msgs.forEach((m, i) => {
     const parts = typeof m.content === 'string' ? [{ type: 'text', text: m.content }] : m.content || [];
     for (const p of parts) {
-      if (m.role === 'user' && p.type === 'text' && !/^<system-reminder>/.test(p.text)) userPrompt = { msg: i, text: p.text.slice(0, 500) };
+      if (m.role === 'user' && p.type === 'text' && !/^<system-reminder>/.test(p.text)) { userPrompt = { msg: i, text: p.text.slice(0, 2000) }; userPrompts.push(p.text.slice(0, 2000)); }
       if (m.role === 'user' && p.type === 'tool_result') toolResults.push({ msg: i, toolUseId: p.tool_use_id, text: textOf(p.content).slice(0, 20000) });
     }
   });
-  return { nMessages: msgs.length, nTools: Array.isArray(j.tools) ? j.tools.length : 0, userPrompt, toolResults };
+  return { nMessages: msgs.length, nTools: Array.isArray(j.tools) ? j.tools.length : 0, userPrompt, userPrompts, toolResults };
 }
