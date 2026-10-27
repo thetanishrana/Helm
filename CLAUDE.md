@@ -4,14 +4,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current state
 
-Helm is in a **pre-research phase**. The repo contains only `research brief.md`; there is no code, build system, linter, or test suite yet, so there are no build/test commands to record. Update this file once code exists.
+Helm is in the **research and design phase** (no production code, per `research brief.md` Section 0). The repo holds the brief, design docs in `docs/`, and throwaway spikes in `spikes/` that prove individual pieces. Read in this order: `research brief.md` (the contract), `docs/00-brief-review.md` (corrections to the brief), `docs/00-success-criteria.md` (gates), `docs/decisions.md` (running decision log), then `docs/01`-`06`.
 
-`research brief.md` is the source of truth. Read it before doing anything. Its sections are the project's contract:
+Verify numbers before repeating them: they come from small, author-written test sets, and each doc and spike README says what was and was not measured.
 
-- Section 0: how to work. Research, validate, and design only; no production code.
-- Section 7: the deliverables, which are `docs/01-prior-art.md` through `docs/06-plan.md`, `docs/decisions.md`, and throwaway prototypes in `spikes/`.
+## Spikes and commands
+Node 24, no build step. Install per folder (`npm install` in `spikes/cdp-proxy` and `spikes/agent-e2e`).
 
-Read `docs/00-brief-review.md` alongside the brief: it corrects several brief claims (e.g. the activation-probe gap is closed, "Coding with Enemy" is NeurIPS and its 56% was misstated). `docs/00-success-criteria.md` defines the gates, and `docs/decisions.md` is the decision log.
+- `spikes/model-tap`: the model proxy and decision logic. Tests (no network, no API use): `cd spikes/model-tap && node --test *.test.mjs` (policy, explainer, counterfactual, and an integration test against a stub upstream). Single file: `node --test policy.test.mjs`. Offline evaluations: `node explain.eval.mjs`, `node explain.replay.mjs` (uses `fixtures/snapshots/`).
+- `spikes/cdp-proxy`: `HOLD_MS=3000 node test.mjs` (needs Chrome at `/Applications/Google Chrome.app`).
+- `spikes/agent-e2e`: end-to-end runs with Claude Code driving Chrome through both taps. Each run is one process: `e2e-gate.mjs` (hold and approve/deny), `e2e-attack.mjs` (measure-only; env `TECH`, `TASK`, `MODEL`, `LOCAL=1`, `MINIMAL=1`), `battery.sh <outfile> <model> <reps> <task> <techs...>` to repeat, `capture-snapshots.mjs` to regenerate fixtures, `attribute-traces.mjs` for counterfactual attribution on saved requests. These run real model requests; `LOCAL=1` uses Ollama (`helm-qwen30b`, created with `ollama create` from `qwen3-coder:30b` with a 32k context) and costs nothing but is slow and memory-hungry on this machine. Without `LOCAL=1` they use your Claude Code subscription login.
+- Kill leftovers with `pgrep -f "user-data-dir=.*helm-"` (headless Chrome). Do not `pkill -f` a pattern that appears in your own command line.
+
+## Gotchas learned the hard way
+- Tools can start while a model response is still streaming; correlate browser actions to the latest model turn that had started, not to a finished response.
+- A gated `tool_use` must be held with SSE `ping` events or Claude Code aborts the stream; the ceiling is about 10 minutes per attempt.
+- Returning CDP errors does not reach the agent (Playwright retries); rewriting a denied call into `echo` makes the agent doubt itself. Deny by ending the turn with a text block.
+- Agents restate injections in their own messages; counterfactual removal must blank those too.
+- Never write credential headers to logs. Do not route study participants through the researcher's subscription (see `docs/00-brief-review.md`, terms-of-use section).
+- Local-model results are an upper bound on susceptibility (minimal prompt). Zero compromises can mean the agent never acted; always check that the task completed.
 
 ## What Helm is
 
