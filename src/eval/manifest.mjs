@@ -38,7 +38,8 @@ export function loadEvalDir(dir, { set }) {
     if (m.id !== id) { problems.push(`${id}: manifest id "${m.id}" does not match the folder name`); continue; }
     const sp = join(dir, id, 'snapshot.txt');
     if (!existsSync(sp)) { problems.push(`${id}: no snapshot.txt yet (run: node src/eval/cli.mjs capture)`); continue; }
-    entries.push({ ...m, set, snapshot: readFileSync(sp, 'utf8') });
+    const hp = join(dir, id, 'page.html');
+    entries.push({ ...m, set, snapshot: readFileSync(sp, 'utf8'), html: existsSync(hp) ? readFileSync(hp, 'utf8') : null });
   }
   return { entries, problems };
 }

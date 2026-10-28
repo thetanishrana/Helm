@@ -10,5 +10,8 @@
   },
   "dependencies": {
     "ws": "8.18.3"
+  },
+  "devDependencies": {
+    "@playwright/cli": "^0.1.22"
   }
 }

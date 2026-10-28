@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { startTap } from './model/tap.mjs';
 import { startProxy } from './cdp/proxy.mjs';
 import { classify } from './model/policy.mjs';
-import { explain } from './model/explain.mjs';
+import { explainAll, mostImportant } from './model/explain.mjs';
 import { attribute } from './model/counterfactual.mjs';
 
 const short = (c) => (c || '').replace(/\s+/g, ' ').slice(0, 140);
@@ -16,9 +16,9 @@ export async function startSession({ store, approvals, tapPort = 8787, cdpPort =
   const policy = async (tu, req, ctx) => {
     const c = classify(tu, req);
     if (!c.gate) return { action: 'allow' };
-    const ex = explain(c, req);
+    const all = explainAll(c, req); const ex = mostImportant(all);
     if (!ex) return { action: 'allow' };
-    if (!ex.interrupt) { store.add('gate.allowed', { what: ex.action.what, reason: ex.reason }); return { action: 'allow' }; }
+    if (!ex.interrupt) { for (const x of all) store.add('gate.allowed', { what: x.action.what, reason: x.reason }); return { action: 'allow' }; }
     const lastResult = req.toolResults?.at(-1)?.toolUseId ?? null;
     const key = createHash('sha256').update(JSON.stringify([ex.action.what, lastResult])).digest('hex').slice(0, 12);
     return {

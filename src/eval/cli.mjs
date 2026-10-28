@@ -2,6 +2,9 @@
 // node src/eval/cli.mjs detect [--set dev|heldout|all] [--heldout-dir eval-pages/heldout] [--out eval-results]
 // node src/eval/cli.mjs validate [dir]      check manifests and report pages that cannot be scored
 // node src/eval/cli.mjs capture [dir]       render pages in Chrome and save their snapshots
+// node src/eval/cli.mjs agent --agent ollama:helm-qwen30b [--set dev|heldout|all] [--modes measure,block] [--reps 2]
+//        [--only id,id] [--limit N] [--out eval-results/agent] [--no-resume] [--dry-run] [--allow-subscription]
+// node src/eval/cli.mjs agent-report [dir]  re-print the tables from saved run files
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -33,4 +36,22 @@ if (cmd === 'detect') {
   writeFileSync(join(out, `detect-${stamp}.json`), JSON.stringify({ summary, results }, null, 1)); writeFileSync(join(out, `detect-${stamp}.md`), md + '\n');
   console.log(md); process.exit(0);
 }
-console.error('usage: node src/eval/cli.mjs detect|validate|capture [options]'); process.exit(2);
+if (cmd === 'agent' || cmd === 'agent-report') {
+  const { parseAgent, runAgentEval, loadRuns, aggregate, agentReport } = await import('./agent.mjs');
+  if (cmd === 'agent-report') { const rs = loadRuns(rest[0] || 'eval-results/agent'); console.log(agentReport(aggregate(rs))); process.exit(0); }
+  const agent = parseAgent(opt('--agent', 'ollama:helm-qwen30b'));
+  if (agent.kind === 'claude' && !rest.includes('--allow-subscription')) { console.error('claude agents use your Claude subscription (about 4 model requests per run). Re-run with --allow-subscription to confirm.'); process.exit(2); }
+  const set = opt('--set', 'dev'); const entries = [];
+  if (set !== 'heldout') entries.push(...devSet());
+  if (set !== 'dev') entries.push(...loadEvalDir(heldoutDir, { set: 'heldout' }).entries);
+  let pick = entries.filter((e) => e.html); const only = opt('--only', null);
+  if (only) pick = pick.filter((e) => only.split(',').includes(e.id)); const limit = Number(opt('--limit', 0)); if (limit) pick = pick.slice(0, limit);
+  const modes = opt('--modes', 'measure').split(','); const reps = Number(opt('--reps', 1));
+  if (!pick.length) { console.error('no pages with HTML to run (held-out pages need page.html and snapshot.txt)'); process.exit(1); }
+  const runs = pick.length * modes.length * reps;
+  console.error(`${pick.length} pages x ${modes.join('+')} x ${reps} rep(s) = ${runs} runs with ${agent.kind}:${agent.model}${agent.kind === 'ollama' ? ' (about 0.5-4 minutes each on this machine)' : ` (about ${runs * 4} subscription requests)`}`);
+  if (rest.includes('--dry-run')) process.exit(0);
+  const out = opt('--out', 'eval-results/agent'); const results = await runAgentEval({ entries: pick, agent, modes, reps, outDir: out, resume: !rest.includes('--no-resume') });
+  const md = agentReport(aggregate(loadRuns(out))); writeFileSync(join(out, 'report.md'), md + '\n'); console.log(md); process.exit(0);
+}
+console.error('usage: node src/eval/cli.mjs detect|validate|capture|agent|agent-report [options]'); process.exit(2);

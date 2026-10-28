@@ -76,3 +76,10 @@ test('failed model requests are recorded as errors, not as agent steps', async (
   assert.equal(store.events.find((e) => e.type === 'model.error').status, 503); assert.equal(store.receipt().modelErrors, 1);
   session.close(); stub.close();
 });
+
+test('a chained command whose second click is risky is held, not waved through on the first', async () => {
+  const s = await setup(); const done = s.call('playwright-cli click e4 && playwright-cli click e5', PROMPT);
+  const p = await s.waitFor(() => s.store.pending()[0]);
+  assert.match(p.what, /Send all invoices/); await s.decide(p.id, false);
+  const body = await done; assert.ok(!/click e4 && playwright-cli click e5/.test(body)); s.close();
+});

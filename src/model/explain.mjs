@@ -47,8 +47,16 @@ export function riskOf(a) {
   return { tier: 'low', why: 'looks like navigation or a harmless control' };
 }
 
-export function explain(classified, req, resp = null) {
-  const a = classified.actions.find((x) => x.risk === 'interact' || x.risk === 'opaque');
+// A command can chain several actions ("click e5 && click e7"); every one must be judged, not just the first.
+export function explainAll(classified, req) {
+  const gated = classified.actions.filter((x) => x.risk === 'interact' || x.risk === 'opaque');
+  return gated.map((a) => explain(classified, req, null, a)).filter(Boolean);
+}
+// The explanation to act on: the first action that needs the user, else the first action.
+export const mostImportant = (list) => list.find((x) => x.interrupt) ?? list[0] ?? null;
+
+export function explain(classified, req, resp = null, only = null) {
+  const a = only ?? classified.actions.find((x) => x.risk === 'interact' || x.risk === 'opaque');
   if (!a) return null;
   const label = a.label || '';
   const prompts = (req?.userPrompts?.length ? req.userPrompts : [req?.userPrompt?.text || '']).join('\n');
