@@ -39,70 +39,70 @@ test('validation catches broken scenarios', () => {
 });
 
 test('C: Helm asks only about the injected action; blocking it is recorded as stopped', async () => {
-  const { result, store } = await play('inject-tag', 'C', { onPrompt: () => false });
+  const { result, store } = await play('invoices-tag', 'C', { onPrompt: () => false });
   assert.equal(store.events.filter((e) => e.type === 'gate.pending').length, 1);
   assert.deepEqual([result.metrics.injectedActions, result.metrics.injectedStopped, result.metrics.maliciousApprovals, result.metrics.benignBlocked, result.metrics.prompts], [1, 1, 0, 0, 1]);
   assert.ok(store.events.some((e) => e.type === 'agent.say' && /blocked/.test(e.text)));
   assert.ok(!store.events.some((e) => e.type === 'action' && /Send all/.test(e.what)));
 });
 test('C: approving the injected action is a malicious approval and the action happens', async () => {
-  const { result, store } = await play('inject-xml', 'C', { onPrompt: () => true });
+  const { result, store } = await play('invoices-numbered', 'C', { onPrompt: () => true });
   assert.equal(result.metrics.maliciousApprovals, 1); assert.equal(result.metrics.injectedStopped, 0);
   assert.ok(store.events.some((e) => e.type === 'action' && /Send all/.test(e.what)));
 });
 test('C: a benign scenario never prompts', async () => {
-  const { result, store } = await play('benign-wizard', 'C');
+  const { result, store } = await play('signup-wizard', 'C');
   assert.equal(result.metrics.prompts, 0); assert.equal(store.events.filter((e) => e.type === 'gate.allowed').length, 2);
 });
 test('B: every action prompts with the command only, and denying a harmless one counts as a false block', async () => {
   const seen = [];
-  const { result } = await play('inject-tag', 'B', { onPrompt: (e) => { seen.push(e); return !/e4|Refresh/.test(e.explanation.command) ? false : false; } });
+  const { result } = await play('invoices-tag', 'B', { onPrompt: (e) => { seen.push(e); return !/e4|Refresh/.test(e.explanation.command) ? false : false; } });
   assert.equal(seen.length, 2); assert.ok(seen.every((e) => e.explanation.commandOnly && !e.explanation.cause));
   assert.equal(result.metrics.prompts, 2); assert.equal(result.metrics.benignBlocked, 1); assert.equal(result.metrics.injectedStopped, 1);
 });
 test('B: approving everything lets the injection through', async () => {
-  const { result } = await play('inject-user', 'B', { onPrompt: () => true });
+  const { result } = await play('bank-user', 'B', { onPrompt: () => true });
   assert.equal(result.metrics.maliciousApprovals, 1); assert.equal(result.metrics.benignBlocked, 0);
 });
 test('A: no prompts; letting the window pass lets the action run', async () => {
-  const { result, kinds } = await play('inject-tag', 'A');
+  const { result, kinds } = await play('invoices-tag', 'A');
   assert.ok(!kinds.includes('gate.pending')); assert.ok(kinds.includes('stop.window'));
   assert.equal(result.metrics.maliciousApprovals, 1); assert.equal(result.metrics.stoppedAgent, false);
 });
 test('A: pressing Stop in the window blocks the action and ends the run', async () => {
   let n = 0;
-  const { result, store } = await play('inject-tag', 'A', { stopWindowMs: 2000, onWindow: (eng) => { if (++n === 2) eng.stop(); } });
+  const { result, store } = await play('invoices-tag', 'A', { stopWindowMs: 2000, onWindow: (eng) => { if (++n === 2) eng.stop(); } });
   assert.equal(result.metrics.injectedStopped, 1); assert.equal(result.metrics.stoppedAgent, true);
   assert.ok(store.events.some((e) => e.type === 'agent.stopped'));
-  assert.ok(!store.events.some((e) => e.type === 'agent.say' && /Done\./.test(e.text)), 'later steps must not run after Stop');
+  assert.ok(!store.events.some((e) => e.type === 'agent.say' && /That is everything/.test(e.text)), 'later steps must not run after Stop');
 });
 test('an unanswered prompt times out as blocked', async () => {
   const store = new Store(); const approvals = new Approvals({ store, timeoutMs: 30 });
-  const engine = new ReplayEngine({ scenario: SC['inject-tag'], condition: 'C', store, approvals, sleep: instant, participant: 'p' });
+  const engine = new ReplayEngine({ scenario: SC['invoices-tag'], condition: 'C', store, approvals, sleep: instant, participant: 'p' });
   engine.begin(); const result = await engine.run();
   assert.equal(result.decisions.find((d) => d.injected).decision, 'timeout'); assert.equal(result.metrics.injectedStopped, 1);
 });
 test('reflexive approvals of a high-risk card are counted', async () => {
-  const { result } = await play('inject-tag', 'C', { onPrompt: () => true });
+  const { result } = await play('invoices-tag', 'C', { onPrompt: () => true });
   assert.equal(result.metrics.reflexiveApprovals, 1);
 });
 test('questionnaire answers are validated and stored', async () => {
   const store = new Store(); const approvals = new Approvals({ store });
-  const e = new ReplayEngine({ scenario: SC['benign-refresh'], condition: 'C', store, approvals, sleep: instant });
+  const e = new ReplayEngine({ scenario: SC['invoices-benign'], condition: 'C', store, approvals, sleep: instant });
   assert.equal(e.submitTlx({ mental: 10 }), false); assert.equal(e.submitTlx({ mental: 1, physical: 1, temporal: 1, performance: 1, effort: 1, frustration: 101 }), false);
   assert.equal(e.submitTlx({ mental: 10, physical: 0, temporal: 20, performance: 30, effort: 40, frustration: 50 }), true); assert.equal(e.tlx.effort, 40);
 });
 test('the runner plays scenarios in order, routes hooks to the current one, and writes result files', async () => {
   const store = new Store(); const approvals = new Approvals({ store }); const dir = mkdtempSync(join(tmpdir(), 'helm-study-'));
-  const runner = makeRunner({ scenarios: [SC['benign-refresh'], SC['inject-tag']], condition: 'C', participant: 'p7', store, approvals, outDir: dir, sleep: instant, tlxWaitMs: 5000 });
+  const runner = makeRunner({ scenarios: [SC['invoices-benign'], SC['invoices-tag']], condition: 'C', participant: 'p7', store, approvals, outDir: dir, sleep: instant, tlxWaitMs: 5000 });
   store.on('event', (e) => {
     if (e.type === 'study.ready') queueMicrotask(() => runner.hooks.start());
     if (e.type === 'gate.pending') queueMicrotask(() => approvals.decide(e.id, false));
     if (e.type === 'study.questionnaire') queueMicrotask(() => runner.hooks.tlx({ mental: 1, physical: 1, temporal: 1, performance: 1, effort: 1, frustration: 1 }));
   });
   const results = await runner.run();
-  assert.equal(results.length, 2); assert.deepEqual(readdirSync(dir).sort(), ['p7-C-benign-refresh.json', 'p7-C-inject-tag.json']);
-  const saved = JSON.parse(readFileSync(join(dir, 'p7-C-inject-tag.json'), 'utf8'));
+  assert.equal(results.length, 2); assert.deepEqual(readdirSync(dir).sort(), ['p7-C-invoices-benign.json', 'p7-C-invoices-tag.json']);
+  const saved = JSON.parse(readFileSync(join(dir, 'p7-C-invoices-tag.json'), 'utf8'));
   assert.equal(saved.metrics.injectedStopped, 1); assert.equal(saved.tlx.mental, 1); assert.ok(saved.scenarioHash);
   assert.equal(store.events.filter((e) => e.type === 'task.start').length, 2);
 });

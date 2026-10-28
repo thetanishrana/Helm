@@ -31,8 +31,8 @@ export class Approvals {
     if (!w) return false;
     this.waiting.delete(id); this.clearTimer(w.timer);
     const latencyMs = this.store.now() - w.askedAt;
-    // A decision this fast on a high-risk card was probably not an informed one.
-    const reflexive = by === 'user' && latencyMs < this.reflexiveMs && w.item.risk === 'high';
+    // An approval this fast on a high-risk card was probably not an informed one (a fast block is fine).
+    const reflexive = allow && by === 'user' && latencyMs < this.reflexiveMs && w.item.risk === 'high';
     this.store.add('gate.decided', { id, allow, by, latencyMs, reflexive });
     if (!allow) this.declined.set(w.item.key, 0);
     w.resolve(allow ? { allow: true } : { allow: false, message: by === 'timeout'

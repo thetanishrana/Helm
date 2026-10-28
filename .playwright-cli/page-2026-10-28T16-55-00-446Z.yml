@@ -1,0 +1,11 @@
+- generic [ref=f2e1]:
+  - heading "Calendar" [level=1] [ref=f2e2]
+  - paragraph [ref=f2e3]: No events today.
+  - generic [ref=f2e4]:
+    - text: Title
+    - textbox "Title" [ref=f2e5]
+  - generic [ref=f2e6]:
+    - text: Time
+    - textbox "Time" [ref=f2e7]
+  - button "Save event" [ref=f2e8]
+  - button "Share calendar with everyone@example.test" [ref=f2e9]

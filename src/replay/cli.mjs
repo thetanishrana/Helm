@@ -18,7 +18,9 @@ const HELP = `usage: helm replay --condition A|B|C --participant ID [options]
   --ui-port N         web UI port (default 7777)
   --fast              shorten the agent's pauses (for trying it out, not for the study)
   --open              open the UI in your browser
-conditions: ${Object.entries(CONDITIONS).map(([k, v]) => `${k} = ${v}`).join('\n            ')}`;
+  --index N           run the whole counterbalanced session for participant number N (consent, practice,
+                      three condition blocks, debrief); ignores --condition and --scenarios
+conditions (single-block mode): ${Object.entries(CONDITIONS).map(([k, v]) => `${k} = ${v}`).join('\n            ')}`;
 
 const o = { ui: 7777, stopWindow: 8, timeout: 120, outDir: 'study-data', scenarios: 'all' };
 const a = process.argv.slice(2);
@@ -29,10 +31,10 @@ for (let i = 0; i < a.length; i++) {
   else if (f === '--scenarios') o.scenarios = v(); else if (f === '--order') o.order = v();
   else if (f === '--stop-window') o.stopWindow = Number(v()); else if (f === '--timeout') o.timeout = Number(v());
   else if (f === '--out-dir') o.outDir = v(); else if (f === '--ui-port') o.ui = Number(v());
-  else if (f === '--fast') o.fast = true; else if (f === '--open') o.open = true;
+  else if (f === '--fast') o.fast = true; else if (f === '--open') o.open = true; else if (f === '--index') o.index = Number(v());
   else { console.error(`unknown option ${f}\n${HELP}`); process.exit(2); }
 }
-if (!CONDITIONS[o.condition] || !o.participant) { console.error(HELP); process.exit(2); }
+if (!o.participant || (o.index === undefined && !CONDITIONS[o.condition])) { console.error(HELP); process.exit(2); }
 
 const all = loadScenarios(fileURLToPath(new URL('../../scenarios/', import.meta.url)));
 const pick = (id) => all[id] ?? (console.error(`unknown scenario ${id}`), process.exit(2));
@@ -45,13 +47,23 @@ if (o.order === 'shuffle') {   // deterministic per participant so a session can
 }
 
 const store = new Store(); const approvals = new Approvals({ store, timeoutMs: o.timeout * 1000 });
-const runner = makeRunner({ scenarios: list, condition: o.condition, participant: o.participant, store, approvals, outDir: o.outDir, stopWindowMs: o.stopWindow * 1000,
-  sleep: o.fast ? (ms) => new Promise((r) => setTimeout(r, Math.min(ms, 250))) : undefined });
-const ui = await startServer({ store, approvals, port: o.ui, hooks: runner.hooks });
+import { planFor } from './plan.mjs';
+import { runStudySession } from './session.mjs';
+const sleepFn = o.fast ? (ms) => new Promise((r) => setTimeout(r, Math.min(ms, 250))) : undefined;
+const hooks = {};
+const runner = o.index !== undefined ? null : makeRunner({ scenarios: list, condition: o.condition, participant: o.participant, store, approvals, outDir: o.outDir, stopWindowMs: o.stopWindow * 1000,
+  sleep: sleepFn, hooks });
+const ui = await startServer({ store, approvals, port: o.ui, hooks });
 const url = `http://127.0.0.1:${ui.port}/`;
 console.error(`helm replay: condition ${o.condition}, participant ${o.participant}, ${list.length} scenarios (${list.map((s) => s.id).join(', ')})\nUI ${url}   results ${o.outDir}/`);
 if (o.open) spawn('open', [url], { stdio: 'ignore' });
-const results = await runner.run();
+let results;
+if (o.index !== undefined) {
+  const plan = planFor(o.index, all); console.error(`plan: conditions ${plan.order.join(' -> ')}; ${plan.blocks.map((b) => `${b.condition}: ${b.scenarios.join(', ')}`).join(' | ')}`);
+  const r = await runStudySession({ plan, participant: o.participant, scenarios: all, store, approvals, outDir: o.outDir, stopWindowMs: o.stopWindow * 1000, sleep: sleepFn, hooks });
+  if (r.declined) { console.error('participant declined consent; nothing recorded.'); process.exit(0); }
+  results = r.results.filter((x) => !x.practice);
+} else results = await runner.run();
 const sum = (k) => results.reduce((n, r) => n + r.metrics[k], 0);
 console.error(`done. injected actions ${sum('injectedActions')}: stopped ${sum('injectedStopped')}, approved ${sum('maliciousApprovals')}; benign actions ${sum('benignActions')}: blocked ${sum('benignBlocked')}; prompts shown ${sum('prompts')}`);
 setTimeout(() => { ui.close(); process.exit(0); }, 3000);

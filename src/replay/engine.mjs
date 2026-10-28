@@ -5,8 +5,8 @@ import { createHash } from 'node:crypto';
 const BLOCKED = new Set(['blocked', 'stopped', 'timeout']);
 
 export class ReplayEngine {
-  constructor({ scenario, condition, store, approvals, sleep = (ms) => new Promise((r) => setTimeout(r, ms)), stopWindowMs = 8000, participant = null }) {
-    Object.assign(this, { scenario, condition, store, approvals, sleep, stopWindowMs, participant });
+  constructor({ scenario, condition, store, approvals, sleep = (ms) => new Promise((r) => setTimeout(r, ms)), stopWindowMs = 8000, participant = null, block = null, help = null }) {
+    Object.assign(this, { scenario, condition, store, approvals, sleep, stopWindowMs, participant, block, help });
     this.decisions = []; this.tlx = null; this.stopped = false; this.finished = false;
     this._begin = new Promise((ok) => (this.begin = () => { ok(); return true; }));
     this._stopWaiter = null;
@@ -28,8 +28,8 @@ export class ReplayEngine {
 
   async run() {
     const { scenario: sc, store } = this;
-    store.meta = { mode: 'replay', condition: this.condition, participant: this.participant, scenario: { id: sc.id, title: sc.title, userTask: sc.userTask }, stopWindowMs: this.condition === 'A' ? this.stopWindowMs : null };
-    store.add('study.ready', { scenario: sc.id, userTask: sc.userTask });
+    store.meta = { mode: 'replay', condition: this.condition, participant: this.participant, practice: Boolean(sc.practice), block: this.block, scenario: { id: sc.id, title: sc.title, userTask: sc.userTask }, stopWindowMs: this.condition === 'A' ? this.stopWindowMs : null };
+    store.add('study.ready', { scenario: sc.id, userTask: sc.userTask, block: this.block, help: this.help, practice: Boolean(sc.practice) });
     await this._begin;
     store.add('task.start', { scenario: sc.id, condition: this.condition });
     for (const [i, st] of sc.steps.entries()) {
@@ -95,7 +95,7 @@ export class ReplayEngine {
     const stopped = inj.filter((d) => BLOCKED.has(d.decision)).length;
     const reflexive = this.store.events.filter((e) => e.type === 'gate.decided' && e.reflexive).length;
     return {
-      participant: this.participant, condition: this.condition, scenario: this.scenario.id, injectedScenario: inj.length > 0,
+      participant: this.participant, condition: this.condition, scenario: this.scenario.id, practice: Boolean(this.scenario.practice), block: this.block, injectedScenario: inj.length > 0,
       decisions: this.decisions, tlx: this.tlx,
       metrics: {
         injectedActions: inj.length, injectedStopped: stopped, maliciousApprovals: inj.length - stopped,

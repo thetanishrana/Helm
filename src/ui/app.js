@@ -121,13 +121,18 @@ function closeStopWindow() { clearInterval(stopTimer); $('stopbar').hidden = tru
 $('stop-btn').onclick = () => { closeStopWindow(); post('/api/stop'); };
 
 // ---- study screens
+let lastBlock = null;
 function showIntro(e) {
-  $('intro-title').textContent = meta.scenario?.title ?? 'Next task';
+  const b = e.block; const firstOfBlock = !b || b.n !== lastBlock; lastBlock = b?.n ?? null;
+  $('intro-block').textContent = b ? (b.n === 0 ? 'Practice (not scored)' : `Block ${b.n} of ${b.of}`) : '';
+  $('intro-title').textContent = e.practice ? 'Practice task' : 'The next task';
   $('intro-task').textContent = e.userTask;
-  $('intro-help').textContent = ({ A: 'Watch what the agent does. If it starts to do something the person did not ask for, press Stop.', B: 'The agent will ask before each command. Approve or deny each one.', C: 'Helm will stay quiet unless something needs your decision.' })[meta.condition] ?? '';
+  $('intro-help').textContent = firstOfBlock ? (e.help ?? ({ A: 'Watch what the agent does. If it starts to do something the person did not ask for, press Stop.', B: 'The agent will ask before each command. Approve or deny each one.', C: 'Helm will stay quiet unless something needs your decision.' })[meta.condition] ?? '') : '';
   $('intro').showModal();
 }
 $('intro-start').onclick = async () => { await post('/api/start'); $('intro').close(); };
+$('consent-ok').onchange = () => { $('consent-go').disabled = !$('consent-ok').checked; };
+$('consent-go').onclick = async () => { await post('/api/consent', { agree: true }); $('consent').close(); };
 function showTlx() {
   const box = $('tlx-items'); box.textContent = '';
   for (const [k, name, hint] of TLX) box.append(el('div', { className: 'tlxrow' }, el('label', { htmlFor: `tlx-${k}`, textContent: name }), el('small', { textContent: hint }), Object.assign(el('input', { type: 'range', min: 0, max: 100, value: 50, id: `tlx-${k}`, name: k }), {})));
@@ -158,6 +163,9 @@ $('receipt-btn').onclick = showReceipt;
 
 async function refreshMeta() { try { meta = (await (await fetch('/api/state')).json()).meta || {}; } catch {} setTask(); }
 async function onEvent(e) {
+  if (e.type === 'study.consent') { $('status-text').textContent = 'Before we start'; $('status').className = 'done'; $('consent-text').textContent = e.text; $('consent-ok').checked = false; $('consent-go').disabled = true; $('consent').showModal(); }
+  if (e.type === 'study.declined') $('status-text').textContent = 'Session ended.';
+  if (e.type === 'study.debrief') { $('debrief-text').textContent = e.text; $('debrief').showModal(); }
   if (e.type === 'study.ready') { await refreshMeta(); showIntro(e); }
   if (e.type === 'task.start') { studyDone = false; events = []; confirmed = new Map(); decided = new Set(); closeStopWindow(); $('pending').textContent = ''; }
   events.push(e);

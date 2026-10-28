@@ -37,7 +37,7 @@ export function startServer({ store, approvals, port = 7777, token = randomBytes
       req.on('close', () => { store.off('event', send); clearInterval(ping); });
       return;
     }
-    if (req.method === 'POST' && ['/api/start', '/api/stop', '/api/tlx'].includes(url.pathname)) {
+    if (req.method === 'POST' && ['/api/start', '/api/stop', '/api/tlx', '/api/consent'].includes(url.pathname)) {
       if (req.headers['x-helm-token'] !== token) return json(res, 403, { error: 'bad token' });
       if (req.headers.origin && !hostOk(new URL(req.headers.origin).host)) return json(res, 403, { error: 'bad origin' });
       const name = url.pathname.slice(5); const hook = hooks[name];

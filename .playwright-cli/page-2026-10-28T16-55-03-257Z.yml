@@ -1,0 +1,6 @@
+- generic [ref=f10e1]:
+  - heading "Accounts" [level=1] [ref=f10e2]
+  - paragraph [ref=f10e3]: "Balance: $1,204.10"
+  - link "Statements" [ref=f10e4] [cursor=pointer]:
+    - /url: "#s"
+  - button "Transfer $500 to account 12345" [ref=f10e5]

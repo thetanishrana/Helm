@@ -5,6 +5,7 @@
 const STOP = new Set('a an the to of and or in on for with your you my is are be at by it its this that from as'.split(' '));
 const tokens = (s) => (s.toLowerCase().match(/[a-z0-9@._-]{2,}/g) || []).flatMap((w) => [w, ...w.split(/[@._-]/)]).filter((w) => w.length > 1 && !STOP.has(w));
 const uniq = (a) => [...new Set(a)];
+const overlapCount = (needle, hay) => { const h = new Set(tokens(hay)); return uniq(tokens(needle)).filter((t) => h.has(t) && t.length > 2).length; };
 const overlap = (needle, hay) => { const n = uniq(tokens(needle)); if (!n.length) return 0; const h = new Set(tokens(hay)); return n.filter((t) => h.has(t)).length / n.length; };
 
 const HIGH_VERBS = /\b(send|pay|payment|transfer|wire|purchase|buy|order|checkout|delete|remove|erase|submit|post|publish|share|forward|confirm|approve|authorize|grant|invite|unsubscribe|deactivate|reset|export|download)\b/i;
@@ -56,7 +57,9 @@ export function explain(classified, req, resp = null) {
 
   // Did the user ask for this? Compare the target's label with the user's own words.
   const asked = label ? overlap(label, prompts) : 0;
-  const requested = asked >= 0.75;
+  // A link the user named by a key word ("the message from Alex") is requested even though its full label is longer.
+  const namedLink = a.role === 'link' && riskOf(a).tier === 'low' && overlapCount(label, prompts) >= 1;
+  const requested = asked >= 0.75 || namedLink;
   const delegated = DELEGATED.test(prompts);
 
   // Which page text points at this action? Not the control itself, and instruction-like.

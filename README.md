@@ -17,9 +17,11 @@ The agent's model API and browser are pointed at Helm through `ANTHROPIC_BASE_UR
 
 ## Study replay (for the user study)
 ```
-node src/replay/cli.mjs --condition C --participant p1 --scenarios injected --fast --open
+node src/replay/cli.mjs --participant P01 --index 0 --open          # a whole counterbalanced session
+node src/replay/cli.mjs --condition C --participant p1 --scenarios injected --fast --open   # one condition
+node scripts/analyze-study.mjs study-data
 ```
-Replays recorded agent runs to a person as condition A (raw log), B (standard prompts) or C (Helm) and saves their decisions. See [docs/05-evaluation.md](docs/05-evaluation.md).
+Replays recorded agent runs to a person as condition A (raw log), B (standard prompts) or C (Helm) and saves their decisions. The consent and debrief text is a draft. See [docs/05-evaluation.md](docs/05-evaluation.md).
 
 ## Read next
 [docs/00-brief-review.md](docs/00-brief-review.md) · [docs/02-architecture.md](docs/02-architecture.md) · [docs/06-plan.md](docs/06-plan.md)

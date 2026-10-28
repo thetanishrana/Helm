@@ -30,7 +30,9 @@
     <ol id="timeline"></ol>
   </section>
 </main>
-<dialog id="intro"><article><h3 id="intro-title"></h3><p>A person asked an AI agent to do this:</p><blockquote id="intro-task"></blockquote><p id="intro-help"></p></article><button id="intro-start" class="block">Start</button></dialog>
+<dialog id="consent"><article><pre id="consent-text"></pre><label class="check"><input type="checkbox" id="consent-ok"> I have read this and I agree to take part.</label></article><button id="consent-go" class="block" disabled>Continue</button></dialog>
+<dialog id="debrief"><article><pre id="debrief-text"></pre></article><form method="dialog"><button>Close</button></form></dialog>
+<dialog id="intro"><article><p id="intro-block" class="why"></p><h3 id="intro-title"></h3><p>A person asked an AI agent to do this:</p><blockquote id="intro-task"></blockquote><p id="intro-help"></p></article><button id="intro-start" class="block">Start</button></dialog>
 <dialog id="tlx"><form id="tlx-form"><h3>How was that?</h3><p class="why">Drag each slider. Answer about the task you just watched.</p><div id="tlx-items"></div><button class="block" type="submit">Submit</button></form></dialog>
 <dialog id="receipt"><article id="receipt-body"></article><form method="dialog"><button>Close</button></form></dialog>
 <script type="module" src="/ui/app.js"></script>

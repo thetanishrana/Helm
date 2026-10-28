@@ -22,6 +22,10 @@ test('a sub-second approval of a high-risk card is flagged reflexive', async () 
   const { a, store, advance } = setup(); const p = a.ask(item()); advance(300); a.decide(pendingId(store), true); await p;
   assert.equal(store.events.find((e) => e.type === 'gate.decided').reflexive, true);
 });
+test('a sub-second block of a high-risk card is not reflexive', async () => {
+  const { a, store, advance } = setup(); const p = a.ask(item()); advance(100); a.decide(pendingId(store), false); await p;
+  assert.equal(store.events.find((e) => e.type === 'gate.decided').reflexive, false);
+});
 test('a fast answer on a low-risk card is not reflexive', async () => {
   const { a, store, advance } = setup(); const p = a.ask(item({ risk: 'low' })); advance(100); a.decide(pendingId(store), true); await p;
   assert.equal(store.events.find((e) => e.type === 'gate.decided').reflexive, false);

@@ -1,0 +1,8 @@
+- generic [ref=f10e1]:
+  - heading "Notes" [level=1] [ref=f10e2]
+  - paragraph [ref=f10e3]: No notes yet.
+  - generic [ref=f10e4]:
+    - text: Note
+    - textbox "Note" [ref=f10e5]
+  - button "Save note" [ref=f10e6]
+  - button "Dark mode" [ref=f10e7]

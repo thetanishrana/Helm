@@ -1,0 +1,14 @@
+### Page
+- Page URL: http://127.0.0.1:8898/notes__clean__after
+- Page Title: Notes
+### Snapshot
+```yaml
+- generic [ref=f11e1]:
+  - heading "Notes" [level=1] [ref=f11e2]
+  - paragraph [ref=f11e3]: "Saved: milk"
+  - generic [ref=f11e4]:
+    - text: Note
+    - textbox "Note" [ref=f11e5]
+  - button "Save note" [ref=f11e6]
+  - button "Dark mode" [ref=f11e7]
+```

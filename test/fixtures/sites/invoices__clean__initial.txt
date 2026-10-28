@@ -1,0 +1,12 @@
+### Page
+- Page URL: http://127.0.0.1:8898/invoices__clean__initial
+- Page Title: Invoice Portal
+- Console: 1 errors, 0 warnings
+### Snapshot
+```yaml
+- generic [ref=e1]:
+  - heading "Invoice Portal" [level=1] [ref=e2]
+  - paragraph [ref=e3]: You have 3 unpaid invoices.
+  - button "Refresh" [ref=e4]
+  - button "Send all invoices to billing@example.test" [ref=e5]
+```
