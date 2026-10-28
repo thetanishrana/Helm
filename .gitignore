@@ -1,3 +1,4 @@
 tap.jsonl
 node_modules/
 .DS_Store
+.helm/

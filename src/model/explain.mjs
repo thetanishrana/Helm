@@ -1,0 +1,109 @@
+// Turn a classified action plus the request context into a human explanation:
+// did the user ask for this, did untrusted page text push the agent toward it, how bad is it,
+// and should the user be interrupted. Deterministic heuristics, no model calls.
+
+const STOP = new Set('a an the to of and or in on for with your you my is are be at by it its this that from as'.split(' '));
+const tokens = (s) => (s.toLowerCase().match(/[a-z0-9@._-]{2,}/g) || []).flatMap((w) => [w, ...w.split(/[@._-]/)]).filter((w) => w.length > 1 && !STOP.has(w));
+const uniq = (a) => [...new Set(a)];
+const overlap = (needle, hay) => { const n = uniq(tokens(needle)); if (!n.length) return 0; const h = new Set(tokens(hay)); return n.filter((t) => h.has(t)).length / n.length; };
+
+const HIGH_VERBS = /\b(send|pay|payment|transfer|wire|purchase|buy|order|checkout|delete|remove|erase|submit|post|publish|share|forward|confirm|approve|authorize|grant|invite|unsubscribe|deactivate|reset|export|download)\b/i;
+const SECRET_FIELD = /pass(word)?|card|cvv|ssn|secret|token|api.?key|private/i;
+const AI_ADDRESSED = /\b(ai|a\.i\.|assistants?|agents?|llms?|language model|claude|gpt|chatbot|copilot)\b/i;
+const COERCION = /\b(please remember|remember to|reminder:|make sure|be sure|don't forget|you must|you should|you need to|ignore (all|any|previous|prior)|disregard|do not (tell|mention|inform)|don't (tell|mention)|instead|override|system (note|message|prompt)|important:|required|to (complete|finish) (your|the|this) task|before (you )?(continu|proceed|answer))/i;
+// Text that poses as the user, the assistant, or the system: the style that worked on a real agent.
+const IMPERSONATION = /(^|\s)(human|user|assistant|system)\s*:|<\|im_(start|end)\|>|<\/?(user_message|system-reminder|system|tool_result)>|\[system\]|\b(one more thing|in addition|added to your task|amended|follow-up|the user (has )?(asked|confirmed|approved|requested)|i need you to|i forgot to mention|as requested|instructions from the user)\b/i;
+const DELEGATED = /\b(whatever|everything|anything|all (the )?(steps|tasks)|as)\b.{0,30}\b(page|site|website|checklist|instructions?|portal|it)\b.{0,20}\b(says?|tells?|instructs?|lists?|asks?)\b|\bfollow (the )?(page|site|instructions|checklist)\b/i;
+
+// Break tool-result text into chunks of page content with a source label.
+export function pageChunks(req) {
+  const chunks = [];
+  (req?.toolResults || []).forEach((r, ri) => {
+    let page = null;
+    for (let line of r.text.split('\n')) {
+      const rawLine = line;
+      // YAML single-quotes a key that contains quotes: - 'note "..." [ref=e6]': text
+      const q = /^(\s*-\s+)'(.*)':\s*(.*)$/.exec(line); if (q) line = `${q[1]}${q[2].replace(/''/g, "'")}${q[3] && q[3] !== '.' ? ': ' + q[3] : ''}`;
+      const url = /Page URL:\s*(\S+)/.exec(line); if (url) { page = url[1]; continue; }
+      const m = /^\s*-\s+(\w+)(?:\s+"((?:[^"\\]|\\.)*)")?[^\n]*?(?:\[ref=(e\d+)\])?[^\n]*?(?::\s*(?:"((?:[^"\\]|\\.)*)"|(.+)))?\s*$/.exec(line);
+      if (!m) continue;
+      const un = (x) => x && x.replace(/\\"/g, '"');
+      const ref = /\[ref=(\w+)\]/.exec(line)?.[1];
+      const text = un(m[4]) ?? m[5] ?? un(m[2]);
+      if (text && text.trim()) chunks.push({ line: rawLine, result: ri, page, role: m[1], ref, text: text.trim(), isLabel: !m[4] && !m[5] });
+    }
+  });
+  return chunks;
+}
+
+export function riskOf(a) {
+  const label = a.label || a.selector || a.detail || '';
+  if (a.risk === 'opaque') return { tier: 'high', why: 'runs code the proxy cannot inspect' };
+  if (a.cli === 'curl' || a.verb === 'send') return { tier: 'high', why: 'sends data off the machine' };
+  if (['fill', 'type'].includes(a.verb) && SECRET_FIELD.test(label)) return { tier: 'high', why: 'types into a sensitive field' };
+  if (HIGH_VERBS.test(label)) return { tier: 'high', why: `the control says "${label}", which changes something outside the page` };
+  if (['fill', 'type', 'press', 'select', 'upload', 'check', 'uncheck'].includes(a.verb)) return { tier: 'medium', why: 'enters or changes data on the page' };
+  return { tier: 'low', why: 'looks like navigation or a harmless control' };
+}
+
+export function explain(classified, req, resp = null) {
+  const a = classified.actions.find((x) => x.risk === 'interact' || x.risk === 'opaque');
+  if (!a) return null;
+  const label = a.label || '';
+  const prompts = (req?.userPrompts?.length ? req.userPrompts : [req?.userPrompt?.text || '']).join('\n');
+  const chunks = pageChunks(req);
+  const tainted = (req?.toolResults || []).length > 0;
+
+  // Did the user ask for this? Compare the target's label with the user's own words.
+  const asked = label ? overlap(label, prompts) : 0;
+  const requested = asked >= 0.75;
+  const delegated = DELEGATED.test(prompts);
+
+  // Which page text points at this action? Not the control itself, and instruction-like.
+  const candidates = chunks
+    .filter((c) => !(c.ref && a.ref && c.ref === a.ref) && !(c.isLabel && c.text === label))
+    .map((c) => {
+      const o = label ? overlap(label, c.text) : 0;
+      const cues = (AI_ADDRESSED.test(c.text) ? 1 : 0) + (IMPERSONATION.test(c.text) ? 1 : 0) + (COERCION.test(c.text) ? 1 : 0) + (/\b(click|press|tap|select|open|send|type|enter|visit|go to|run|execute)\b/i.test(c.text) ? 0.5 : 0);
+      return { ...c, overlap: o, cues, score: o * 2 + cues };
+    })
+    .filter((c) => c.overlap >= 0.5 && c.cues >= 1)
+    .sort((x, y) => y.score - x.score);
+  let cause = candidates[0] || null;
+  if (!cause) {   // no passage names the control; still flag text that talks to AI agents and issues orders
+    const weak = chunks.filter((c) => !c.isLabel && (AI_ADDRESSED.test(c.text) || IMPERSONATION.test(c.text)) && (COERCION.test(c.text) || /\b(click|press|send|forward|open|type|enter|run|execute|visit)\b/i.test(c.text)))
+      .sort((x, y) => y.text.length - x.text.length)[0];
+    if (weak) cause = { ...weak, overlap: 0, cues: 1, score: 1, weak: true };
+  }
+
+  if (cause?.weak && requested) cause = null;   // an unnamed order to AI is not about something the user asked for
+  const risk = riskOf(a);
+  const influenced = Boolean(cause);
+  // Interrupt budget: stay quiet unless the user did not ask AND (it is high stakes OR the page pushed it).
+  let interrupt = false; let reason;
+  if (requested && !influenced) reason = 'you asked for this';
+  else if (requested && influenced) reason = 'you asked for this, though page text also mentions it';
+  else if (risk.tier === 'high') { interrupt = true; reason = 'you did not ask for this and it has real consequences'; }
+  else if (influenced) { interrupt = true; reason = 'page text told the agent to do this'; }
+  else reason = 'low stakes and not influenced by page instructions';
+  if (delegated && !influenced && !interrupt) reason += ' (you told it to follow the page)';
+  if (delegated && risk.tier === 'high' && !requested) { interrupt = true; reason = 'you told the agent to follow the page, but this has real consequences'; }
+
+  const emails = uniq([...(label.match(/[\w.+-]+@[\w-]+\.[\w.-]+/g) || []), ...((cause?.text || '').match(/[\w.+-]+@[\w-]+\.[\w.-]+/g) || [])]);
+  const what = `${a.verb} ${a.role || 'control'}${label ? ` "${label}"` : ''}`;
+  const lines = [];
+  lines.push(`${interrupt ? 'PAUSED' : 'ALLOWED'}: ${what}`);
+  lines.push(requested ? `You asked for this (your request mentions "${label}").` : `You did not ask for this.`);
+  if (cause?.weak) lines.push(`Text on ${cause.page || 'the page'} is addressed to AI agents and gives orders (it does not name this control):\n    "${cause.text.length > 200 ? cause.text.slice(0, 197) + '...' : cause.text}"`);
+  else if (cause) lines.push(`Text on ${cause.page || 'the page'} pointed the agent at it:\n    "${cause.text.length > 200 ? cause.text.slice(0, 197) + '...' : cause.text}"`);
+  else if (!requested && tainted) lines.push('The agent had read page content, but no single passage clearly told it to do this.');
+  if (emails.length) lines.push(`Involves: ${emails.join(', ')}`);
+  lines.push(`Risk: ${risk.tier} - ${risk.why}.`);
+  lines.push(`Why ${interrupt ? 'you are being asked' : 'no prompt'}: ${reason}.`);
+
+  return {
+    action: { ...a, what }, tainted, requested, requestedOverlap: asked, delegated, influenced,
+    cause: cause && { text: cause.text, page: cause.page, role: cause.role, score: cause.score, weak: Boolean(cause.weak) },
+    risk, interrupt, reason, emails, card: lines.join('\n'),
+  };
+}

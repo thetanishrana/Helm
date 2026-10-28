@@ -1,0 +1,11 @@
+{
+  "name": "helm",
+  "private": true,
+  "type": "module",
+  "description": "Live oversight for AI browser agents",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "helm": "node src/cli.mjs"
+  },
+  "dependencies": { "ws": "8.18.3" }
+}
