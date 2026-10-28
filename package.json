@@ -5,7 +5,10 @@
   "description": "Live oversight for AI browser agents",
   "scripts": {
     "test": "node --test test/*.test.mjs",
-    "helm": "node src/cli.mjs"
+    "helm": "node src/cli.mjs",
+    "replay": "node src/replay/cli.mjs"
   },
-  "dependencies": { "ws": "8.18.3" }
+  "dependencies": {
+    "ws": "8.18.3"
+  }
 }

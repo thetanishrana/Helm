@@ -12,7 +12,8 @@ Verify numbers before repeating them: they come from small, author-written test 
 Node 24, no build step. `npm install` at the root (only `ws`), and in `spikes/cdp-proxy` and `spikes/agent-e2e` for the spikes.
 
 - `src/`: the product slice (Gate 1). `model/` (tap, policy, explain, counterfactual, turns), `cdp/proxy.mjs`, `store.mjs` (event log, receipt), `approvals.mjs`, `session.mjs` (wiring), `server.mjs` + `ui/` (web UI), `cli.mjs` (launcher). `spikes/` holds the frozen evidence the slice was built from; do not edit spike results.
-- Tests: `npm test` (63 tests, under a second, no network or model). Single file: `node --test test/policy.test.mjs`. A hung test file usually means a test failed before closing its servers.
+- Tests: `npm test` (76 tests, under a second, no network or model). Single file: `node --test test/policy.test.mjs`. A hung test file usually means a test failed before closing its servers.
+- Study replay: `node src/replay/cli.mjs --condition C --participant p1 --scenarios injected --fast --open` replays `scenarios/*.json` (regenerate with `node scripts/make-scenarios.mjs`; needs `test/fixtures/snapshots/`). Results go to `study-data/` (gitignored).
 - Run the product: `node src/cli.mjs run --headless --ollama helm-qwen30b --exit -- claude -p "<task>" --model helm-qwen30b --tools Bash ...` (see `node src/cli.mjs`). Serve a test page with `node demo/pages.mjs turn_tag`. The UI is at http://127.0.0.1:7777/.
 
 

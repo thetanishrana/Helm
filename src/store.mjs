@@ -14,12 +14,21 @@ export class Store extends EventEmitter {
     this.file = null;
     if (dir) { mkdirSync(dir, { recursive: true }); this.file = join(dir, `${this.id}.jsonl`); }
     this.untrusted = false;   // untrusted tool output has entered the agent's context
+    this.meta = {};            // e.g. { mode: 'replay', condition: 'C', participant: 'p1' }
+  }
+
+  // Events of the current task: everything since the last task.start.
+  current() {
+    let i = this.events.length - 1;
+    while (i >= 0 && this.events[i].type !== 'task.start') i--;
+    return i >= 0 ? this.events.slice(i) : this.events;
   }
 
   add(type, data = {}) {
     const ev = { seq: this.events.length + 1, t: this.now(), type, ...data };
     this.events.push(ev);
     if (this.file) appendFileSync(this.file, JSON.stringify(ev) + '\n');
+    if (type === 'task.start') this.untrusted = false;
     if (type === 'model.turn' && data.untrustedChunks > 0) this.untrusted = true;
     this.emit('event', ev);
     return ev;
@@ -29,19 +38,20 @@ export class Store extends EventEmitter {
   status() {
     const pending = this.pending();
     if (pending.length) return { level: 'paused', text: `Paused: ${pending.length} decision${pending.length > 1 ? 's' : ''} waiting` };
-    if (this.events.some((e) => e.type === 'task.end')) return { level: 'done', text: 'Task finished' };
+    if (this.current().some((e) => e.type === 'task.end')) return { level: 'done', text: 'Task finished' };
     if (this.untrusted) return { level: 'untrusted', text: 'Agent has read untrusted content' };
     return { level: 'ok', text: 'On task' };
   }
 
   pending() {
-    const decided = new Set(this.events.filter((e) => e.type === 'gate.decided').map((e) => e.id));
-    return this.events.filter((e) => e.type === 'gate.pending' && !decided.has(e.id));
+    const cur = this.current();
+    const decided = new Set(cur.filter((e) => e.type === 'gate.decided').map((e) => e.id));
+    return cur.filter((e) => e.type === 'gate.pending' && !decided.has(e.id));
   }
 
   // Everything the receipt needs, from the log alone.
   receipt() {
-    const ev = this.events;
+    const ev = this.current();
     const start = ev.find((e) => e.type === 'task.start');
     const end = ev.find((e) => e.type === 'task.end');
     const decided = new Map(ev.filter((e) => e.type === 'gate.decided').map((e) => [e.id, e]));

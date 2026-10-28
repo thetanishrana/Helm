@@ -38,3 +38,23 @@ dialog { max-width:640px; width:calc(100% - 32px); border:1px solid var(--line);
 dialog h3 { margin-top:0; }
 dialog ul { padding-left:20px; }
 @media (max-width:480px) { .actions { flex-direction:column; } }
+
+#task { max-width:860px; margin:0 auto; padding:10px 16px 0; color:var(--muted); font-size:14px; }
+#task b { color:var(--text); }
+#stopbar { position:sticky; top:48px; z-index:2; margin:0 auto; max-width:860px; padding:12px 16px; background:var(--panel); border:2px solid var(--warn); border-radius:10px; }
+#stopbar code { font-family:ui-monospace, monospace; word-break:break-all; }
+.stoprow { display:flex; align-items:center; gap:12px; margin:8px 0; }
+#stop-progress { height:6px; background:var(--line); border-radius:3px; overflow:hidden; }
+#stop-fill { height:100%; width:100%; background:var(--warn); transform-origin:left; }
+#timeline .cmd { font-family:ui-monospace, monospace; font-size:13px; word-break:break-all; }
+.card.plain { border-color:var(--line); }
+.card.plain code { display:block; padding:8px 10px; margin:8px 0; background:var(--bg); border-radius:6px; font-family:ui-monospace, monospace; font-size:13px; word-break:break-all; }
+.tlxrow { margin:12px 0; }
+.tlxrow label { display:block; font-weight:600; }
+.tlxrow small { color:var(--muted); display:block; }
+.tlxrow input { width:100%; }
+dialog blockquote { margin:8px 0; padding:8px 12px; background:var(--bg); border-left:4px solid var(--accent); border-radius:4px; }
+
+#timeline details { width:100%; }
+#timeline summary { cursor:pointer; color:var(--muted); }
+pre.out { margin:6px 0 0; padding:8px 10px; background:var(--bg); border-radius:6px; font-size:12px; overflow:auto; max-height:240px; white-space:pre-wrap; word-break:break-word; }

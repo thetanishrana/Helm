@@ -14,6 +14,12 @@
   <span class="spacer"></span>
   <button id="receipt-btn" class="quiet">Receipt</button>
 </header>
+<div id="task" hidden></div>
+<div id="stopbar" hidden>
+  <div><strong>The agent is about to run:</strong> <code id="stop-cmd"></code></div>
+  <div class="stoprow"><button id="stop-btn" class="block">Stop the agent</button><span id="stop-count"></span></div>
+  <div id="stop-progress"><div id="stop-fill"></div></div>
+</div>
 <main>
   <section aria-labelledby="h-pending">
     <h2 id="h-pending">Needs your decision</h2>
@@ -24,7 +30,9 @@
     <ol id="timeline"></ol>
   </section>
 </main>
+<dialog id="intro"><article><h3 id="intro-title"></h3><p>A person asked an AI agent to do this:</p><blockquote id="intro-task"></blockquote><p id="intro-help"></p></article><button id="intro-start" class="block">Start</button></dialog>
+<dialog id="tlx"><form id="tlx-form"><h3>How was that?</h3><p class="why">Drag each slider. Answer about the task you just watched.</p><div id="tlx-items"></div><button class="block" type="submit">Submit</button></form></dialog>
 <dialog id="receipt"><article id="receipt-body"></article><form method="dialog"><button>Close</button></form></dialog>
-<script src="/ui/app.js"></script>
+<script type="module" src="/ui/app.js"></script>
 </body>
 </html>
