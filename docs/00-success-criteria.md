@@ -9,8 +9,8 @@ There is no deadline, so success is defined by gates. Each gate leaves a shippab
 - Proxy overhead under 50 ms p95 per CDP command, excluding held actions.
 - Artifact: repo, README, 60-second clip.
 
-## Gate 2: Measured detection
-- At least 40 local injection pages across at least 6 technique families, plus at least 40 matched benign tasks. One command reproduces the results.
+## Gate 2: Measured detection (now the headline result)
+- At least 40 local injection pages across at least 6 technique families, plus at least 40 matched benign tasks, **including a held-out set written by someone else without seeing the explainer** (the volunteer can do this). One command reproduces the results. Report in-sample (dev) and held-out numbers separately.
 - Against attacks that reach a high-risk action:
   - interception at least 90%
   - attribution accuracy at least 80% (the highlighted chunk is the injected one)
@@ -18,14 +18,12 @@ There is no deadline, so success is defined by gates. Each gate leaves a shippab
 - Report added latency and extra model calls per task.
 - Artifact: results table.
 
-## Gate 3: Human evidence (the headline)
-- n = 12-15, within-subjects, three conditions (raw replay, standard prompts, Helm), counterbalanced order, different injection placements per condition.
-- One pilot (n = 3), at most one UX redesign, then the main study.
-- Primary measure: percentage of attacks stopped. Secondary: malicious approvals, time to decision, false interrupts, NASA-TLX.
-- Win: Helm beats standard prompts by at least 25 percentage points, with NASA-TLX no worse. Prior baselines are low ([13.6% caught](https://www.theregister.com/a/5285326), unverified; [66.3% accuracy](https://mer.vin/news/human-in-the-loop-approval-misses-ai-agent-threats/)), so this is plausible.
-- With n near 14, report effect sizes and per-participant plots, not only p-values.
-- No win: report it honestly with a per-condition failure analysis.
-- Artifact: "Users stopped X% of injections with Helm vs Y% with standard prompts, at Z interrupts per task."
+## Gate 3: Human evidence (revised 2026-10-28: small pilot, no percentage claim)
+The original plan was a 12-15 person within-subjects study whose stop-rate difference would be the headline. There is no participant pool (the researcher knows the injected scenarios, so cannot serve as a naive participant, and two volunteers cannot support a percentage). Decision: **the headline comes from the automated evaluation (Gate 2) and the demo; human evidence is a qualitative pilot.**
+- The researcher and one volunteer run the instrument (`src/replay/`) as a usability pilot: find confusing screens, bad timings, scenarios that give the game away, and record what each person says the cards did or did not help with.
+- Write it up as qualitative findings with n stated, no stop-rate percentages and no claim that Helm helps people. The "real vs apparent visibility" thesis stays **a design hypothesis supported by prior work and a working system, not shown by this project**.
+- The full instrument stays in the repo so anyone with participants (or a later recruitment effort, e.g. a remote volunteer version or a paid platform, which would need approval) can run the original study.
+- Artifact: a short pilot report and the fixes it caused.
 
 ## Gate 4: Activation detector (optional)
 - Fara1.5-9B runs locally through Helm. A probe reuses the [2608.02657 code](https://github.com/jianshuod/IPI-exposure-signal) and passes the [2606.22864](https://arxiv.org/abs/2606.22864) controls.

@@ -15,7 +15,13 @@ node src/cli.mjs run --open --exit -- <your agent command>
 ```
 The agent's model API and browser are pointed at Helm through `ANTHROPIC_BASE_URL` and `HELM_CDP_URL` (a Playwright CLI session attaches with `playwright-cli attach --cdp=$HELM_CDP_URL`). See `node src/cli.mjs` for options.
 
-## Study replay (for the user study)
+## Evaluation
+```
+node src/eval/cli.mjs detect          # scores the explainer on rendered pages; dev (in-sample) and held-out reported separately
+```
+Held-out pages go in `eval-pages/heldout/`; the authoring guide is `eval-pages/README.md`.
+
+## Study replay (usability pilot; no participant pool yet)
 ```
 node src/replay/cli.mjs --participant P01 --index 0 --open          # a whole counterbalanced session
 node src/replay/cli.mjs --condition C --participant p1 --scenarios injected --fast --open   # one condition

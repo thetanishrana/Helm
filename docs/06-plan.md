@@ -6,19 +6,19 @@ No deadline, so progress is measured in gates ([00-success-criteria.md](00-succe
 | Gate | State |
 | --- | --- |
 | 1 Working product | First vertical slice built in `src/` (63 tests): launcher, both taps, policy and explainer, approval round-trip over HTTP, event log, web UI with status line, cards, timeline and receipt. Run live once end to end on a local model (injected click held, explained, blocked). Proxy overhead measured: about 0.04 ms p50 and no measurable p95 difference per CDP `evaluate` (localhost, `spikes/cdp-proxy/bench.mjs`), well inside the 50 ms target. Missing: fatigue-aware friction beyond a fixed Allow delay, ambient menu-bar item, replay mode, receipt egress data, README quick start polish, demo clip, support for agents other than Claude Code + `playwright-cli`, long-hold retry run, subscription-model run of the live flow. |
-| 2 Measured detection | Early numbers on 25 author-written pages (see [03-detection.md](03-detection.md)); no realistic benign tasks, no held-out set, one susceptible agent. |
-| 3 Human evidence | Design only ([05-evaluation.md](05-evaluation.md)). |
+| 2 Measured detection | Offline harness built (`src/eval/`): scores the explainer on page snapshots, dev and held-out reported separately; dev numbers in [05-evaluation.md](05-evaluation.md). Held-out set not yet written (needs your volunteer; guide in `eval-pages/README.md`). Live-agent runs exist as spike scripts, not yet folded into one command. |
+| 3 Human evidence | Revised to a qualitative pilot (you + one volunteer, no percentage claim); instrument built and tested only with simulated participants ([05-evaluation.md](05-evaluation.md)). |
 | 4 Activations | Not started. |
 | 5 Shareable package | Not started. |
 
 ## Minimum viable product (smallest thing with a real headline)
-One command starts Claude Code or a local model through the taps with the web UI; injected high-risk actions are held with the cause card; asked-for actions pass quietly; a receipt is produced; a recorded-session replay mode exists for the study. Headline: "people stopped X% of injected actions with Helm vs Y% with standard prompts."
+One command starts Claude Code or a local model through the taps with the web UI; injected high-risk actions are held with the cause card; asked-for actions pass quietly; a receipt is produced; a recorded-session replay mode exists for the study. Headline (revised): measured detection and attribution on a held-out attack set plus a demo video; human evidence is a qualitative pilot.
 
 ## Phases
 1. **Gate 1 build (about 30-40 h).** Convert spikes to a TypeScript package: launcher, event store, approval round-trip (the policy's `ask` becomes a UI decision), web UI with ambient status, card, timeline, receipt. Keep `node --test` suites; port the replay and integration tests.
 2. **Realistic tasks and held-out attacks (about 20-30 h).** Benign task set with legitimate instruction text, a blind attack set (ask a volunteer to write 15), at least two agents. Measure false interrupts honestly. Tune the interrupt rule once.
-3. **Replay mode and study materials (about 15-20 h).** Record compromised and benign runs, scripted outcomes, consent and debrief text, NASA-TLX form, data capture of decisions and latencies, pilot with 3 people, one redesign.
-4. **Main study (about 15-20 h over a few weeks of scheduling).** 12-15 participants, analysis, per-person plots.
+3. **Pilot (about 6-10 h, mostly waiting on people).** You and a volunteer run the replay instrument, I fix what they find. The original study design is kept for anyone who can recruit. (Replaces: replay mode and study materials, which are built.) Old estimate was 15-20 h. Record compromised and benign runs, scripted outcomes, consent and debrief text, NASA-TLX form, data capture of decisions and latencies, pilot with 3 people, one redesign.
+4. **Held-out evaluation and `helm eval` (about 20-30 h).** A blind attack set (volunteer writes 10-15 pages), realistic benign tasks, two or more agents, one command that reproduces every number, in-sample and held-out reported separately.
 5. **Optional: activation detector (about 25-40 h).** Only if time allows; success test is whether it improves Level 2 precision on the local agent.
 6. **Package (about 20 h).** Demo video, writeup, README, one-command eval.
 
@@ -47,8 +47,13 @@ One command starts Claude Code or a local model through the taps with the web UI
 5. Ambient status line (keep card, timeline, receipt).
 6. Vision-based injection handling.
 
+## Next steps for you (small)
+1. Ask your volunteer to write the held-out pages: send them `eval-pages/README.md` and `eval-pages/_template/`, and ask them not to read `src/` first. Aim for 10-15 attack pages and about 10 benign ones.
+2. Dry-run the replay instrument on yourself (`node src/replay/cli.mjs --participant me --index 0 --open`) and note anything confusing; then let your volunteer try it as the pilot.
+3. Replace the placeholder contact line in `src/replay/texts.mjs` before anyone else sees the consent text.
+
 ## Decisions waiting for you
-1. Recorded replay vs live runs for the study (design leans to replay because of the terms question and repeatability).
+1. (Answered 2026-10-28: pilot only, headline from the automated evaluation.)
 2. Whether to ask Anthropic about proxying a subscription login, and whether to spend on a paid API key for live Claude runs.
 3. Who writes the blind attack pages and who is willing to be a pilot participant.
 4. Whether the activation detector stays on the list.
