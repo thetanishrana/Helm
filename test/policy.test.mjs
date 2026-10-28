@@ -41,7 +41,7 @@ test('agent-browser verbs, @refs, batch, find', () => {
   assert.equal(gate('agent-browser snapshot').gate, false);
   assert.equal(gate('agent-browser batch "open x.com" "click @e5" "screenshot"').actions.find((a) => a.verb === 'click').label, 'Send all invoices');
   assert.equal(gate('agent-browser find role button click --name "Submit"').actions[0].label, 'Submit');
-  assert.equal(gate('agent-browser eval "1"').risk, 'opaque');
+  assert.equal(gate('agent-browser eval "document.querySelector(\'a\').click()"').risk, 'opaque'); assert.equal(gate('agent-browser eval "document.title"').gate, false);
 });
 test('scripts that drive a browser are opaque', () => {
   assert.equal(gate('node run.js --connectOverCDP').risk, 'opaque');

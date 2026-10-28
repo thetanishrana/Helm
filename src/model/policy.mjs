@@ -1,3 +1,4 @@
+import { isReadOnlyJs } from './jsread.mjs';
 // Classify a tool_use: does it act on a page (or on something we cannot see into)?
 // Data-driven: add a CLI by adding a row to CLIS.
 
@@ -79,6 +80,7 @@ function classifySegment(words, req, out) {
   if (!verb) return;
   if ((BATCHES[cli] || []).includes(verb)) { for (const inner of args) for (const s of segments(inner)) classifySegment([cli, ...s], req, out); return; }
   let risk = spec.interact.includes(verb) ? 'interact' : spec.opaque.includes(verb) ? 'opaque' : spec.navigate.includes(verb) ? 'navigate' : 'read';
+  if (risk === 'opaque' && verb !== 'script' && isReadOnlyJs(args.join(' '))) risk = 'read';   // code that only reads the page is not a risk
   const entry = { risk, cli, verb };
   const target = args.find((a) => /^@?(f\d+)?e\d+$/.test(a));
   if (target) Object.assign(entry, { ref: target }, resolveRef(target, req) || {});
