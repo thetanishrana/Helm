@@ -64,3 +64,15 @@ test('model turns are recorded with whether untrusted content was in context', a
   await s.waitFor(() => s.store.events.find((e) => e.type === 'model.turn'));
   const t = s.store.events.find((e) => e.type === 'model.turn'); assert.ok(t.untrustedChunks >= 1); assert.match(t.tools[0], /click e4/); s.close();
 });
+
+test('failed model requests are recorded as errors, not as agent steps', async () => {
+  const store = new Store(); const approvals = new Approvals({ store, timeoutMs: 60_000 });
+  const stub = http.createServer((q, r) => { q.resume(); q.on('end', () => r.writeHead(503, { 'content-type': 'application/json' }).end('{"error":"down"}')); });
+  await new Promise((ok) => stub.listen(0, '127.0.0.1', ok));
+  const session = await startSession({ store, approvals, tapPort: 0, cdpPort: 0, upstream: { host: '127.0.0.1', port: stub.address().port } });
+  await new Promise((ok, bad) => { const rq = http.request({ host: '127.0.0.1', port: session.tap.address().port, method: 'POST', path: '/v1/messages', headers: { 'content-type': 'application/json' } }, (rs) => { rs.resume(); rs.on('end', ok); }); rq.on('error', bad); rq.end(JSON.stringify({ model: 'x', messages: [{ role: 'user', content: 'hi' }] })); });
+  await new Promise((r) => setTimeout(r, 50));
+  assert.equal(store.events.filter((e) => e.type === 'model.turn').length, 0);
+  assert.equal(store.events.find((e) => e.type === 'model.error').status, 503); assert.equal(store.receipt().modelErrors, 1);
+  session.close(); stub.close();
+});

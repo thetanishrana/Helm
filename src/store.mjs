@@ -55,6 +55,7 @@ export class Store extends EventEmitter {
     return {
       task: this.id, startedAt: start?.t ?? null, endedAt: end?.t ?? null,
       modelTurns: ev.filter((e) => e.type === 'model.turn').length,
+      modelErrors: ev.filter((e) => e.type === 'model.error').length,
       actionsExecuted: executed.map((a) => ({ t: a.t, what: a.what, turn: a.turn })),
       allowedWithoutAsking: allowedQuietly.map((a) => ({ what: a.what, reason: a.reason })),
       held,

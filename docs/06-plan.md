@@ -5,7 +5,7 @@ No deadline, so progress is measured in gates ([00-success-criteria.md](00-succe
 ## Where the work stands
 | Gate | State |
 | --- | --- |
-| 1 Working product | Pieces proven separately: model tap with hold and pings, CDP tap, correlation, policy, explainer, decision memory. Missing: launcher, event store, UI, receipt, real approval round-trip, packaging. |
+| 1 Working product | First vertical slice built in `src/` (63 tests): launcher, both taps, policy and explainer, approval round-trip over HTTP, event log, web UI with status line, cards, timeline and receipt. Run live once end to end on a local model (injected click held, explained, blocked). Proxy overhead measured: about 0.04 ms p50 and no measurable p95 difference per CDP `evaluate` (localhost, `spikes/cdp-proxy/bench.mjs`), well inside the 50 ms target. Missing: fatigue-aware friction beyond a fixed Allow delay, ambient menu-bar item, replay mode, receipt egress data, README quick start polish, demo clip, support for agents other than Claude Code + `playwright-cli`, long-hold retry run, subscription-model run of the live flow. |
 | 2 Measured detection | Early numbers on 25 author-written pages (see [03-detection.md](03-detection.md)); no realistic benign tasks, no held-out set, one susceptible agent. |
 | 3 Human evidence | Design only ([05-evaluation.md](05-evaluation.md)). |
 | 4 Activations | Not started. |

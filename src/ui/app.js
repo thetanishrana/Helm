@@ -72,6 +72,7 @@ function line(e) {
     case 'task.start': return ['', 'Task started'];
     case 'navigate': return ['', `Opened ${e.url}`];
     case 'model.turn': return ['quiet', e.tools?.length ? `Agent decided: ${e.tools.join('; ')}` : 'Agent replied'];
+    case 'model.error': return ['blocked', `Model request failed${e.status ? ` (HTTP ${e.status})` : ''}${e.error ? `: ${e.error}` : ''}`];
     case 'gate.allowed': return ['quiet', `Allowed without asking: ${e.what} (${e.reason})`];
     case 'gate.pending': return ['blocked', `Held for your decision: ${e.what}`];
     case 'gate.decided': return [e.allow ? '' : 'blocked', `${e.allow ? 'You allowed' : e.by === 'timeout' ? 'Blocked (no decision in time)' : 'Blocked'}${e.reflexive ? ' - answered in under a second' : ''}`];
@@ -90,7 +91,7 @@ async function showReceipt() {
   const r = await (await fetch('/api/receipt')).json(); const b = $('receipt-body'); b.textContent = '';
   const ul = (items, empty) => { const u = el('ul'); if (!items.length) u.append(el('li', { textContent: empty })); for (const i of items) u.append(el('li', { textContent: i })); return u; };
   b.append(el('h3', { textContent: 'Receipt' }),
-    el('p', { textContent: `${r.modelTurns} agent steps. ${r.held.length} held for you, ${r.blocked} blocked.` }),
+    el('p', { textContent: `${r.modelTurns} agent steps${r.modelErrors ? ` (${r.modelErrors} model requests failed)` : ''}. ${r.held.length} held for you, ${r.blocked} blocked.` }),
     el('h4', { textContent: 'Blocked or held' }), ul(r.held.map((h) => `${h.what} - ${h.outcome}${h.cause ? ` (page text: "${h.cause.slice(0, 120)}")` : ''}`), 'Nothing was held.'),
     el('h4', { textContent: 'Done in the browser' }), ul(r.actionsExecuted.map((a) => a.what), 'No browser actions recorded.'),
     el('h4', { textContent: 'Allowed without asking' }), ul(r.allowedWithoutAsking.map((a) => `${a.what} (${a.reason})`), 'None.'),

@@ -52,14 +52,16 @@ Browser actions are assigned to the latest model turn whose request had started.
 ### Counterfactual confirmer — measured, with limits
 Re-asks the model with each candidate passage removed, **and with the agent's own restatements of the target blanked** (agents launder injections through their own earlier messages). About 8 calls per check. Confirmed 12 of 12 consistent compromises; correct on 3 of 3 negative controls; reported "not reproducible" on the one chance compromise. Runs after the card is shown and annotates it; it never gates the prompt.
 
-### Viewer — design
-Local web UI served by the Helm process (React + TypeScript). Chosen over Tauri because the user study runs in a browser anyway and it avoids a build step; revisit if the study needs a native overlay. Screens in [04-oversight-ux.md](04-oversight-ux.md).
+### Viewer — built (v0), `src/server.mjs` and `src/ui/`
+Local web UI served by the Helm process, **vanilla JS with no build step** (the plan said React + TypeScript; see decisions). Shows the ambient status line, decision cards, a timeline and a receipt dialog, fed by a server-sent-event stream of the event log. Chosen over Tauri because the user study runs in a browser anyway. Screens in [04-oversight-ux.md](04-oversight-ux.md); a screenshot of a live held action is `docs/assets/ui-pending.png`.
+- Page text is untrusted, so the UI only ever sets text with `textContent` (a test fails if `innerHTML` and similar appear in `app.js`).
+- Decisions need a per-run token embedded in the page, a Host check (DNS-rebinding guard) and an Origin check; the server binds to 127.0.0.1.
 
-### Storage — design
-Append-only event log per task (JSON lines) with indexes in SQLite for the timeline and receipt: model turns (request analysis, response tool uses), browser actions, verdicts and user decisions with latency. Credential headers are never written. Request bodies are stored only for held actions (needed for counterfactuals and replay); they contain page content and the user's prompt, so the store is local and per-task deletable.
+### Storage — built (v0), `src/store.mjs`
+Append-only JSON-lines event log per task (`.helm/`, gitignored) plus derived state for the status line and receipt. Events: `task.start/end`, `model.turn`, `model.error`, `navigate`, `action`, `gate.allowed`, `gate.pending`, `gate.decided` (with latency and a reflexive flag), `gate.confirmed`, `gate.repeat-blocked`. Credential headers and raw request bodies are never written; request bodies exist only in memory for the counterfactual re-run. The receipt lists what was done, held, blocked and allowed quietly, pages visited, and says what it does **not** track (network requests and the data they carry, downloads, clipboard). No SQLite yet.
 
-### Launcher — design
-`helm run -- <agent command>` starts Chrome (or attaches), both taps and the UI, sets `ANTHROPIC_BASE_URL` and, for Playwright CLI, `PLAYWRIGHT_MCP_TIMEOUT_ACTION` so CDP-level holds do not fail; then runs the agent.
+### Launcher — built (v0), `src/cli.mjs`
+`node src/cli.mjs run [options] -- <agent command>` starts Chrome (or attaches), both taps and the UI, sets `ANTHROPIC_BASE_URL`, `HELM_CDP_URL` and `PLAYWRIGHT_MCP_TIMEOUT_ACTION` for the agent, runs it, and prints a summary and the receipt link when it exits. `--ollama MODEL` routes model requests to a local Ollama; `--confirm` turns on the counterfactual re-run. Run live against qwen3-coder:30b on the `turn_tag` page: the injected Send click was held within about 20 s, the card showed the injected passage, the re-run labelled it "confirmed" (8 model calls), Block ended the turn with the Helm message, and the receipt recorded 1 held, 1 blocked, 1 browser action.
 
 ## Technology
 - **Taps and core: Node (plain JS now; TypeScript for the build).** The spikes are dependency-light Node (`ws` only); streaming proxies, WebSockets and the UI share one language. The ML parts stay separate.

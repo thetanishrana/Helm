@@ -68,7 +68,7 @@ const stop = () => { chrome?.kill(); session.close(); ui.close(); };
 agent.on('exit', (code) => {
   session.end();
   const r = store.receipt();
-  console.error(`\nhelm: agent exited (${code}). ${r.modelTurns} steps, ${r.held.length} held, ${r.blocked} blocked, ${r.actionsExecuted.length} browser actions. Receipt: ${url}`);
+  console.error(`\nhelm: agent exited (${code}). ${r.modelTurns} steps${r.modelErrors ? ` (${r.modelErrors} model requests failed)` : ''}, ${r.held.length} held, ${r.blocked} blocked, ${r.actionsExecuted.length} browser actions. Receipt: ${url}`);
   if (o.exit) { stop(); setTimeout(() => process.exit(code ?? 0), 200); } else console.error('helm: UI still running for review; Ctrl-C to quit.');
 });
 process.on('SIGINT', () => { agent.kill(); stop(); process.exit(130); });

@@ -42,7 +42,9 @@ export async function startSession({ store, approvals, tapPort = 8787, cdpPort =
     onRequest: (rec) => { if (rec.path?.startsWith('/v1/messages')) turns.push({ index: turns.length, startedAt: rec.reqStartMs }); },
     log: (rec) => {
       log(rec);
-      if (!rec.req || !rec.path?.startsWith('/v1/messages')) return;
+      if (!rec.path?.startsWith('/v1/messages')) return;
+      if (rec.error || rec.status !== 200) { store.add('model.error', { status: rec.status ?? null, error: rec.error ? String(rec.error).slice(0, 120) : null }); return; }
+      if (!rec.req) return;
       store.add('model.turn', {
         index: turns.findIndex((t) => t.startedAt === rec.reqStartMs), untrustedChunks: rec.req.toolResults.length,
         tools: (rec.resp?.toolUses || []).map((u) => short(u.input?.command || JSON.stringify(u.input))),

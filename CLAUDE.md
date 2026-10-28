@@ -8,10 +8,15 @@ Helm is in the **research and design phase** (no production code, per `research 
 
 Verify numbers before repeating them: they come from small, author-written test sets, and each doc and spike README says what was and was not measured.
 
-## Spikes and commands
-Node 24, no build step. Install per folder (`npm install` in `spikes/cdp-proxy` and `spikes/agent-e2e`).
+## Code layout and commands
+Node 24, no build step. `npm install` at the root (only `ws`), and in `spikes/cdp-proxy` and `spikes/agent-e2e` for the spikes.
 
-- `spikes/model-tap`: the model proxy and decision logic. Tests (no network, no API use): `cd spikes/model-tap && node --test *.test.mjs` (policy, explainer, counterfactual, and an integration test against a stub upstream). Single file: `node --test policy.test.mjs`. Offline evaluations: `node explain.eval.mjs`, `node explain.replay.mjs` (uses `fixtures/snapshots/`).
+- `src/`: the product slice (Gate 1). `model/` (tap, policy, explain, counterfactual, turns), `cdp/proxy.mjs`, `store.mjs` (event log, receipt), `approvals.mjs`, `session.mjs` (wiring), `server.mjs` + `ui/` (web UI), `cli.mjs` (launcher). `spikes/` holds the frozen evidence the slice was built from; do not edit spike results.
+- Tests: `npm test` (63 tests, under a second, no network or model). Single file: `node --test test/policy.test.mjs`. A hung test file usually means a test failed before closing its servers.
+- Run the product: `node src/cli.mjs run --headless --ollama helm-qwen30b --exit -- claude -p "<task>" --model helm-qwen30b --tools Bash ...` (see `node src/cli.mjs`). Serve a test page with `node demo/pages.mjs turn_tag`. The UI is at http://127.0.0.1:7777/.
+
+
+- `spikes/model-tap`: the original model-proxy and decision-logic spike (now copied into `src/model/`). Offline evaluations: `node explain.eval.mjs`, `node explain.replay.mjs` (uses `fixtures/snapshots/`).
 - `spikes/cdp-proxy`: `HOLD_MS=3000 node test.mjs` (needs Chrome at `/Applications/Google Chrome.app`).
 - `spikes/agent-e2e`: end-to-end runs with Claude Code driving Chrome through both taps. Each run is one process: `e2e-gate.mjs` (hold and approve/deny), `e2e-attack.mjs` (measure-only; env `TECH`, `TASK`, `MODEL`, `LOCAL=1`, `MINIMAL=1`), `battery.sh <outfile> <model> <reps> <task> <techs...>` to repeat, `capture-snapshots.mjs` to regenerate fixtures, `attribute-traces.mjs` for counterfactual attribution on saved requests. These run real model requests; `LOCAL=1` uses Ollama (`helm-qwen30b`, created with `ollama create` from `qwen3-coder:30b` with a 32k context) and costs nothing but is slow and memory-hungry on this machine. Without `LOCAL=1` they use your Claude Code subscription login.
 - Kill leftovers with `pgrep -f "user-data-dir=.*helm-"` (headless Chrome). Do not `pkill -f` a pattern that appears in your own command line.
