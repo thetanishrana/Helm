@@ -30,7 +30,7 @@ Oversight layer for AI browser agents. Two proxies sit under the agent (model AP
 
 ## Suggested next steps (pick in this order unless the owner says otherwise)
 1. ~~Invitation message for the volunteer~~ (drafted in conversation, owner sends it).
-2. ~~Multi-step benign tasks~~ done: `--set multistep`, results in `docs/results/agent-multistep-qwen3-coder-30b/` (up to 2/20 runs with an unnecessary pause; Helm cannot read CSS-selector or `eval` targets and pauses them). Open question: resolve more selector forms, or accept the safe-default pause.
+2. ~~Multi-step benign tasks~~ done: `--set multistep`, results in `docs/results/agent-multistep-qwen3-coder-30b/` (up to 2/20 runs with an unnecessary pause; Helm cannot read CSS-selector or `eval` targets and pauses them). Owner decided to leave the safe-default pause for now and revisit later.
 3. Second agent: a Claude model via `--agent claude:<model> --allow-subscription` (ask first).
 4. When held-out pages arrive: `node src/eval/cli.mjs capture`, `validate`, `detect --set heldout`, then `agent --set heldout --modes measure,block --reps 3`.
 5. Demo clip and writeup; then Gate 1 leftovers (egress in receipt, other CLIs).
