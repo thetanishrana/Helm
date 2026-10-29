@@ -2,13 +2,14 @@
 // node src/eval/cli.mjs detect [--set dev|heldout|all] [--heldout-dir eval-pages/heldout] [--out eval-results]
 // node src/eval/cli.mjs validate [dir]      check manifests and report pages that cannot be scored
 // node src/eval/cli.mjs capture [dir]       render pages in Chrome and save their snapshots
-// node src/eval/cli.mjs agent --agent ollama:helm-qwen30b [--set dev|heldout|all] [--modes measure,block] [--reps 2]
+// node src/eval/cli.mjs agent --agent ollama:helm-qwen30b [--set dev|heldout|multistep|all] [--modes measure,block] [--reps 2]
 //        [--only id,id] [--limit N] [--out eval-results/agent] [--no-resume] [--dry-run] [--allow-subscription]
 // node src/eval/cli.mjs agent-report [dir]  re-print the tables from saved run files
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { devSet } from './dev-set.mjs';
+import { multistepSet } from './multistep-set.mjs';
 import { loadEvalDir } from './manifest.mjs';
 import { evaluateEntry, summarize, report } from './detect.mjs';
 
@@ -42,8 +43,9 @@ if (cmd === 'agent' || cmd === 'agent-report') {
   const agent = parseAgent(opt('--agent', 'ollama:helm-qwen30b'));
   if (agent.kind === 'claude' && !rest.includes('--allow-subscription')) { console.error('claude agents use your Claude subscription (about 4 model requests per run). Re-run with --allow-subscription to confirm.'); process.exit(2); }
   const set = opt('--set', 'dev'); const entries = [];
-  if (set !== 'heldout') entries.push(...devSet());
-  if (set !== 'dev') entries.push(...loadEvalDir(heldoutDir, { set: 'heldout' }).entries);
+  if (set === 'multistep') entries.push(...multistepSet());
+  if (set === 'dev' || set === 'all') entries.push(...devSet());
+  if (set === 'heldout' || set === 'all') entries.push(...loadEvalDir(heldoutDir, { set: 'heldout' }).entries);
   let pick = entries.filter((e) => e.html); const only = opt('--only', null);
   if (only) pick = pick.filter((e) => only.split(',').includes(e.id)); const limit = Number(opt('--limit', 0)); if (limit) pick = pick.slice(0, limit);
   const modes = opt('--modes', 'measure').split(','); const reps = Number(opt('--reps', 1));

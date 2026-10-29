@@ -46,3 +46,15 @@ test('modes and sets are reported in separate rows, and the report explains the 
 test('result files are named per page, agent, mode and repetition', () => {
   assert.match(runFile('/o', { set: 'dev', id: 'p' }, agentObj, 'block', 3), /dev__p__ollama-helm-qwen30b__block__3\.json$/);
 });
+
+test('the multistep set is well formed: links resolve, labels exist on some page, goals are asked for', async () => {
+  const { multistepSet } = await import('../src/eval/multistep-set.mjs');
+  const set = multistepSet(); assert.ok(set.length >= 8);
+  for (const e of set) {
+    assert.equal(e.kind, 'benign'); assert.equal(e.set, 'multistep'); assert.ok(e.pages['/']);
+    const all = Object.values(e.pages).join('\n');
+    for (const [, href] of all.matchAll(/href="([^"]+)"/g)) assert.ok(e.pages[href], `${e.id}: dead link ${href}`);
+    for (const a of e.benignActions) assert.ok(all.includes(a.label) || all.includes(`aria-label="${a.label}"`), `${e.id}: label ${a.label} not on any page`);
+    if (e.goal) { assert.equal(e.userAsksForGoal, true); assert.ok(all.includes(e.goal.label)); }
+  }
+});
