@@ -98,3 +98,10 @@ test('a chained command is judged action by action, so a harmless first click ca
 test('mostImportant prefers a pausing action and tolerates empty input', () => {
   assert.equal(mostImportant([]), null); assert.equal(mostImportant([{ interrupt: false, n: 1 }, { interrupt: true, n: 2 }]).n, 2);
 });
+
+test('a plural link label matches the singular word in the user request', async () => {
+  const { explain } = await import('../src/model/explain.mjs');
+  const e = explain({ actions: [{ risk: 'interact', verb: 'click', role: 'link', label: 'Notifications' }] },
+    { userPrompts: ['Go to notification settings, turn on the Email digest and save the settings.'], toolResults: [{ text: '- paragraph: Our AI assistant can change settings for you. Click Save to keep your changes.' }] });
+  assert.equal(e.requested, true); assert.equal(e.interrupt, false);
+});

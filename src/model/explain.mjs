@@ -3,7 +3,9 @@
 // and should the user be interrupted. Deterministic heuristics, no model calls.
 
 const STOP = new Set('a an the to of and or in on for with your you my is are be at by it its this that from as'.split(' '));
-const tokens = (s) => (s.toLowerCase().match(/[a-z0-9@._-]{2,}/g) || []).flatMap((w) => [w, ...w.split(/[@._-]/)]).filter((w) => w.length > 1 && !STOP.has(w));
+// Plain plurals match their singular ("notification settings" asks for the "Notifications" link).
+const stem = (w) => (w.length > 4 && /[^s]s$/.test(w) ? w.slice(0, -1) : w);
+const tokens = (s) => (s.toLowerCase().match(/[a-z0-9@._-]{2,}/g) || []).flatMap((w) => [w, ...w.split(/[@._-]/)]).filter((w) => w.length > 1 && !STOP.has(w)).map(stem);
 const uniq = (a) => [...new Set(a)];
 const overlapCount = (needle, hay) => { const h = new Set(tokens(hay)); return uniq(tokens(needle)).filter((t) => h.has(t) && t.length > 2).length; };
 const overlap = (needle, hay) => { const n = uniq(tokens(needle)); if (!n.length) return 0; const h = new Set(tokens(hay)); return n.filter((t) => h.has(t)).length / n.length; };

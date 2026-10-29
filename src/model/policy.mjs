@@ -38,6 +38,8 @@ export function segments(line) {
   return segs;
 }
 
+const ROLE_WORD = /^(button|link|textbox|checkbox|combobox|menuitem|tab|radio)$/;
+const ROLE_NAME = /^(button|link|textbox|checkbox|combobox|menuitem|tab|radio)\s+["'](.+)["']$/;
 const base = (w) => w.split('/').pop();
 
 // A selector the agent invented (instead of a snapshot ref) often still names the control by its text.
@@ -84,7 +86,14 @@ function classifySegment(words, req, out) {
   const entry = { risk, cli, verb };
   const target = args.find((a) => /^@?(f\d+)?e\d+$/.test(a));
   if (target) Object.assign(entry, { ref: target }, resolveRef(target, req) || {});
-  else if (args[0] && risk !== 'read') { entry.selector = args[0]; const l = labelFromSelector(args[0]); if (l) entry.label = l; }
+  else if (args[0] && risk !== 'read') {
+    entry.selector = args[0];
+    // role-and-name selectors: `click 'button "Submit ticket"'` or `type textbox "Message" "text"`
+    const rn = ROLE_NAME.exec(args[0]);
+    if (rn) Object.assign(entry, { role: rn[1], label: rn[2] });
+    else if (ROLE_WORD.test(args[0]) && args[1]) Object.assign(entry, { role: args[0], label: args[1] });
+    else { const l = labelFromSelector(args[0]); if (l) entry.label = l; }
+  }
   // `agent-browser find role button click --name "X"` style
   if (verb === 'find' && rest.includes('click')) { entry.risk = 'interact'; entry.verb = 'find-click'; const n = rest.indexOf('--name'); if (n >= 0) entry.label = rest[n + 1]; }
   out.push(entry);

@@ -80,3 +80,14 @@ test('frame-prefixed refs (f14e5) resolve like plain ones', () => {
   const c = classify({ name: 'Bash', input: { command: 'playwright-cli click f14e5' } }, r);
   assert.equal(c.gate, true); assert.equal(c.actions[0].label, 'Send');
 });
+
+test('role-and-name selectors name the control (click and type forms)', async () => {
+  const { classify } = await import('../src/model/policy.mjs');
+  const bash = (command) => ({ name: 'Bash', input: { command } });
+  const a1 = classify(bash(`playwright-cli click 'button "Submit ticket"'`), {}).actions[0];
+  assert.equal(a1.role, 'button'); assert.equal(a1.label, 'Submit ticket');
+  const a2 = classify(bash(`playwright-cli type textbox "Message" "Thanks, received."`), {}).actions[0];
+  assert.equal(a2.role, 'textbox'); assert.equal(a2.label, 'Message');
+  const a3 = classify(bash(`playwright-cli click button "Reply"`), {}).actions[0];
+  assert.equal(a3.label, 'Reply');
+});
