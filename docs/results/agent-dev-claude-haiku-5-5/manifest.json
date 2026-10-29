@@ -1,0 +1,129 @@
+{
+ "when": "2026-10-29T18:12:18.590Z",
+ "node": "v24.9.0",
+ "claudeCode": "2.1.308 (Claude Code)",
+ "gitCommit": "6790a5a29c4b04f97f3093c10021ec8366d956b6",
+ "gitDirty": false,
+ "agent": {
+  "kind": "claude",
+  "model": "claude-haiku-5-5"
+ },
+ "modes": [
+  "measure",
+  "block"
+ ],
+ "reps": 1,
+ "pages": [
+  {
+   "id": "invoices-tag",
+   "set": "dev",
+   "hash": "cc238ec981"
+  },
+  {
+   "id": "invoices-numbered",
+   "set": "dev",
+   "hash": "e93e9f6512"
+  },
+  {
+   "id": "calendar-xml",
+   "set": "dev",
+   "hash": "45d0c0348c"
+  },
+  {
+   "id": "calendar-plain",
+   "set": "dev",
+   "hash": "6858fb84bc"
+  },
+  {
+   "id": "email-user",
+   "set": "dev",
+   "hash": "fe6dc01c48"
+  },
+  {
+   "id": "email-authority",
+   "set": "dev",
+   "hash": "7829e569ca"
+  },
+  {
+   "id": "shop-chatml",
+   "set": "dev",
+   "hash": "bfb092a34a"
+  },
+  {
+   "id": "shop-note",
+   "set": "dev",
+   "hash": "7d7dc11a2a"
+  },
+  {
+   "id": "docs-numbered",
+   "set": "dev",
+   "hash": "568c8dfaa0"
+  },
+  {
+   "id": "docs-plain",
+   "set": "dev",
+   "hash": "b7b3d31b56"
+  },
+  {
+   "id": "bank-tag",
+   "set": "dev",
+   "hash": "fcd61cfc77"
+  },
+  {
+   "id": "bank-user",
+   "set": "dev",
+   "hash": "80f523ffb9"
+  },
+  {
+   "id": "invoices-benign",
+   "set": "dev",
+   "hash": "196f483929"
+  },
+  {
+   "id": "calendar-benign",
+   "set": "dev",
+   "hash": "330249dcf9"
+  },
+  {
+   "id": "email-benign",
+   "set": "dev",
+   "hash": "191dc30e3c"
+  },
+  {
+   "id": "shop-benign",
+   "set": "dev",
+   "hash": "8d18943afb"
+  },
+  {
+   "id": "docs-benign",
+   "set": "dev",
+   "hash": "06612e8ee0"
+  },
+  {
+   "id": "bank-benign",
+   "set": "dev",
+   "hash": "b0b4f8ce3a"
+  },
+  {
+   "id": "shop-order-asked",
+   "set": "dev",
+   "hash": "edcf91271f"
+  },
+  {
+   "id": "invoices-send-asked",
+   "set": "dev",
+   "hash": "006fc5d19b"
+  },
+  {
+   "id": "bank-transfer-asked",
+   "set": "dev",
+   "hash": "2bdda9a9b7"
+  },
+  {
+   "id": "shop-ai-mention",
+   "set": "dev",
+   "hash": "d57e02a6f1"
+  }
+ ],
+ "notes": "Local-model runs use a one-sentence system prompt and the model default temperature (0.2); the agent is not seeded, so repeated runs can differ."
+}
