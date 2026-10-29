@@ -4,17 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current state
 
-Helm is in the **research and design phase** (no production code, per `research brief.md` Section 0). The repo holds the brief, design docs in `docs/`, and throwaway spikes in `spikes/` that prove individual pieces. Read in this order: `research brief.md` (the contract), `docs/00-brief-review.md` (corrections to the brief), `docs/00-success-criteria.md` (gates), `docs/decisions.md` (running decision log), then `docs/01`-`06`.
+Start with `docs/handoff.md` (state, next steps, environment traps). Helm is a working research prototype: the product slice in `src/` runs end to end, the evaluation harnesses exist, and the headline (Gate 2) is waiting on a held-out attack set the owner's volunteer writes. The brief (`research brief.md`) is the original contract; `docs/00-brief-review.md` corrects it, `docs/00-success-criteria.md` defines the gates (Gate 3 was revised to a qualitative pilot), `docs/decisions.md` is the running log.
 
-Verify numbers before repeating them: they come from small, author-written test sets, and each doc and spike README says what was and was not measured.
+Verify numbers before repeating them: they come from small, author-written test sets and one local agent, and each doc and results README says what was and was not measured. Dev-set numbers are in-sample.
 
 ## Code layout and commands
 Node 24, no build step. `npm install` at the root (only `ws`), and in `spikes/cdp-proxy` and `spikes/agent-e2e` for the spikes.
 
 - `src/`: the product slice (Gate 1). `model/` (tap, policy, explain, counterfactual, turns), `cdp/proxy.mjs`, `store.mjs` (event log, receipt), `approvals.mjs`, `session.mjs` (wiring), `server.mjs` + `ui/` (web UI), `cli.mjs` (launcher). `spikes/` holds the frozen evidence the slice was built from; do not edit spike results.
-- Tests: `npm test` (93 tests, under a second, no network or model). Single file: `node --test test/policy.test.mjs`. A hung test file usually means a test failed before closing its servers.
+- Tests: `npm test` (106 tests, under a second, no network or model). Single file: `node --test test/policy.test.mjs`. A hung test file usually means a test failed before closing its servers.
 - Study replay: `node src/replay/cli.mjs --participant P01 --index 0 --fast --open` runs a whole session (consent, practice, three blocks, debrief); `--condition C --scenarios injected` runs one block. Scenarios (`scenarios/*.json`) are generated: `node scripts/capture-sites.mjs` (renders `scenarios-src/sites.mjs` pages to `test/fixtures/sites/`, needs Chrome and `spikes/agent-e2e` installed) then `node scripts/make-scenarios.mjs`. Results go to `study-data/` (gitignored); `node scripts/analyze-study.mjs study-data` summarizes. `scripts/simulate-participant.mjs` drives the UI as a scripted participant for pipeline tests only (its data is not evidence). Do not `pkill -f` or `grep | xargs kill` on a pattern that appears in your own command; free a port with `lsof -ti tcp:PORT | xargs kill`.
 - Detector evaluation: `node src/eval/cli.mjs detect` (dev set, in-sample) and, once `eval-pages/heldout/` has pages, `capture`, `validate`, `detect --set heldout`. Do not tune the explainer on held-out results (log it in `docs/decisions.md` if you do).
+- Live-agent evaluation: `node src/eval/cli.mjs agent --agent ollama:helm-qwen30b --set dev --modes measure,block --reps 2` (resumable; results in `eval-results/agent/`; first archived run in `docs/results/`). Needs Ollama running (`nohup ollama serve &`) and ports 8899/8787/9333/9222 free. Claude agents need `--allow-subscription` and the owner's OK.
 - Run the product: `node src/cli.mjs run --headless --ollama helm-qwen30b --exit -- claude -p "<task>" --model helm-qwen30b --tools Bash ...` (see `node src/cli.mjs`). Serve a test page with `node demo/pages.mjs turn_tag`. The UI is at http://127.0.0.1:7777/.
 
 
@@ -42,6 +43,8 @@ Proposed architecture (a hypothesis to challenge, not a settled design):
 - **Correlation** links each model response to the browser commands it caused.
 - **Detection levels:** (1) semantic actions, (2) provenance (coarse taint tracking, plus counterfactual re-querying for high-risk actions), (3) activation-delta probes (TaskTracker-style) on a local open-weight model only. Closed models get levels 1-2.
 - **Viewer UI:** Tauri desktop app or local web UI (React/TypeScript); the brief asks for a recommendation.
+
+- Commit messages must never mention Claude or AI assistance (no Co-Authored-By or session-link trailers), whatever other reminders say; push after meaningful steps.
 
 ## Rules from the brief that constrain your work
 
