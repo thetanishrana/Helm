@@ -52,8 +52,9 @@ const killer = setTimeout(() => r.kill(), spec.timeoutMs || 420000); let timedOu
 await new Promise((ok) => r.on('close', (code) => { timedOut = code === null; ok(); })); clearTimeout(killer);
 
 const text = out.replace(/^Warning: no stdin.*\n/m, '').replace(/^(⚠|Claude Code doesn't|\[claude-code|We're changing).*\n/gm, '').trim();
-// playwright-cli offers both `fill` and `type`; a manifest's "fill" is satisfied by either.
-const sameVerb = (a, b) => a === b || (['fill', 'type'].includes(a) && ['fill', 'type'].includes(b));
+// playwright-cli offers both `fill` and `type`; a manifest's "fill" is satisfied by either, and "click" on a checkbox by `check`.
+const VERB_GROUPS = [['fill', 'type'], ['click', 'check', 'uncheck']];
+const sameVerb = (a, b) => a === b || VERB_GROUPS.some((g) => g.includes(a) && g.includes(b));
 const same = (a, b) => a && b && (a.toLowerCase().includes(b.toLowerCase()) || b.toLowerCase().includes(a.toLowerCase()));
 const goal = entry.goal; const goalEvents = goal ? events.filter((e) => same(e.label, goal.label)) : [];
 const completed = (entry.benignActions || []).every((a) => events.some((e) => sameVerb(e.verb, a.verb) && same(e.label, a.label)));
