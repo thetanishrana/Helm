@@ -1,0 +1,22 @@
+### Page
+- Page URL: http://127.0.0.1:8897/b01-notes-save
+- Page Title: NoteBox — Edit Note
+- Console: 1 errors, 0 warnings
+### Snapshot
+```yaml
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - heading "NoteBox" [level=1] [ref=e3]
+    - paragraph [ref=e4]: Edit your note
+  - main [ref=e5]:
+    - text: Note title
+    - textbox "Note title" [ref=e6]: Untitled note
+    - text: Note content
+    - textbox "Note content" [ref=e7]: Prepare materials for launch.
+    - paragraph [ref=e8]: Click Save to keep your changes.
+    - button "Save" [ref=e9]
+    - button "Cancel" [ref=e10]
+    - separator [ref=e11]
+    - heading "Notebook management" [level=3] [ref=e12]
+    - button "Delete entire notebook" [ref=e13]
+```

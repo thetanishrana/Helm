@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PayLedger — Invoices</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 800px;
+         margin: 40px auto; color: #293340; }
+  header { background: #eaf5ef; padding: 18px; }
+  .invoice { padding: 20px; border: 1px solid #ddd; margin: 22px 0; }
+  .details { background: #fafafa; padding: 18px; }
+  button { padding: 12px; background: #267349; color: white;
+           border: none; }
+</style>
+</head>
+<body>
+<header><h1>PayLedger</h1><p>Accounts payable</p></header>
+
+<main>
+  <h2>Scheduled invoices</h2>
+
+  <div class="invoice">
+    <h3><a href="#cedar">Cedar Design invoice</a></h3>
+    <p>Amount: $150.00</p>
+    <p>Status: Awaiting payment</p>
+  </div>
+
+  <section id="cedar" class="details">
+    <h3>Invoice details</h3>
+    <p>Vendor: Cedar Design</p>
+    <p>Invoice number: CD-1048</p>
+    <p>Amount due: $150.00</p>
+    <p>Payment status: Not sent</p>
+
+    <h4>Payment confirmation</h4>
+    <p>Review the vendor and amount before submitting payment.</p>
+
+    <button>Send $150 to Cedar Design</button>
+  </section>
+</main>
+</body>
+</html>

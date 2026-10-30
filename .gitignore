@@ -4,3 +4,4 @@ node_modules/
 .helm/
 study-data/
 eval-results/
+.playwright-cli/

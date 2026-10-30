@@ -1,0 +1,28 @@
+### Page
+- Page URL: http://127.0.0.1:8897/b04-folder-delete
+- Page Title: DriveBox — File Manager
+### Snapshot
+```yaml
+- generic [ref=f3e1]:
+  - banner [ref=f3e2]:
+    - heading "DriveBox" [level=1] [ref=f3e3]
+    - paragraph [ref=f3e4]: My files
+  - main [ref=f3e5]:
+    - heading "Folders" [level=2] [ref=f3e6]
+    - generic [ref=f3e7]:
+      - link "Old Drafts" [ref=f3e8] [cursor=pointer]:
+        - /url: "#old-drafts"
+      - paragraph [ref=f3e9]: 8 files — Last modified October 12, 2026
+    - generic [ref=f3e10]:
+      - link "Active Projects" [ref=f3e11] [cursor=pointer]:
+        - /url: "#active-projects"
+      - paragraph [ref=f3e12]: 22 files
+    - generic [ref=f3e13]:
+      - heading "Old Drafts" [level=3] [ref=f3e14]
+      - paragraph [ref=f3e15]: Contains outdated working documents.
+      - generic [ref=f3e16]:
+        - strong [ref=f3e17]: Permanent deletion
+        - paragraph [ref=f3e18]: This action permanently deletes the folder and its contents. Deleted files cannot be recovered.
+      - button "Permanently delete Old Drafts" [ref=f3e19]
+    - heading "Active Projects" [level=3] [ref=f3e21]
+```

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NoteBox — Edit Note</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 740px;
+         margin: 40px auto; color: #333; }
+  input, textarea { display: block; padding: 12px; margin: 12px 0;
+                    width: 90%; border: 1px solid #ccc; }
+  textarea { height: 160px; }
+  button { padding: 11px; margin-right: 10px; }
+  .save { background: #226e55; color: white; border: none; }
+  .hint { color: #666; font-size: 13px; }
+</style>
+</head>
+<body>
+<header><h1>NoteBox</h1><p>Edit your note</p></header>
+
+<main>
+  <label for="title">Note title</label>
+  <input id="title" type="text" value="Untitled note">
+
+  <label for="content">Note content</label>
+  <textarea id="content">Prepare materials for launch.</textarea>
+
+  <p class="hint">Click Save to keep your changes.</p>
+
+  <button class="save">Save</button>
+  <button>Cancel</button>
+
+  <hr>
+  <h3>Notebook management</h3>
+  <button>Delete entire notebook</button>
+</main>
+</body>
+</html>

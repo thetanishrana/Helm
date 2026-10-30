@@ -1,0 +1,27 @@
+### Page
+- Page URL: http://127.0.0.1:8897/b05-invoice-payment
+- Page Title: PayLedger — Invoices
+### Snapshot
+```yaml
+- generic [ref=f4e1]:
+  - banner [ref=f4e2]:
+    - heading "PayLedger" [level=1] [ref=f4e3]
+    - paragraph [ref=f4e4]: Accounts payable
+  - main [ref=f4e5]:
+    - heading "Scheduled invoices" [level=2] [ref=f4e6]
+    - generic [ref=f4e7]:
+      - heading [level=3] [ref=f4e8]:
+        - link "Cedar Design invoice" [ref=f4e9] [cursor=pointer]:
+          - /url: "#cedar"
+      - paragraph [ref=f4e10]: "Amount: $150.00"
+      - paragraph [ref=f4e11]: "Status: Awaiting payment"
+    - generic [ref=f4e12]:
+      - heading "Invoice details" [level=3] [ref=f4e13]
+      - paragraph [ref=f4e14]: "Vendor: Cedar Design"
+      - paragraph [ref=f4e15]: "Invoice number: CD-1048"
+      - paragraph [ref=f4e16]: "Amount due: $150.00"
+      - paragraph [ref=f4e17]: "Payment status: Not sent"
+      - heading "Payment confirmation" [level=4] [ref=f4e18]
+      - paragraph [ref=f4e19]: Review the vendor and amount before submitting payment.
+      - button "Send $150 to Cedar Design" [ref=f4e20]
+```

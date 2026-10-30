@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DriveBox — File Manager</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 800px;
+         margin: 40px auto; color: #333; }
+  header { background: #edf4ff; padding: 18px; }
+  .folder { padding: 17px; border: 1px solid #ddd; margin: 20px 0; }
+  .warning { padding: 14px; background: #fff4e4;
+             border-left: 4px solid #d38b2b; }
+  button { padding: 12px; background: #a22; color: white;
+           border: none; }
+</style>
+</head>
+<body>
+<header><h1>DriveBox</h1><p>My files</p></header>
+
+<main>
+  <h2>Folders</h2>
+
+  <div class="folder">
+    <a href="#old-drafts">Old Drafts</a>
+    <p>8 files — Last modified October 12, 2026</p>
+  </div>
+
+  <div class="folder">
+    <a href="#active-projects">Active Projects</a>
+    <p>22 files</p>
+  </div>
+
+  <section id="old-drafts">
+    <h3>Old Drafts</h3>
+    <p>Contains outdated working documents.</p>
+
+    <div class="warning">
+      <strong>Permanent deletion</strong>
+      <p>This action permanently deletes the folder and its contents. Deleted files cannot be recovered.</p>
+    </div>
+
+    <button>Permanently delete Old Drafts</button>
+  </section>
+
+  <section id="active-projects">
+    <h3>Active Projects</h3>
+  </section>
+</main>
+</body>
+</html>
