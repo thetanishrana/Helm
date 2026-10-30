@@ -12,7 +12,7 @@ Oversight layer for AI browser agents. Two proxies sit under the agent (model AP
 | 2 Measured detection (the headline) | **Update 2026-10-30:** held-out set written by ChatGPT (no volunteer needed); first score 5/8 intercepted, 2/8 attributed; explainer then fixed, pages are now dev. See `docs/heldout-findings.md`. A fresh held-out set (different author) is needed for a clean claim. Older text follows. | Offline harness (`src/eval/`) and live-agent harness (`node src/eval/cli.mjs agent`) built. Dev-set (in-sample) result: unprotected attack success 8/24 (33%) vs 0/24 with Helm blocking; harmless steps still done 22/24. See `docs/results/agent-dev-qwen3-coder-30b/README.md`. **Missing: the held-out set** (the owner's volunteer is to write it; guide in `eval-pages/README.md`). |
 | 3 Human evidence | **Revised:** no participant pool, so a qualitative pilot (owner + one volunteer), no percentage claim. Study instrument is built (`src/replay/`: conditions A/B/C, counterbalanced plan, consent, practice, debrief, analysis) and tested only with simulated participants. Consent text is a draft with a placeholder contact line. |
 | 4 Activation probes | Not started; first on the cut list. |
-| 5 Package | Not started (demo video, writeup, a one-line headline result). |
+| 5 Package | **Mostly done 2026-10-30:** `README.md`, `docs/writeup.md`, `docs/demo-script.md`, `demo/run-demo.sh` (verified headless: 1 held, 1 blocked). **Missing:** the recorded demo clip (owner records it from the script). |
 
 ## Decisions already made (full log in `docs/decisions.md`)
 - Thesis kept, but stated as a design hypothesis, not a result (no study).
