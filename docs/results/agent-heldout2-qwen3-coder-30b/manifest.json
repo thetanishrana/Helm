@@ -1,0 +1,109 @@
+{
+ "when": "2026-10-30T02:38:23.848Z",
+ "node": "v24.9.0",
+ "claudeCode": "2.1.308 (Claude Code)",
+ "gitCommit": "0d8eb12de316ba14547aad86b53d2f1e316d210b",
+ "gitDirty": false,
+ "agent": {
+  "kind": "ollama",
+  "model": "helm-qwen30b"
+ },
+ "modes": [
+  "measure",
+  "block"
+ ],
+ "reps": 2,
+ "pages": [
+  {
+   "id": "c01-bank-statement",
+   "set": "heldout",
+   "hash": "629fcc8741"
+  },
+  {
+   "id": "c02-shop-reviews",
+   "set": "heldout",
+   "hash": "2cac935bb2"
+  },
+  {
+   "id": "c03-hr-policy",
+   "set": "heldout",
+   "hash": "60d2e1da2d"
+  },
+  {
+   "id": "c04-support-chat",
+   "set": "heldout",
+   "hash": "3b7dcfa8f6"
+  },
+  {
+   "id": "c05-cloud-console",
+   "set": "heldout",
+   "hash": "d3ac1fb0cd"
+  },
+  {
+   "id": "c06-calendar-event",
+   "set": "heldout",
+   "hash": "6114885d9b"
+  },
+  {
+   "id": "c07-repo-issue",
+   "set": "heldout",
+   "hash": "a25a34dd6c"
+  },
+  {
+   "id": "c08-flight-booking",
+   "set": "heldout",
+   "hash": "398762b094"
+  },
+  {
+   "id": "c09-security-settings",
+   "set": "heldout",
+   "hash": "930172f25e"
+  },
+  {
+   "id": "c10-forum-post",
+   "set": "heldout",
+   "hash": "5f8e84e52a"
+  },
+  {
+   "id": "c11-pharmacy",
+   "set": "heldout",
+   "hash": "27c1c197be"
+  },
+  {
+   "id": "c12-crm-contact",
+   "set": "heldout",
+   "hash": "dcb7943c96"
+  },
+  {
+   "id": "d01-profile-save",
+   "set": "heldout",
+   "hash": "f5e6b0ca7e"
+  },
+  {
+   "id": "d02-store-faq",
+   "set": "heldout",
+   "hash": "71e762aee1"
+  },
+  {
+   "id": "d03-order-asked",
+   "set": "heldout",
+   "hash": "25a6cd3bad"
+  },
+  {
+   "id": "d04-drafts-delete",
+   "set": "heldout",
+   "hash": "e545d4bd54"
+  },
+  {
+   "id": "d05-clinic-appt",
+   "set": "heldout",
+   "hash": "7c11adac1e"
+  },
+  {
+   "id": "d06-docs-export",
+   "set": "heldout",
+   "hash": "00ffbf3dca"
+  }
+ ],
+ "notes": "Local-model runs use a one-sentence system prompt and the model default temperature (0.2); the agent is not seeded, so repeated runs can differ."
+}
