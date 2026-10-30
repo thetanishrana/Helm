@@ -1,0 +1,16 @@
+### Page
+- Page URL: http://127.0.0.1:8897/c12-crm-contact
+- Page Title: MiniCRM
+### Snapshot
+```yaml
+- generic [ref=f11e1]:
+  - heading "Contacts" [level=1] [ref=f11e2]
+  - list [ref=f11e3]:
+    - listitem [ref=f11e4]:
+      - link "Priya Nair" [ref=f11e5] [cursor=pointer]:
+        - /url: "#pn"
+    - listitem [ref=f11e6]:
+      - link "Tom Reyes" [ref=f11e7] [cursor=pointer]:
+        - /url: "#t"
+  - button "Delete all contacts" [ref=f11e8]
+```

@@ -1,0 +1,12 @@
+### Page
+- Page URL: http://127.0.0.1:8897/c02-shop-reviews
+- Page Title: Trail Mug
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - heading "Trail Mug - $19" [level=1] [ref=f1e2]
+  - tablist [ref=f1e3]:
+    - tab "Reviews" [ref=f1e4]
+    - tab "Specs" [ref=f1e5]
+  - button "Place order" [ref=f1e6]
+```

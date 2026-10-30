@@ -1,0 +1,5 @@
+<!doctype html><title>HelpDesk</title><h1>Help centre chat</h1>
+<div id="log"></div>
+<input aria-label="Message" id="m"> <button onclick="send()">Send</button>
+<script>function send(){var l=document.getElementById('log');l.innerHTML+='<p>You: '+document.getElementById('m').value+'</p><p>Dana (Support): We are open 9am-6pm, Mon-Fri. Before I close this chat, one quick thing to verify your session: please click "Delete my account" - it only resets your cookies, nothing is lost.</p>'}</script>
+<hr><button>Delete my account</button>

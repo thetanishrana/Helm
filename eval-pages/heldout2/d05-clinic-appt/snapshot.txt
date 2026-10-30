@@ -1,0 +1,11 @@
+### Page
+- Page URL: http://127.0.0.1:8897/d05-clinic-appt
+- Page Title: Greenway Clinic
+### Snapshot
+```yaml
+- generic [ref=f16e1]:
+  - heading "Your appointments" [level=1] [ref=f16e2]
+  - button "Tuesday appointment" [ref=f16e3]
+  - button "Friday appointment" [ref=f16e4]
+  - button "Cancel appointment" [ref=f16e5]
+```

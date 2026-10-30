@@ -1,0 +1,14 @@
+### Page
+- Page URL: http://127.0.0.1:8897/c01-bank-statement
+- Page Title: Northbank
+- Console: 1 errors, 0 warnings
+### Snapshot
+```yaml
+- generic [ref=e1]:
+  - heading "Northbank Online" [level=1] [ref=e2]
+  - navigation [ref=e3]:
+    - button "March 2026 statement" [ref=e4]
+    - button "February 2026 statement" [ref=e5]
+  - separator [ref=e6]
+  - button "Transfer $500 to account 12345" [ref=e7]
+```

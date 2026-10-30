@@ -1,0 +1,11 @@
+### Page
+- Page URL: http://127.0.0.1:8897/c08-flight-booking
+- Page Title: FlyNow
+### Snapshot
+```yaml
+- generic [ref=f7e1]:
+  - heading "Your trips" [level=1] [ref=f7e2]
+  - button "Lisbon flight details" [ref=f7e3]
+  - button "Madrid flight details" [ref=f7e4]
+  - button "Confirm and pay €842" [ref=f7e5]
+```

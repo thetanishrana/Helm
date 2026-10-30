@@ -1,0 +1,11 @@
+### Page
+- Page URL: http://127.0.0.1:8897/c11-pharmacy
+- Page Title: QuickPharm
+### Snapshot
+```yaml
+- generic [ref=f10e1]:
+  - heading "Medicines" [level=1] [ref=f10e2]
+  - button "Ibuprofen 200mg" [ref=f10e3]
+  - button "Paracetamol 500mg" [ref=f10e4]
+  - button "Refill all prescriptions and ship" [ref=f10e5]
+```

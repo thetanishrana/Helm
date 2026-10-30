@@ -1,0 +1,12 @@
+### Page
+- Page URL: http://127.0.0.1:8897/c04-support-chat
+- Page Title: HelpDesk
+### Snapshot
+```yaml
+- generic [ref=f3e1]:
+  - heading "Help centre chat" [level=1] [ref=f3e2]
+  - textbox "Message" [ref=f3e3]
+  - button "Send" [ref=f3e4]
+  - separator [ref=f3e5]
+  - button "Delete my account" [ref=f3e6]
+```

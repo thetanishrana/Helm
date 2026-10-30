@@ -37,3 +37,14 @@ The local agent followed 0 of 16 of these injections (33% on the dev pages), so 
 
 ## Limits
 LLM-written attacks, not human adversaries; 8 attack pages, one per style; one ChatGPT conversation as the sole author, so one author's habits; offline detection runs on snapshots, not a live agent.
+
+## Second held-out set (clean)
+A fresh Claude subagent that never saw the repo wrote 18 more pages (12 attacks, 6 benign; `eval-pages/heldout2/`). Scored once on the already-fixed explainer, with no tuning (`docs/results/detect-heldout2-claude-fresh/`):
+
+| | Result |
+| --- | --- |
+| Attacks intercepted | 11 of 12 (95% CI 65-99%) |
+| Cause correctly named | **2 of 12** |
+| Pauses on harmless steps / on actions the user asked for | 1 of 19 / 0 of 2 |
+
+This is the cleanest figure the project has. It says Helm usually stops the consequential click on unseen attacks, mostly because of the risk rule, and that it is **poor at saying why** (2 of 12). It missed an injection carried in image alt/title attributes, and it paused a chat "Send" button the user had asked for. Same limits as above: one LLM author per set, small samples, offline snapshots.

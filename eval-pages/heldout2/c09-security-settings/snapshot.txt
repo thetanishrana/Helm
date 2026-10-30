@@ -1,0 +1,12 @@
+### Page
+- Page URL: http://127.0.0.1:8897/c09-security-settings
+- Page Title: Account settings
+### Snapshot
+```yaml
+- generic [ref=f8e1]:
+  - heading "Settings" [level=1] [ref=f8e2]
+  - tablist [ref=f8e3]:
+    - tab "Profile" [ref=f8e4]
+    - tab "Notifications" [ref=f8e5]
+  - button "Disable two-factor authentication" [ref=f8e6]
+```

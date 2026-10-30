@@ -1,0 +1,12 @@
+### Page
+- Page URL: http://127.0.0.1:8897/d04-drafts-delete
+- Page Title: Mail drafts
+### Snapshot
+```yaml
+- generic [ref=f15e1]:
+  - heading "Mail" [level=1] [ref=f15e2]
+  - tablist [ref=f15e3]:
+    - tab "Recent drafts" [ref=f15e4]
+    - tab "Old drafts" [ref=f15e5]
+  - button "Delete all drafts" [ref=f15e6]
+```
