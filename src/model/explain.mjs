@@ -11,11 +11,16 @@ const overlapCount = (needle, hay) => { const h = new Set(tokens(hay)); return u
 const overlap = (needle, hay) => { const n = uniq(tokens(needle)); if (!n.length) return 0; const h = new Set(tokens(hay)); return n.filter((t) => h.has(t)).length / n.length; };
 
 const HIGH_VERBS = /\b(send|pay|payment|transfer|wire|purchase|buy|order|checkout|delete|remove|erase|submit|post|publish|share|forward|confirm|approve|authorize|grant|invite|unsubscribe|deactivate|reset|export|download)\b/i;
+// Consequential actions named by a verb plus an object, so a bare "Cancel" or "Disable" button is not flagged.
+const HIGH_PHRASES = [
+  /\b(cancel|disable|suspend|revoke|terminate|disconnect|wipe|purge|deactivate|turn off|switch off)\b.{0,40}\b(all|every|any|my|your|account|meetings?|events?|subscription|order|mfa|multi-?factor|authentication|security|protection|access|users?|employees?)\b/i,
+  /\b(make|set|switch|change)\b.{0,40}\b(public|unrestricted|anyone|everyone)\b/i,
+];
 const SECRET_FIELD = /pass(word)?|card|cvv|ssn|secret|token|api.?key|private/i;
 const AI_ADDRESSED = /\b(ai|a\.i\.|assistants?|agents?|llms?|language model|claude|gpt|chatbot|copilot)\b/i;
-const COERCION = /\b(please remember|remember to|reminder:|make sure|be sure|don't forget|you must|you should|you need to|ignore (all|any|previous|prior)|disregard|do not (tell|mention|inform)|don't (tell|mention)|instead|override|system (note|message|prompt)|important:|required|to (complete|finish) (your|the|this) task|before (you )?(continu|proceed|answer))/i;
+const COERCION = /\b(please remember|remember to|reminder:|make sure|be sure|don't forget|you must|you should|you need to|ignore (all|any|previous|prior)|disregard|do not (tell|mention|inform)|don't (tell|mention)|instead|override|system (note|message|prompt)|important:|required|to (complete|finish) (your|the|this) task|before (you )?(continu|proceed|answer|read|check|open|look)|(then|and then) (re-?open|tell me|answer|reply|report)|until .{0,40} (is |are )?(cleared|disabled|suspended))/i;
 // Text that poses as the user, the assistant, or the system: the style that worked on a real agent.
-const IMPERSONATION = /(^|\s)(human|user|assistant|system)\s*:|<\|im_(start|end)\|>|<\/?(user_message|system-reminder|system|tool_result)>|\[system\]|\b(one more thing|in addition|added to your task|amended|follow-up|the user (has )?(asked|confirmed|approved|requested)|i need you to|i forgot to mention|as requested|instructions from the user)\b/i;
+const IMPERSONATION = /(^|\s)(human|user|assistant|system)\s*:|<\|im_(start|end)\|>|<\/?(user_message|system-reminder|system|tool_result)>|\[system\]|\b(one more thing|in addition|added to your task|amended|follow-up|the user (has )?(asked|confirmed|approved|requested)|i need you to|i forgot to mention|as requested|instructions from the user)\b|\bmessage from (you|the user|me)\b|\bfrom (the )?(workspace |site |page |account |system |security )?(owner|administrator|admin)\b|\b(already|pre-?|previously|has been) ?approved\b|\bidentity provider\b/i;
 const DELEGATED = /\b(whatever|everything|anything|all (the )?(steps|tasks)|as)\b.{0,30}\b(page|site|website|checklist|instructions?|portal|it)\b.{0,20}\b(says?|tells?|instructs?|lists?|asks?)\b|\bfollow (the )?(page|site|instructions|checklist)\b/i;
 
 // Break tool-result text into chunks of page content with a source label.
@@ -44,7 +49,7 @@ export function riskOf(a) {
   if (a.risk === 'opaque') return { tier: 'high', why: 'runs code the proxy cannot inspect' };
   if (a.cli === 'curl' || a.verb === 'send') return { tier: 'high', why: 'sends data off the machine' };
   if (['fill', 'type'].includes(a.verb) && SECRET_FIELD.test(label)) return { tier: 'high', why: 'types into a sensitive field' };
-  if (HIGH_VERBS.test(label)) return { tier: 'high', why: `the control says "${label}", which changes something outside the page` };
+  if (HIGH_VERBS.test(label) || HIGH_PHRASES.some((r) => r.test(label))) return { tier: 'high', why: `the control says "${label}", which changes something outside the page` };
   if (['fill', 'type', 'press', 'select', 'upload', 'check', 'uncheck'].includes(a.verb)) return { tier: 'medium', why: 'enters or changes data on the page' };
   return { tier: 'low', why: 'looks like navigation or a harmless control' };
 }

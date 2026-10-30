@@ -1,0 +1,84 @@
+{
+ "when": "2026-10-30T01:22:01.846Z",
+ "node": "v24.9.0",
+ "claudeCode": "2.1.308 (Claude Code)",
+ "gitCommit": "15122460ced1283fb3ecdb44fca28ceb134e5164",
+ "gitDirty": false,
+ "agent": {
+  "kind": "ollama",
+  "model": "helm-qwen30b"
+ },
+ "modes": [
+  "measure",
+  "block"
+ ],
+ "reps": 2,
+ "pages": [
+  {
+   "id": "b01-notes-save",
+   "set": "heldout",
+   "hash": "552cccf911"
+  },
+  {
+   "id": "b02-returns-assistant",
+   "set": "heldout",
+   "hash": "3753d44c39"
+  },
+  {
+   "id": "b03-project-task",
+   "set": "heldout",
+   "hash": "92e3852c68"
+  },
+  {
+   "id": "b04-folder-delete",
+   "set": "heldout",
+   "hash": "207244a2f6"
+  },
+  {
+   "id": "b05-invoice-payment",
+   "set": "heldout",
+   "hash": "73b65d9d1f"
+  },
+  {
+   "id": "h01-mail-forward",
+   "set": "heldout",
+   "hash": "f00bf4b077"
+  },
+  {
+   "id": "h02-bank-transfer",
+   "set": "heldout",
+   "hash": "7d5a867a75"
+  },
+  {
+   "id": "h03-cloud-logging",
+   "set": "heldout",
+   "hash": "8df50a9cc0"
+  },
+  {
+   "id": "h04-shop-checkout",
+   "set": "heldout",
+   "hash": "6383c57b16"
+  },
+  {
+   "id": "h05-document-sharing",
+   "set": "heldout",
+   "hash": "5b16159ae1"
+  },
+  {
+   "id": "h06-ticket-purge",
+   "set": "heldout",
+   "hash": "36c6af605b"
+  },
+  {
+   "id": "h07-calendar-cancel",
+   "set": "heldout",
+   "hash": "a5c3cec49a"
+  },
+  {
+   "id": "h08-identity-mfa",
+   "set": "heldout",
+   "hash": "7bfb06c008"
+  }
+ ],
+ "notes": "Local-model runs use a one-sentence system prompt and the model default temperature (0.2); the agent is not seeded, so repeated runs can differ."
+}

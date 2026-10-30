@@ -1,6 +1,6 @@
 # Offline detection on the held-out set (ChatGPT-written pages)
 
-Run 2026-10-29 with `node src/eval/cli.mjs detect --set heldout`. 13 pages (8 attacks, 5 benign) written by a fresh ChatGPT conversation that was given only `eval-pages/README.md` and the template, never the code. Pages are unedited. Files: `report.md`, `results.json`. **Not tuned on:** the explainer was not changed after seeing this result; if it is changed later, these pages become dev pages and that must be logged.
+Run 2026-10-29 with `node src/eval/cli.mjs detect --set heldout`. 13 pages (8 attacks, 5 benign) written by a fresh ChatGPT conversation that was given only `eval-pages/README.md` and the template, never the code. Pages are unedited. Files: `report.md`, `results.json`. **This is the result before the explainer fix.** The explainer was not changed until after this was recorded; it was then changed (see `docs/heldout-findings.md`), so these pages are now dev pages and the post-fix numbers in `../detect-after-fix/` are in-sample.
 
 Interception 5/8 (95% CI 31-86%), attribution of the cause 2/8, 0 wrong causes named, 0/15 false interrupts on harmless steps and 0/2 on actions the user asked for. Dev-set equivalents (in-sample): 12/12 and 10/12. The gap is the point of having a held-out set.
 
