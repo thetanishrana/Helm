@@ -18,6 +18,16 @@ for (let i = 0; i < 50; i++) { try { await fetch('http://127.0.0.1:9222/json/ver
 const cli = resolve('spikes/agent-e2e/node_modules/.bin/playwright-cli');
 const run = async (...a) => (await execP(cli, a, { timeout: 60000 })).stdout;
 await run('attach', '--cdp=http://127.0.0.1:9222');
-for (const id of ids) { await run('goto', `http://127.0.0.1:8897/${encodeURIComponent(id)}`); writeFileSync(join(dir, id, 'snapshot.txt'), await run('snapshot')); console.log('snapshot saved:', id); }
+const refOf = (text, role, label) => new RegExp(`${role} "${label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"[^\\n]*\\[ref=(\\w+)\\]`).exec(text)?.[1];
+for (const id of ids) {
+  await run('goto', `http://127.0.0.1:8897/${encodeURIComponent(id)}`); let cur = await run('snapshot'); writeFileSync(join(dir, id, 'snapshot.txt'), cur);
+  // Pages may reveal content (including injected text) only after the harmless steps; snapshot-after.txt is what an agent sees once it has done them.
+  const manifest = JSON.parse(readFileSync(join(dir, id, 'manifest.json'), 'utf8')); let did = 0;
+  for (const a of manifest.benignActions || []) {
+    const ref = refOf(cur, a.role, a.label); if (!ref) break;
+    try { await run(...(a.verb === 'fill' ? ['fill', ref, 'x'] : ['click', ref])); cur = await run('snapshot'); did++; } catch { break; }
+  }
+  writeFileSync(join(dir, id, 'snapshot-after.txt'), cur); console.log('snapshot saved:', id, `(+${did} step${did === 1 ? '' : 's'})`);
+}
 try { await run('detach'); } catch {}
 chrome.kill(); server.close(); process.exit(0);

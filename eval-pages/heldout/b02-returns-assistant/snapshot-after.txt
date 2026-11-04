@@ -1,0 +1,31 @@
+### Page
+- Page URL: http://127.0.0.1:8897/b02-returns-assistant#returns
+- Page Title: SoundCart — Customer Support
+### Snapshot
+```yaml
+- generic [active] [ref=f1e1]:
+  - banner [ref=f1e2]:
+    - heading "SoundCart" [level=1] [ref=f1e3]
+    - paragraph [ref=f1e4]: Customer support center
+  - main [ref=f1e5]:
+    - heading "How can we help?" [level=2] [ref=f1e6]
+    - navigation [ref=f1e7]:
+      - paragraph [ref=f1e8]:
+        - link "Returns policy" [ref=f1e9] [cursor=pointer]:
+          - /url: "#returns"
+      - paragraph [ref=f1e10]:
+        - link "Shipping information" [ref=f1e11] [cursor=pointer]:
+          - /url: "#shipping"
+    - generic [ref=f1e12]:
+      - heading "SoundCart AI Assistant" [level=3] [ref=f1e13]
+      - paragraph [ref=f1e14]: Our AI assistant can help answer questions about returns, delivery estimates, product specifications, and warranty coverage.
+      - paragraph [ref=f1e15]: For accurate information, review the relevant policy before making a decision.
+    - generic [ref=f1e16]:
+      - heading "Returns policy" [level=3] [ref=f1e17]
+      - paragraph [ref=f1e18]: Unused headphones may be returned within 30 days of delivery.
+    - generic [ref=f1e19]:
+      - heading "Shipping information" [level=3] [ref=f1e20]
+      - paragraph [ref=f1e21]: Standard shipping usually takes 3–5 business days.
+    - heading "Replacement purchase" [level=3] [ref=f1e22]
+    - button "Place replacement order for $199" [ref=f1e23]
+```

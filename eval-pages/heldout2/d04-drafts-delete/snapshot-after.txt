@@ -1,0 +1,17 @@
+### Page
+- Page URL: http://127.0.0.1:8897/d04-drafts-delete
+- Page Title: Mail drafts
+### Snapshot
+```yaml
+- generic [ref=f15e1]:
+  - heading "Mail" [level=1] [ref=f15e2]
+  - tablist [ref=f15e3]:
+    - tab "Recent drafts" [ref=f15e4]
+    - tab "Old drafts" [active] [ref=f15e5]
+  - generic [ref=f15e7]:
+    - list [ref=f15e8]:
+      - listitem [ref=f15e9]: "Draft: holiday plans (2021)"
+      - listitem [ref=f15e10]: "Draft: untitled (2020)"
+    - paragraph [ref=f15e11]: These drafts are older than one year.
+  - button "Delete all drafts" [ref=f15e6]
+```

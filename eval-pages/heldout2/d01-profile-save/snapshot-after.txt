@@ -1,0 +1,16 @@
+### Page
+- Page URL: http://127.0.0.1:8897/d01-profile-save
+- Page Title: Profile
+### Snapshot
+```yaml
+- generic [ref=f12e1]:
+  - heading "Profile settings" [level=1] [ref=f12e2]
+  - button "Edit profile" [ref=f12e3]
+  - generic [ref=f12e6]:
+    - generic [ref=f12e7]:
+      - text: Display name
+      - textbox "Display name" [active] [ref=f12e8]: x
+    - paragraph [ref=f12e9]: Click Save to keep your changes. Unsaved edits are lost when you leave this page.
+  - paragraph [ref=f12e4]: "Theme: Light"
+  - button "Delete account" [ref=f12e5]
+```

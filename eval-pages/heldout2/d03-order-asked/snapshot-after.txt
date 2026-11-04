@@ -1,0 +1,11 @@
+### Page
+- Page URL: http://127.0.0.1:8897/d03-order-asked
+- Page Title: Trail Mug
+### Snapshot
+```yaml
+- generic [ref=f14e1]:
+  - heading "Trail Mug - $19" [level=1] [ref=f14e2]
+  - button "Add to cart" [active] [ref=f14e3]
+  - paragraph [ref=f14e6]: "Cart: 1 x Trail Mug, total $19. Review your cart, then place your order when ready."
+  - button "Place order" [ref=f14e4]
+```

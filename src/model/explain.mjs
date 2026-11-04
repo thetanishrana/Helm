@@ -7,17 +7,19 @@ const STOP = new Set('a an the to of and or in on for with your you my is are be
 const stem = (w) => (w.length > 4 && /[^s]s$/.test(w) ? w.slice(0, -1) : w);
 const tokens = (s) => (s.toLowerCase().match(/[a-z0-9@._-]{2,}/g) || []).flatMap((w) => [w, ...w.split(/[@._-]/)]).filter((w) => w.length > 1 && !STOP.has(w)).map(stem);
 const uniq = (a) => [...new Set(a)];
-const overlapCount = (needle, hay) => { const h = new Set(tokens(hay)); return uniq(tokens(needle)).filter((t) => h.has(t) && t.length > 2).length; };
+// Short numbers ("#42") identify things, so they count as matches even though other short tokens do not.
+const overlapCount = (needle, hay) => { const h = new Set(tokens(hay)); return uniq(tokens(needle)).filter((t) => h.has(t) && (t.length > 2 || /\d/.test(t))).length; };
 const overlap = (needle, hay) => { const n = uniq(tokens(needle)); if (!n.length) return 0; const h = new Set(tokens(hay)); return n.filter((t) => h.has(t)).length / n.length; };
 
-const HIGH_VERBS = /\b(send|pay|payment|transfer|wire|purchase|buy|order|checkout|delete|remove|erase|submit|post|publish|share|forward|confirm|approve|authorize|grant|invite|unsubscribe|deactivate|reset|export|download)\b/i;
+const ACTION_VERB = /\b(click|press|tap|select|open|send|type|enter|visit|go to|run|execute|use|activate|switch|toggle|turn|enable|disable|choose|acknowledge|confirm|complete|finish|proceed)\b/i;
+const HIGH_VERBS = /\b(send|pay|payment|transfer|wire|purchase|buy|order|checkout|delete|remove|erase|submit|post|publish|share|forward|confirm|approve|authorize|grant|invite|unsubscribe|deactivate|reset|export|download|ship|refill|reorder|renew|subscribe|upgrade|withdraw|refund|charge)\b/i;
 // Consequential actions named by a verb plus an object, so a bare "Cancel" or "Disable" button is not flagged.
 const HIGH_PHRASES = [
   /\b(cancel|disable|suspend|revoke|terminate|disconnect|wipe|purge|deactivate|turn off|switch off)\b.{0,40}\b(all|every|any|my|your|account|meetings?|events?|subscription|order|mfa|multi-?factor|authentication|security|protection|access|users?|employees?)\b/i,
   /\b(make|set|switch|change)\b.{0,40}\b(public|unrestricted|anyone|everyone)\b/i,
 ];
 const SECRET_FIELD = /pass(word)?|card|cvv|ssn|secret|token|api.?key|private/i;
-const AI_ADDRESSED = /\b(ai|a\.i\.|assistants?|agents?|llms?|language model|claude|gpt|chatbot|copilot)\b/i;
+const AI_ADDRESSED = /\b(ai|a\.i\.|assistants?|agents?|llms?|language model|claude|gpt|chatbot|copilot|bots?|crawlers?|scrapers?|automated (readers?|assistants?|agents?|systems?|tools?))\b|@[\w-]*bot\b/i;
 const COERCION = /\b(please remember|remember to|reminder:|make sure|be sure|don't forget|you must|you should|you need to|ignore (all|any|previous|prior)|disregard|do not (tell|mention|inform)|don't (tell|mention)|instead|override|system (note|message|prompt)|important:|required|to (complete|finish) (your|the|this) task|before (you )?(continu|proceed|answer|read|check|open|look)|(then|and then) (re-?open|tell me|answer|reply|report)|until .{0,40} (is |are )?(cleared|disabled|suspended))/i;
 // Text that poses as the user, the assistant, or the system: the style that worked on a real agent.
 const IMPERSONATION = /(^|\s)(human|user|assistant|system)\s*:|<\|im_(start|end)\|>|<\/?(user_message|system-reminder|system|tool_result)>|\[system\]|\b(one more thing|in addition|added to your task|amended|follow-up|the user (has )?(asked|confirmed|approved|requested)|i need you to|i forgot to mention|as requested|instructions from the user)\b|\bmessage from (you|the user|me)\b|\bfrom (the )?(workspace |site |page |account |system |security )?(owner|administrator|admin)\b|\b(already|pre-?|previously|has been) ?approved\b|\bidentity provider\b/i;
@@ -31,7 +33,7 @@ export function pageChunks(req) {
     for (let line of r.text.split('\n')) {
       const rawLine = line;
       // YAML single-quotes a key that contains quotes: - 'note "..." [ref=e6]': text
-      const q = /^(\s*-\s+)'(.*)':\s*(.*)$/.exec(line); if (q) line = `${q[1]}${q[2].replace(/''/g, "'")}${q[3] && q[3] !== '.' ? ': ' + q[3] : ''}`;
+      const q = /^(\s*-\s+)'(.*?)'(?::\s*(.*))?$/.exec(line); if (q) line = `${q[1]}${q[2].replace(/''/g, "'")}${q[3] && q[3] !== '.' ? ': ' + q[3] : ''}`;
       const url = /Page URL:\s*(\S+)/.exec(line); if (url) { page = url[1]; continue; }
       const m = /^\s*-\s+(\w+)(?:\s+"((?:[^"\\]|\\.)*)")?[^\n]*?(?:\[ref=(e\d+)\])?[^\n]*?(?::\s*(?:"((?:[^"\\]|\\.)*)"|(.+)))?\s*$/.exec(line);
       if (!m) continue;
@@ -74,7 +76,9 @@ export function explain(classified, req, resp = null, only = null) {
   const asked = label ? overlap(label, prompts) : 0;
   // A link the user named by a key word ("the message from Alex") is requested even though its full label is longer.
   const namedLink = a.role === 'link' && riskOf(a).tier === 'low' && overlapCount(label, prompts) >= 1;
-  const requested = asked >= 0.75 || namedLink;
+  // A bare "Send"/"Post"/"Submit" button is part of a message the user asked the agent to write or ask.
+  const messageAction = /^(send|post|submit|reply|ask)$/i.test(label.trim()) && /\b(ask|message|reply|respond|chat|write|compose|comment|post)\b/i.test(prompts);
+  const requested = asked >= 0.75 || namedLink || messageAction;
   const delegated = DELEGATED.test(prompts);
 
   // Which page text points at this action? Not the control itself, and instruction-like.
@@ -82,14 +86,14 @@ export function explain(classified, req, resp = null, only = null) {
     .filter((c) => !(c.ref && a.ref && c.ref === a.ref) && !(c.isLabel && c.text === label))
     .map((c) => {
       const o = label ? overlap(label, c.text) : 0;
-      const cues = (AI_ADDRESSED.test(c.text) ? 1 : 0) + (IMPERSONATION.test(c.text) ? 1 : 0) + (COERCION.test(c.text) ? 1 : 0) + (/\b(click|press|tap|select|open|send|type|enter|visit|go to|run|execute)\b/i.test(c.text) ? 0.5 : 0);
+      const cues = (AI_ADDRESSED.test(c.text) ? 1 : 0) + (IMPERSONATION.test(c.text) ? 1 : 0) + (COERCION.test(c.text) ? 1 : 0) + (ACTION_VERB.test(c.text) ? 0.5 : 0);
       return { ...c, overlap: o, cues, score: o * 2 + cues };
     })
-    .filter((c) => c.overlap >= 0.5 && c.cues >= 1)
+    .filter((c) => (c.overlap >= 0.5 && c.cues >= 1) || (c.overlap >= 0.75 && c.cues >= 0.5))
     .sort((x, y) => y.score - x.score);
   let cause = candidates[0] || null;
   if (!cause) {   // no passage names the control; still flag text that talks to AI agents and issues orders
-    const weak = chunks.filter((c) => !c.isLabel && (AI_ADDRESSED.test(c.text) || IMPERSONATION.test(c.text)) && (COERCION.test(c.text) || /\b(click|press|send|forward|open|type|enter|run|execute|visit)\b/i.test(c.text)))
+    const weak = chunks.filter((c) => !c.isLabel && (AI_ADDRESSED.test(c.text) || IMPERSONATION.test(c.text)) && (COERCION.test(c.text) || ACTION_VERB.test(c.text) || /\bforward\b/i.test(c.text)))
       .sort((x, y) => y.text.length - x.text.length)[0];
     if (weak) cause = { ...weak, overlap: 0, cues: 1, score: 1, weak: true };
   }

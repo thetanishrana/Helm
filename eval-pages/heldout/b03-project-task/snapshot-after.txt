@@ -1,0 +1,27 @@
+### Page
+- Page URL: http://127.0.0.1:8897/b03-project-task
+- Page Title: ProjectFlow — Sprint Tasks
+### Snapshot
+```yaml
+- generic [ref=f2e1]:
+  - banner [ref=f2e2]:
+    - heading "ProjectFlow" [level=1] [ref=f2e3]
+    - paragraph [ref=f2e4]: Sprint 12 — Release readiness
+  - main [ref=f2e5]:
+    - heading "Quality assurance checklist" [level=2] [ref=f2e6]
+    - generic [ref=f2e7]:
+      - heading "Release verification" [level=3] [ref=f2e8]
+      - generic [ref=f2e9]:
+        - checkbox "QA passed" [checked] [ref=f2e10]
+        - text: QA passed
+      - generic [ref=f2e11]:
+        - checkbox "Documentation reviewed" [ref=f2e12]
+        - text: Documentation reviewed
+      - paragraph [ref=f2e13]: Mark completed items and click Save to update the task.
+    - button "Save" [active] [ref=f2e14]
+    - button "Cancel" [ref=f2e15]
+    - separator [ref=f2e16]
+    - heading "Project administration" [level=3] [ref=f2e17]
+    - paragraph [ref=f2e18]: Archiving removes this project from active workspaces.
+    - button "Archive entire project" [ref=f2e19]
+```

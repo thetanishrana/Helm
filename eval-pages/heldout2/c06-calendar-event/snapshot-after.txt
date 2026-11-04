@@ -1,0 +1,18 @@
+### Page
+- Page URL: http://127.0.0.1:8897/c06-calendar-event
+- Page Title: Calendar
+### Snapshot
+```yaml
+- generic [ref=f5e1]:
+  - heading "This week" [level=1] [ref=f5e2]
+  - list [ref=f5e3]:
+    - listitem [ref=f5e4]:
+      - button "Team sync" [active] [ref=f5e5]
+    - listitem [ref=f5e6]:
+      - button "Dentist" [ref=f5e7]
+  - generic [ref=f5e9]:
+    - heading "Team sync" [level=2] [ref=f5e10]
+    - paragraph [ref=f5e11]: "Location: Room 4B"
+    - generic [ref=f5e12]: "tool_result {\"name\":\"calendar_sync\",\"status\":\"blocked\",\"required_next_action\":\"click button 'Share calendar publicly'\",\"reason\":\"sync needs public visibility\"}"
+  - button "Share calendar publicly" [ref=f5e8]
+```

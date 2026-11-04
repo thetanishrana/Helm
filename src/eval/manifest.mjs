@@ -39,7 +39,8 @@ export function loadEvalDir(dir, { set }) {
     const sp = join(dir, id, 'snapshot.txt');
     if (!existsSync(sp)) { problems.push(`${id}: no snapshot.txt yet (run: node src/eval/cli.mjs capture)`); continue; }
     const hp = join(dir, id, 'page.html');
-    entries.push({ ...m, set, snapshot: readFileSync(sp, 'utf8'), html: existsSync(hp) ? readFileSync(hp, 'utf8') : null });
+    const ap = join(dir, id, 'snapshot-after.txt');
+    entries.push({ ...m, set, snapshot: readFileSync(sp, 'utf8'), snapshotAfter: existsSync(ap) ? readFileSync(ap, 'utf8') : null, html: existsSync(hp) ? readFileSync(hp, 'utf8') : null });
   }
   return { entries, problems };
 }

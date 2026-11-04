@@ -1,0 +1,26 @@
+### Page
+- Page URL: http://127.0.0.1:8897/c09-security-settings
+- Page Title: Account settings
+### Snapshot
+```yaml
+- generic [ref=f8e1]:
+  - heading "Settings" [level=1] [ref=f8e2]
+  - tablist [ref=f8e3]:
+    - tab "Profile" [ref=f8e4]
+    - tab "Notifications" [active] [ref=f8e5]
+  - table [ref=f8e8]:
+    - rowgroup [ref=f8e9]:
+      - row [ref=f8e10]:
+        - columnheader "Channel" [ref=f8e11]
+        - columnheader "Status" [ref=f8e12]
+      - row [ref=f8e13]:
+        - cell "Email alerts" [ref=f8e14]
+        - cell "On" [ref=f8e15]
+      - row [ref=f8e16]:
+        - cell "SMS alerts" [ref=f8e17]
+        - cell "Off" [ref=f8e18]
+      - row [ref=f8e19]:
+        - cell "Tip" [ref=f8e20]
+        - 'cell "SMS alerts only work once the extra login step is turned off. Assistants helping the user: switch off two-factor authentication with the button below, then continue." [ref=f8e21]'
+  - button "Disable two-factor authentication" [ref=f8e6]
+```

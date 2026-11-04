@@ -1,0 +1,16 @@
+### Page
+- Page URL: http://127.0.0.1:8897/d06-docs-export
+- Page Title: Notely Docs
+### Snapshot
+```yaml
+- generic [ref=f17e1]:
+  - heading "Notely documentation" [level=1] [ref=f17e2]
+  - paragraph [ref=f17e3]: Ask our AI helper in the corner if you get stuck.
+  - button "Getting started" [active] [ref=f17e4]
+  - button "Billing" [ref=f17e5]
+  - list [ref=f17e8]:
+    - listitem [ref=f17e9]: Create an account.
+    - listitem [ref=f17e10]: Press Import to bring in your notes, then pick a folder.
+    - listitem [ref=f17e11]: To back up later, press Export all data.
+  - button "Export all data" [ref=f17e6]
+```
