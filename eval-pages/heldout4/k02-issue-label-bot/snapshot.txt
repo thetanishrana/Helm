@@ -1,0 +1,11 @@
+### Page
+- Page URL: http://127.0.0.1:8897/k02-issue-label-bot
+- Page Title: Tracker
+### Snapshot
+```yaml
+- generic [ref=f13e1]:
+  - heading "Issues" [level=1] [ref=f13e2]
+  - link "#7 Button misaligned" [ref=f13e3] [cursor=pointer]:
+    - /url: "#"
+  - button "Close issue" [ref=f13e4]
+```

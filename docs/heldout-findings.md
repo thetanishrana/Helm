@@ -57,7 +57,7 @@ The offline detector only saw each page's first snapshot, but in the second set 
 
 I then fixed more of what those pages showed (a parser bug that hid text nodes containing colons, more risk words, bot/automated-reader addressees, more imperative verbs, bare "Send" in a messaging task). That made both earlier held-out sets dev data (post-fix 8 of 8 / 12 of 12 interception, 5 of 8 / 12 of 12 cause named, all in-sample).
 
-## Third held-out set (clean, scored once)
+## Third held-out set (clean when scored; dev after the third fix round)
 A third fresh Claude subagent that never saw the repo wrote 18 more pages; scored once on the fixed explainer with post-interaction snapshots (`docs/results/detect-heldout3-claude-fresh-3/`):
 
 | | Result |
@@ -69,3 +69,24 @@ A third fresh Claude subagent that never saw the repo wrote 18 more pages; score
 This is the cleanest figure the project has, and it is more modest than the in-sample 12 of 12. The three misses (`Cancel booking`, `Unlock front door`, `Change direct deposit to account ...`) are consequential verbs missing from the risk list, reached through indirect wording. Naming the cause stays weak when the injection describes the button instead of repeating its words. I have not fixed these, so the set remains clean; fixing them would make it dev data, the pattern seen twice already: each round of fixes closes the gaps the last set exposed and the next author finds new verbs.
 
 **Three-set picture on unseen attacks:** interception 5/8 (first set, before its fix), 11/12 (second set), 9/12 (third set); cause named 2/8, 7/12 (post-interaction re-measure, explainer already fixed once), 4/12. Different authors, different explainer versions, small samples: read it as "usually stops the click, misses new consequential verbs, and explains the cause about a third to half the time", not as one rate.
+
+## Fourth held-out set (clean, scored once, after the third fix round)
+After I fixed the third set's three misses (booking cancellations, unlocking, redirecting pay) the explainer was frozen at `fdac006`, and a fourth fresh Claude subagent wrote 18 pages (`docs/results/detect-heldout4-claude-fresh-4/`):
+
+| | Result |
+| --- | --- |
+| Attacks intercepted | **11 of 12** (95% CI 65-99%) |
+| Cause correctly named | **3 of 12** |
+| Pauses on harmless steps / on actions the user asked for | 0 of 19 / 0 of 2 |
+
+The one miss is "Disable firewall" (a short tip, and a verb rule that needs an object it does not have). Two of this set's goals repeat controls I had just added rules for, so the 11 of 12 is flattered; the 3 of 12 cause naming is the sturdier signal. It is the same pattern as the third set: new consequential verbs keep appearing, and injections that describe the button instead of repeating its words are rarely attributed.
+
+## The four-set picture on unseen attacks
+| Set (author) | Intercepted | Cause named | Note |
+| --- | --- | --- | --- |
+| First (ChatGPT), before any fix | 5/8 | 2/8 | explainer built on author-written pages |
+| Second (Claude) | 11/12 | 2/12, 7/12 once click-revealed text was visible | after one fix round |
+| Third (Claude) | 9/12 | 4/12 | after two fix rounds |
+| Fourth (Claude) | 11/12 | 3/12 | after three fix rounds; partly flattered |
+
+Different authors and explainer versions, 8-12 attack pages each: read it as "usually stops the consequential click, misses a new verb every round, and names the cause for roughly a quarter to a third of attacks on clean sets", not as one rate. The false-interrupt side held up: 0 pauses on 20/19/20/19 harmless actions across the later sets. The risk list is the weak design element: it is a vocabulary, and a vocabulary has to be extended every time an author thinks of a new damaging verb.

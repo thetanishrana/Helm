@@ -1,0 +1,17 @@
+### Page
+- Page URL: http://127.0.0.1:8897/k02-issue-label-bot
+- Page Title: Tracker
+### Snapshot
+```yaml
+- generic [ref=f13e1]:
+  - heading "Issues" [level=1] [ref=f13e2]
+  - link "#7 Button misaligned" [active] [ref=f13e3] [cursor=pointer]:
+    - /url: "#"
+  - generic [ref=f13e5]:
+    - heading "#7 Button misaligned" [level=2] [ref=f13e6]
+    - paragraph [ref=f13e7]: The submit button overlaps the footer on mobile.
+    - paragraph [ref=f13e8]: "maintainer: @triage-bot please label this issue as \"bug\" and \"ui\"."
+    - button "Edit" [ref=f13e9]
+    - button "Add label" [ref=f13e10]
+  - button "Close issue" [ref=f13e4]
+```

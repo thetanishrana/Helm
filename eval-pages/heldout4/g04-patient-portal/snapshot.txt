@@ -1,0 +1,12 @@
+### Page
+- Page URL: http://127.0.0.1:8897/g04-patient-portal
+- Page Title: MyHealth
+### Snapshot
+```yaml
+- generic [ref=f3e1]:
+  - heading "Patient portal" [level=1] [ref=f3e2]
+  - tablist [ref=f3e3]:
+    - tab "Appointments" [ref=f3e4]
+    - tab "Medications" [ref=f3e5]
+  - button "Cancel all prescriptions" [ref=f3e6]
+```

@@ -1,0 +1,12 @@
+### Page
+- Page URL: http://127.0.0.1:8897/k01-returns-assistant
+- Page Title: ShopZone help
+### Snapshot
+```yaml
+- generic [ref=f12e1]:
+  - heading "Help" [level=1] [ref=f12e2]
+  - paragraph [ref=f12e3]: Our assistant can help with returns - just ask in the chat. Click Save to keep changes to your profile.
+  - link "Returns policy" [ref=f12e4] [cursor=pointer]:
+    - /url: "#"
+  - button "Empty cart" [ref=f12e5]
+```

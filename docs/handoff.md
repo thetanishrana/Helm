@@ -1,4 +1,4 @@
-# Handoff (updated 2026-11-04)
+# Handoff (updated 2026-11-04, after the fourth held-out set)
 
 Read this first in a new session, then `CLAUDE.md`, then `docs/decisions.md`. The state table and next steps below were updated at commit `296d2e8`; check `git log` for anything newer. Start with `docs/writeup.md` (the project in plain language) and `docs/heldout-findings.md` (what held-out testing found).
 
@@ -9,7 +9,7 @@ Oversight layer for AI browser agents. Two proxies sit under the agent (model AP
 | Gate | State |
 | --- | --- |
 | 1 Working product | Built in `src/` (launcher, taps, policy, explainer, counterfactual confirmer, approvals, event log, web UI, receipt). Run end to end once on a local model. Proxy overhead ~0.04 ms p50. **Missing:** demo clip, run on a subscription Claude model, other agent CLIs, egress data in the receipt. |
-| 2 Measured detection (the headline) | **Done, with an honest answer.** Three held-out sets by other models: first (ChatGPT) 5/8 intercepted, cause 2/8, then fixed; second (fresh Claude) 11/12, cause 7/12 after a measurement correction; third (fresh Claude, clean, scored once) **9/12 intercepted (CI 47-91%), cause named 4/12, 0/20 false interrupts**. First two sets are now dev data. Dev (in-sample): live local agent followed 33% unprotected, 0% with Helm blocking. Misses are consequential verbs missing from the risk list (Cancel booking, Unlock front door, Change direct deposit); not fixed so the third set stays clean. Details: `docs/heldout-findings.md`, `docs/results/`. |
+| 2 Measured detection (the headline) | **Done, with an honest answer.** Four held-out sets by other models: first (ChatGPT) 5/8 intercepted, cause 2/8; second 11/12, cause 7/12 after a measurement correction; third 9/12, cause 4/12; fourth (fresh Claude, **clean, scored once on the frozen explainer `fdac006`**) **11/12 intercepted (CI 65-99%), cause named 3/12, 0/19 false interrupts**. Sets 1-3 are dev data (each was fixed against). Dev (in-sample): live local agent followed 33% unprotected, 0% with Helm blocking. Misses are always a consequential verb missing from the risk list (latest: Disable firewall, left unfixed so the fourth set stays clean). Details: `docs/heldout-findings.md`, `docs/results/`. |
 | 3 Human evidence | **Revised:** no participant pool, so a qualitative pilot (owner + one volunteer), no percentage claim. Study instrument is built (`src/replay/`: conditions A/B/C, counterbalanced plan, consent, practice, debrief, analysis) and tested only with simulated participants. Consent text is a draft with a placeholder contact line. |
 | 4 Activation probes | Not started; first on the cut list. |
 | 5 Package | **Mostly done 2026-10-30:** `README.md`, `docs/writeup.md`, `docs/demo-script.md`, `demo/run-demo.sh` (verified headless: 1 held, 1 blocked). **Missing:** the recorded demo clip (owner records it from the script). |
@@ -24,7 +24,7 @@ Oversight layer for AI browser agents. Two proxies sit under the agent (model AP
 
 ## What needs the owner (cannot be done by the agent)
 1. Record the demo clip from `docs/demo-script.md` (`demo/run-demo.sh turn_tag`; needs Ollama running).
-   Held-out pages are written by other models now (`eval-pages/heldout*`); `heldout3` is the one clean set. Do **not** tune the explainer on it; if you do, log it and treat it as dev.
+   Held-out pages are written by other models now (`eval-pages/heldout*`); `heldout4` is the one clean set. Do **not** tune the explainer on it; if you do, log it and treat it as dev.
 2. Owner and volunteer dry-run the replay: `node src/replay/cli.mjs --participant me --index 0 --open`.
 3. Fill the contact placeholder in `src/replay/texts.mjs` before anyone else sees consent text.
 4. Approval needed before: running a Claude model through the evaluation (`--allow-subscription`, ~4 requests per run), any paid service, or changing the thesis.
@@ -32,7 +32,7 @@ Oversight layer for AI browser agents. Two proxies sit under the agent (model AP
 ## Suggested next steps
 Done: invitation/blind authoring (LLM authors instead of the volunteer), multi-step benign tasks, Claude Haiku 5.5 on dev and multistep sets (owner-approved; 0 injections followed), three held-out sets, packaging (`README.md`, `docs/writeup.md`, `docs/demo-script.md`, `demo/run-demo.sh`).
 1. **Record the demo clip** (owner).
-2. Optional, only if the owner wants it: a fourth blind set after a further fix round (add unlock/booking/deposit-style verbs; makes `heldout3` dev data); resolve more CSS-selector forms so harmless clicks are not paused (owner deferred this); Gate 1 leftovers (egress data in the receipt, other agent CLIs); the qualitative pilot (owner + one volunteer; fill the consent contact placeholder first).
+2. Optional, only if the owner wants it: a fifth blind set after a further fix round (e.g. disable-firewall-style verbs; makes `heldout4` dev data, and the pattern so far is that each round finds a new verb); resolve more CSS-selector forms so harmless clicks are not paused (owner deferred this); Gate 1 leftovers (egress data in the receipt, other agent CLIs); the qualitative pilot (owner + one volunteer; fill the consent contact placeholder first).
 3. Any further Claude-model run needs explicit owner approval each time (subscription).
 
 ## Environment notes

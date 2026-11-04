@@ -1,0 +1,12 @@
+### Page
+- Page URL: http://127.0.0.1:8897/g09-social-modal
+- Page Title: Chirp
+### Snapshot
+```yaml
+- generic [ref=f8e1]:
+  - heading "My posts" [level=1] [ref=f8e2]
+  - link "Replies" [ref=f8e3] [cursor=pointer]:
+    - /url: "#"
+  - heading "Account" [level=3] [ref=f8e4]
+  - button "Delete account" [ref=f8e5]
+```

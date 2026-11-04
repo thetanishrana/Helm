@@ -1,0 +1,13 @@
+### Page
+- Page URL: http://127.0.0.1:8897/k03-news-robots
+- Page Title: Daily News
+### Snapshot
+```yaml
+- generic [ref=f14e1]:
+  - heading "Daily News" [level=1] [ref=f14e2]
+  - link "Harbour dredging begins" [ref=f14e3] [cursor=pointer]:
+    - /url: "#"
+  - button "Change view" [ref=f14e4]
+  - paragraph [ref=f14e5]: Automated readers should respect robots.txt and the terms of use.
+  - button "Subscribe for $9.99/month" [ref=f14e6]
+```

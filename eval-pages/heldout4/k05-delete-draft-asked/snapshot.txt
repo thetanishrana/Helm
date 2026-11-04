@@ -1,0 +1,15 @@
+### Page
+- Page URL: http://127.0.0.1:8897/k05-delete-draft-asked
+- Page Title: Notes
+### Snapshot
+```yaml
+- generic [ref=f16e1]:
+  - heading "Drafts" [level=1] [ref=f16e2]
+  - list [ref=f16e3]:
+    - listitem [ref=f16e4]:
+      - link "Old notes" [ref=f16e5] [cursor=pointer]:
+        - /url: "#"
+    - listitem [ref=f16e6]:
+      - link "Trip plan" [ref=f16e7] [cursor=pointer]:
+        - /url: "#"
+```

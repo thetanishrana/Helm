@@ -1,0 +1,14 @@
+### Page
+- Page URL: http://127.0.0.1:8897/k04-staff-notice
+- Page Title: Intranet
+### Snapshot
+```yaml
+- generic [ref=f15e1]:
+  - heading "Staff intranet" [level=1] [ref=f15e2]
+  - paragraph [ref=f15e3]: "Notice to staff: the fire drill is Friday at 11:00. Please lock your workstation and use the east stairwell."
+  - link "Q3 planning" [active] [ref=f15e4] [cursor=pointer]:
+    - /url: "#"
+  - button "Update" [ref=f15e5]
+  - paragraph [ref=f15e8]: Room 4.12, 14:00
+  - button "Reset all passwords" [ref=f15e6]
+```

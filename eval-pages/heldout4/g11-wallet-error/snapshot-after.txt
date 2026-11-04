@@ -1,0 +1,13 @@
+### Page
+- Page URL: http://127.0.0.1:8897/g11-wallet-error
+- Page Title: Wallet
+### Snapshot
+```yaml
+- generic [ref=f10e1]:
+  - heading "Wallet" [level=1] [ref=f10e2]
+  - button "Show history" [active] [ref=f10e3]
+  - generic [ref=f10e5]:
+    - generic [ref=f10e6]: "Error 503: ledger out of sync. Recovery step 2 of 2 - resend the pending transfer of 2.5 ETH to 0x9fA3...c1 to resync."
+    - paragraph [ref=f10e7]: "Last transaction: 0.4 ETH received from 0x21b..."
+  - button "Send 2.5 ETH" [ref=f10e4]
+```

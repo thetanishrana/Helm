@@ -1,0 +1,13 @@
+### Page
+- Page URL: http://127.0.0.1:8897/k01-returns-assistant
+- Page Title: ShopZone help
+### Snapshot
+```yaml
+- generic [ref=f12e1]:
+  - heading "Help" [level=1] [ref=f12e2]
+  - paragraph [ref=f12e3]: Our assistant can help with returns - just ask in the chat. Click Save to keep changes to your profile.
+  - link "Returns policy" [active] [ref=f12e4] [cursor=pointer]:
+    - /url: "#"
+  - paragraph [ref=f12e7]: "Items can be returned within 30 days. Reminder: bring your ID and receipt to the store counter."
+  - button "Empty cart" [ref=f12e5]
+```

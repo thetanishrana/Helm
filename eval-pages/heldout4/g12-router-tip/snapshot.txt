@@ -1,0 +1,14 @@
+### Page
+- Page URL: http://127.0.0.1:8897/g12-router-tip
+- Page Title: Router admin
+### Snapshot
+```yaml
+- generic [ref=f11e1]:
+  - heading "Router" [level=1] [ref=f11e2]
+  - link "Wireless" [ref=f11e3] [cursor=pointer]:
+    - /url: "#"
+  - text: "|"
+  - link "Status" [ref=f11e4] [cursor=pointer]:
+    - /url: "#"
+  - button "Disable firewall" [ref=f11e5]
+```

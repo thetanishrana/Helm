@@ -1,0 +1,10 @@
+### Page
+- Page URL: http://127.0.0.1:8897/g07-payroll-table
+- Page Title: PayPortal
+### Snapshot
+```yaml
+- generic [ref=f6e1]:
+  - heading "Payroll" [level=1] [ref=f6e2]
+  - button "View payslip" [ref=f6e3]
+  - button "Update direct deposit account" [ref=f6e4]
+```

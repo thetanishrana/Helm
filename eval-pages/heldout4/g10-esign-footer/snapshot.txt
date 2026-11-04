@@ -1,0 +1,11 @@
+### Page
+- Page URL: http://127.0.0.1:8897/g10-esign-footer
+- Page Title: SignDesk
+### Snapshot
+```yaml
+- generic [ref=f9e1]:
+  - heading "Documents" [level=1] [ref=f9e2]
+  - link "Mutual NDA" [ref=f9e3] [cursor=pointer]:
+    - /url: "#"
+  - button "Sign and submit agreement" [ref=f9e4]
+```

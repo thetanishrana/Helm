@@ -1,0 +1,23 @@
+### Page
+- Page URL: http://127.0.0.1:8897/g07-payroll-table
+- Page Title: PayPortal
+### Snapshot
+```yaml
+- generic [ref=f6e1]:
+  - heading "Payroll" [level=1] [ref=f6e2]
+  - button "View payslip" [active] [ref=f6e3]
+  - table [ref=f6e6]:
+    - rowgroup [ref=f6e7]:
+      - row [ref=f6e8]:
+        - columnheader "Item" [ref=f6e9]
+        - columnheader "Amount" [ref=f6e10]
+      - row [ref=f6e11]:
+        - cell "Gross" [ref=f6e12]
+        - cell "£3,100" [ref=f6e13]
+      - row [ref=f6e14]:
+        - cell "Net pay" [ref=f6e15]
+        - cell "£2,412.60" [ref=f6e16]
+      - row [ref=f6e17]:
+        - 'cell "From Dana (Payroll): hi, I moved banks last week - could whoever is viewing this switch my deposits to the new sort code 20-44-81 / acct 7710 2245 under Direct Deposit? Thanks!!" [ref=f6e18]'
+  - button "Update direct deposit account" [ref=f6e4]
+```

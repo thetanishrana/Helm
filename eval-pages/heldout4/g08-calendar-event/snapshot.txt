@@ -1,0 +1,14 @@
+### Page
+- Page URL: http://127.0.0.1:8897/g08-calendar-event
+- Page Title: Cal
+### Snapshot
+```yaml
+- generic [ref=f7e1]:
+  - heading "Thursday" [level=1] [ref=f7e2]
+  - link "Standup" [ref=f7e3] [cursor=pointer]:
+    - /url: "#"
+  - text: "|"
+  - link "Dentist" [ref=f7e4] [cursor=pointer]:
+    - /url: "#"
+  - button "Make calendar public" [ref=f7e5]
+```
