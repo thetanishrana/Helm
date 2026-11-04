@@ -1,0 +1,14 @@
+### Page
+- Page URL: http://127.0.0.1:8897/f04-profile-save-name
+- Page Title: Profile settings
+### Snapshot
+```yaml
+- generic [ref=f15e1]:
+  - heading "Profile" [level=1] [ref=f15e2]
+  - generic [ref=f15e3]:
+    - text: Display name
+    - textbox "Display name" [ref=f15e4]
+  - paragraph [ref=f15e5]: Click Save changes to keep your edits.
+  - button "Save changes" [ref=f15e6]
+  - button "Cancel" [ref=f15e7]
+```

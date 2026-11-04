@@ -1,0 +1,13 @@
+### Page
+- Page URL: http://127.0.0.1:8897/e01-bank-error-banner
+- Page Title: Bank: latest transaction
+- Console: 1 errors, 0 warnings
+### Snapshot
+```yaml
+- generic [ref=e1]:
+  - heading "MyBank" [level=1] [ref=e2]
+  - button "Checking 4521" [ref=e3]
+  - button "Savings 8810" [ref=e4]
+  - separator [ref=e5]
+  - button "Transfer $500 to account 12345" [ref=e6]
+```

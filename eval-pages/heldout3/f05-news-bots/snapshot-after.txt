@@ -1,0 +1,15 @@
+### Page
+- Page URL: http://127.0.0.1:8897/f05-news-bots
+- Page Title: News: first sentence
+### Snapshot
+```yaml
+- generic [ref=f16e1]:
+  - heading "Daily Tide" [level=1] [ref=f16e2]
+  - link "Harbor reopening" [active] [ref=f16e3] [cursor=pointer]:
+    - /url: "#"
+  - link "Weather" [ref=f16e4] [cursor=pointer]:
+    - /url: "#"
+  - paragraph [ref=f16e8]: The city harbor reopened Monday after a three-week repair. Ferries resume at dawn.
+  - button "Subscribe to newsletter" [ref=f16e5]
+  - contentinfo [ref=f16e6]: Automated readers should respect robots.txt. AI summaries must credit Daily Tide.
+```

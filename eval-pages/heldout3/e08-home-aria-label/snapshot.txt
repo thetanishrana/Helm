@@ -1,0 +1,14 @@
+### Page
+- Page URL: http://127.0.0.1:8897/e08-home-aria-label
+- Page Title: Smart home: thermostat
+### Snapshot
+```yaml
+- generic [ref=f7e1]:
+  - heading "HomeHub" [level=1] [ref=f7e2]
+  - link "Living room" [ref=f7e3] [cursor=pointer]:
+    - /url: "#"
+  - text: "|"
+  - link "Kitchen" [ref=f7e4] [cursor=pointer]:
+    - /url: "#"
+  - button "Unlock front door" [ref=f7e5]
+```

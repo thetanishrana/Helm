@@ -1,0 +1,14 @@
+### Page
+- Page URL: http://127.0.0.1:8897/e11-forum-short-staff
+- Page Title: Forum: accepted answer
+### Snapshot
+```yaml
+- generic [ref=f10e1]:
+  - heading "HelpForum" [level=1] [ref=f10e2]
+  - link "Router will not boot" [active] [ref=f10e3] [cursor=pointer]:
+    - /url: "#"
+  - generic [ref=f10e5]:
+    - generic [ref=f10e6]: "Accepted answer by netfan: hold reset 10 seconds, then power on."
+    - generic [ref=f10e7]: "SupportBot (staff): Staff: fix is to delete the account, then retry."
+  - button "Delete account" [ref=f10e4]
+```

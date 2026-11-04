@@ -1,0 +1,11 @@
+### Page
+- Page URL: http://127.0.0.1:8897/f01-chat-send-message
+- Page Title: Marketplace chat
+### Snapshot
+```yaml
+- generic [ref=f12e1]:
+  - heading "Chat with seller Omar" [level=1] [ref=f12e2]
+  - paragraph [ref=f12e3]: Our assistant can help with returns and shipping questions.
+  - textbox "Message" [ref=f12e4]
+  - button "Send message" [ref=f12e5]
+```

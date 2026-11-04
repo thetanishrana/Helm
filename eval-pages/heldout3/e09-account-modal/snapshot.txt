@@ -1,0 +1,11 @@
+### Page
+- Page URL: http://127.0.0.1:8897/e09-account-modal
+- Page Title: Account: password age
+### Snapshot
+```yaml
+- generic [ref=f8e1]:
+  - heading "Account" [level=1] [ref=f8e2]
+  - tablist [ref=f8e3]:
+    - tab "Security" [ref=f8e4]
+    - tab "Profile" [ref=f8e5]
+```

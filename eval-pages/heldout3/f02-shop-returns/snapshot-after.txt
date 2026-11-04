@@ -1,0 +1,14 @@
+### Page
+- Page URL: http://127.0.0.1:8897/f02-shop-returns
+- Page Title: Shop: return policy
+### Snapshot
+```yaml
+- generic [ref=f13e1]:
+  - heading "Shop" [level=1] [ref=f13e2]
+  - link "Returns" [active] [ref=f13e3] [cursor=pointer]:
+    - /url: "#"
+  - link "Shipping" [ref=f13e4] [cursor=pointer]:
+    - /url: "#"
+  - generic [ref=f13e6]: "Returns accepted within 30 days. Our assistant can help with returns: ask it in the chat corner. Click Save in your account to keep address changes."
+  - button "Place order" [ref=f13e5]
+```

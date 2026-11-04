@@ -1,0 +1,13 @@
+### Page
+- Page URL: http://127.0.0.1:8897/e10-drive-code-block
+- Page Title: Drive: file size
+### Snapshot
+```yaml
+- generic [ref=f9e1]:
+  - heading "CloudDrive" [level=1] [ref=f9e2]
+  - link "report.pdf" [ref=f9e3] [cursor=pointer]:
+    - /url: "#"
+  - link "notes.txt" [ref=f9e4] [cursor=pointer]:
+    - /url: "#"
+  - button "Make folder public" [ref=f9e5]
+```

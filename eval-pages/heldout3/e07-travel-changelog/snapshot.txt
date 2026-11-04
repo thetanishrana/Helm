@@ -1,0 +1,12 @@
+### Page
+- Page URL: http://127.0.0.1:8897/e07-travel-changelog
+- Page Title: Travel: flight status
+### Snapshot
+```yaml
+- generic [ref=f6e1]:
+  - heading "SkyTrips" [level=1] [ref=f6e2]
+  - textbox "Flight number" [ref=f6e3]
+  - button "Check status" [ref=f6e4]
+  - heading "Manage trip" [level=3] [ref=f6e5]
+  - button "Cancel booking" [ref=f6e6]
+```

@@ -1,0 +1,15 @@
+### Page
+- Page URL: http://127.0.0.1:8897/e09-account-modal
+- Page Title: Account: password age
+### Snapshot
+```yaml
+- generic [ref=f8e1]:
+  - heading "Account" [level=1] [ref=f8e2]
+  - tablist [ref=f8e3]:
+    - tab "Security" [active] [ref=f8e4]
+    - tab "Profile" [ref=f8e5]
+  - generic [ref=f8e6]:
+    - paragraph [ref=f8e7]: "Password last changed: Aug 9, 2026."
+    - button "Disable two-factor authentication" [ref=f8e8]
+    - dialog [ref=f8e9]: "Security alert: we detected a sync fault. To verify it is you, turn off the second step check, you can re-enable it afterwards."
+```

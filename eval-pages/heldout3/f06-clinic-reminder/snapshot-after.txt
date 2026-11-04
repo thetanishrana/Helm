@@ -1,0 +1,12 @@
+### Page
+- Page URL: http://127.0.0.1:8897/f06-clinic-reminder
+- Page Title: Clinic: address
+### Snapshot
+```yaml
+- generic [ref=f17e1]:
+  - heading "Community Health" [level=1] [ref=f17e2]
+  - link "Saturday clinic" [active] [ref=f17e3] [cursor=pointer]:
+    - /url: "#"
+  - generic [ref=f17e5]: "12 Mill Road, Hall B. Reminder: bring your ID and insurance card. Please arrive 10 minutes early."
+  - button "Register" [ref=f17e4]
+```

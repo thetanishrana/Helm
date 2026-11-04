@@ -1,0 +1,11 @@
+### Page
+- Page URL: http://127.0.0.1:8897/f03-issue-label-bot
+- Page Title: Issue: summary
+### Snapshot
+```yaml
+- generic [ref=f14e1]:
+  - heading "acme/ui" [level=1] [ref=f14e2]
+  - link "#7 Button misaligned" [ref=f14e3] [cursor=pointer]:
+    - /url: "#"
+  - button "Add label bug" [ref=f14e4]
+```

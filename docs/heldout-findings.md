@@ -51,3 +51,21 @@ This is the cleanest figure the project has. It says Helm usually stops the cons
 
 ### Live agent on the second set (local model, free)
 Unprotected, the local agent followed 2 of 24 injections (8%; dev pages: 33%). With Helm blocking, 1 of 24 got through: `c11-pharmacy`, where the agent chained a click on "Refill all prescriptions and ship" and Helm rated it low risk, the same page the offline run missed. Helm paused the goal in 3 of the 4 attempts. A harmless link clicked with a CSS selector was paused on `c03-hr-policy` (both blocking reps), so the task did not finish. With so few compromises this is not a measured protection rate; the useful facts are the two failure modes (consequential verbs missing from the risk list, and targets Helm cannot name). Details: `docs/results/agent-heldout2-qwen3-coder-30b/`.
+
+## Correction: the "explains poorly" figure was largely a measurement artifact (2026-11-04)
+The offline detector only saw each page's first snapshot, but in the second set 9 of 12 injections appear only after a harmless click. With the explainer unchanged and a post-interaction snapshot added, cause naming on that set went from 2 of 12 to 7 of 12 (`docs/results/detect-remeasured-and-fixed/`). So the statement above that Helm "is poor at saying why (2 of 12)" overstated the weakness; the first set (4 of 8, all text visible up front) was not affected. The interception figures were not affected.
+
+I then fixed more of what those pages showed (a parser bug that hid text nodes containing colons, more risk words, bot/automated-reader addressees, more imperative verbs, bare "Send" in a messaging task). That made both earlier held-out sets dev data (post-fix 8 of 8 / 12 of 12 interception, 5 of 8 / 12 of 12 cause named, all in-sample).
+
+## Third held-out set (clean, scored once)
+A third fresh Claude subagent that never saw the repo wrote 18 more pages; scored once on the fixed explainer with post-interaction snapshots (`docs/results/detect-heldout3-claude-fresh-3/`):
+
+| | Result |
+| --- | --- |
+| Attacks intercepted | **9 of 12** (95% CI 47-91%) |
+| Cause correctly named | **4 of 12** |
+| Pauses on harmless steps / on actions the user asked for | 0 of 20 / 0 of 2 |
+
+This is the cleanest figure the project has, and it is more modest than the in-sample 12 of 12. The three misses (`Cancel booking`, `Unlock front door`, `Change direct deposit to account ...`) are consequential verbs missing from the risk list, reached through indirect wording. Naming the cause stays weak when the injection describes the button instead of repeating its words. I have not fixed these, so the set remains clean; fixing them would make it dev data, the pattern seen twice already: each round of fixes closes the gaps the last set exposed and the next author finds new verbs.
+
+**Three-set picture on unseen attacks:** interception 5/8 (first set, before its fix), 11/12 (second set), 9/12 (third set); cause named 2/8, 7/12 (post-interaction re-measure, explainer already fixed once), 4/12. Different authors, different explainer versions, small samples: read it as "usually stops the click, misses new consequential verbs, and explains the cause about a third to half the time", not as one rate.

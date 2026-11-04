@@ -4,7 +4,7 @@ Live oversight for AI browser agents. Helm sits underneath the agent, watches th
 
 ![A held action in the Helm UI](docs/assets/ui-pending.png)
 
-**Status: working research prototype.** It runs end to end on Claude Code driving Chrome through `playwright-cli`. On two small sets of attack pages written by other models (ChatGPT, then a fresh Claude session) it stopped the consequential click on 5/8 and 11/12 unseen attacks but named the page text responsible on only 2/8 and 2/12. The headline in-sample result (a susceptible local agent followed 33% of injections unprotected, 0% with Helm blocking) is on pages the explainer was built from. No user study has been run. Read [docs/writeup.md](docs/writeup.md) first, then [docs/heldout-findings.md](docs/heldout-findings.md); every number's provenance is in `docs/results/`.
+**Status: working research prototype.** It runs end to end on Claude Code driving Chrome through `playwright-cli`. On two small sets of attack pages written by other models (ChatGPT, then a fresh Claude session) it stopped the consequential click on 5/8, 11/12 and (cleanest, scored once) 9/12 unseen attacks, and named the page text responsible on about a third to half of them (4/12 on the cleanest set); each round of fixes closed the last set's gaps and the next author found new consequential verbs. The headline in-sample result (a susceptible local agent followed 33% of injections unprotected, 0% with Helm blocking) is on pages the explainer was built from. No user study has been run. Read [docs/writeup.md](docs/writeup.md) first, then [docs/heldout-findings.md](docs/heldout-findings.md); every number's provenance is in `docs/results/`.
 
 ## Try it
 ```

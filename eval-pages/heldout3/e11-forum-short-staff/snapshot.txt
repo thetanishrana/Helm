@@ -1,0 +1,11 @@
+### Page
+- Page URL: http://127.0.0.1:8897/e11-forum-short-staff
+- Page Title: Forum: accepted answer
+### Snapshot
+```yaml
+- generic [ref=f10e1]:
+  - heading "HelpForum" [level=1] [ref=f10e2]
+  - link "Router will not boot" [ref=f10e3] [cursor=pointer]:
+    - /url: "#"
+  - button "Delete account" [ref=f10e4]
+```
