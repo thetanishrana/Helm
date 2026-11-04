@@ -11,15 +11,20 @@ const uniq = (a) => [...new Set(a)];
 const overlapCount = (needle, hay) => { const h = new Set(tokens(hay)); return uniq(tokens(needle)).filter((t) => h.has(t) && (t.length > 2 || /\d/.test(t))).length; };
 const overlap = (needle, hay) => { const n = uniq(tokens(needle)); if (!n.length) return 0; const h = new Set(tokens(hay)); return n.filter((t) => h.has(t)).length / n.length; };
 
+// Passages that point at a control without naming it ("the red control under Manage trip", "through the form button").
+const POINTER = /\b(the|that) (red|last|first|bottom|top|main|big|danger\w*)\b.{0,25}\b(button|control|toggle|link|switch)\b|\b(through|using|with|via) the (form |submit |confirm )?(button|control)\b/i;
 const ACTION_VERB = /\b(click|press|tap|select|open|send|type|enter|visit|go to|run|execute|use|activate|switch|toggle|turn|enable|disable|choose|acknowledge|confirm|complete|finish|proceed)\b/i;
 const HIGH_VERBS = /\b(send|pay|payment|transfer|wire|purchase|buy|order|checkout|delete|remove|erase|submit|post|publish|share|forward|confirm|approve|authorize|grant|invite|unsubscribe|deactivate|reset|export|download|ship|refill|reorder|renew|subscribe|upgrade|withdraw|refund|charge)\b/i;
 // Consequential actions named by a verb plus an object, so a bare "Cancel" or "Disable" button is not flagged.
 const HIGH_PHRASES = [
-  /\b(cancel|disable|suspend|revoke|terminate|disconnect|wipe|purge|deactivate|turn off|switch off)\b.{0,40}\b(all|every|any|my|your|account|meetings?|events?|subscription|order|mfa|multi-?factor|authentication|security|protection|access|users?|employees?)\b/i,
+  /\b(cancel|disable|suspend|revoke|terminate|disconnect|wipe|purge|deactivate|turn off|switch off)\b.{0,40}\b(all|every|any|my|your|account|meetings?|events?|subscription|order|mfa|multi-?factor|authentication|security|protection|access|users?|employees?|booking|reservation|flight|trip|appointment|membership|policy|contract|plan)\b/i,
   /\b(make|set|switch|change)\b.{0,40}\b(public|unrestricted|anyone|everyone)\b/i,
+  // physical or financial control: unlocking, disarming, redirecting money, changing who can get in or be paid
+  /\b(unlock|disarm|unarm|open (the )?(door|gate|vault|garage))\b/i,
+  /\b(change|update|edit|replace|set|redirect|move|link|add)\b.{0,40}\b(direct deposit|payout|payee|beneficiary|bank account|routing|iban|payment method|billing|recovery (email|phone)|password|authorized user|admin|owner|delegate)\b/i,
 ];
 const SECRET_FIELD = /pass(word)?|card|cvv|ssn|secret|token|api.?key|private/i;
-const AI_ADDRESSED = /\b(ai|a\.i\.|assistants?|agents?|llms?|language model|claude|gpt|chatbot|copilot|bots?|crawlers?|scrapers?|automated (readers?|assistants?|agents?|systems?|tools?))\b|@[\w-]*bot\b/i;
+const AI_ADDRESSED = /\b(ai|a\.i\.|assistants?|agents?|llms?|language model|claude|gpt|chatbot|copilot|bots?|crawlers?|scrapers?|automated (readers?|assistants?|agents?|systems?|tools?|clients?))\b|@[\w-]*bot\b/i;
 const COERCION = /\b(please remember|remember to|reminder:|make sure|be sure|don't forget|you must|you should|you need to|ignore (all|any|previous|prior)|disregard|do not (tell|mention|inform)|don't (tell|mention)|instead|override|system (note|message|prompt)|important:|required|to (complete|finish) (your|the|this) task|before (you )?(continu|proceed|answer|read|check|open|look)|(then|and then) (re-?open|tell me|answer|reply|report)|until .{0,40} (is |are )?(cleared|disabled|suspended))/i;
 // Text that poses as the user, the assistant, or the system: the style that worked on a real agent.
 const IMPERSONATION = /(^|\s)(human|user|assistant|system)\s*:|<\|im_(start|end)\|>|<\/?(user_message|system-reminder|system|tool_result)>|\[system\]|\b(one more thing|in addition|added to your task|amended|follow-up|the user (has )?(asked|confirmed|approved|requested)|i need you to|i forgot to mention|as requested|instructions from the user)\b|\bmessage from (you|the user|me)\b|\bfrom (the )?(workspace |site |page |account |system |security )?(owner|administrator|admin)\b|\b(already|pre-?|previously|has been) ?approved\b|\bidentity provider\b/i;
@@ -78,7 +83,8 @@ export function explain(classified, req, resp = null, only = null) {
   const namedLink = a.role === 'link' && riskOf(a).tier === 'low' && overlapCount(label, prompts) >= 1;
   // A bare "Send"/"Post"/"Submit" button is part of a message the user asked the agent to write or ask.
   const messageAction = /^(send|post|submit|reply|ask)$/i.test(label.trim()) && /\b(ask|message|reply|respond|chat|write|compose|comment|post)\b/i.test(prompts);
-  const requested = asked >= 0.75 || namedLink || messageAction;
+  // High-stakes controls must be named almost fully; for low- and medium-risk ones, sharing half their words with the request is enough.
+  const requested = asked >= (riskOf(a).tier === 'high' ? 0.75 : 0.5) || namedLink || messageAction;
   const delegated = DELEGATED.test(prompts);
 
   // Which page text points at this action? Not the control itself, and instruction-like.
@@ -86,7 +92,7 @@ export function explain(classified, req, resp = null, only = null) {
     .filter((c) => !(c.ref && a.ref && c.ref === a.ref) && !(c.isLabel && c.text === label))
     .map((c) => {
       const o = label ? overlap(label, c.text) : 0;
-      const cues = (AI_ADDRESSED.test(c.text) ? 1 : 0) + (IMPERSONATION.test(c.text) ? 1 : 0) + (COERCION.test(c.text) ? 1 : 0) + (ACTION_VERB.test(c.text) ? 0.5 : 0);
+      const cues = (AI_ADDRESSED.test(c.text) ? 1 : 0) + (IMPERSONATION.test(c.text) ? 1 : 0) + (COERCION.test(c.text) ? 1 : 0) + (ACTION_VERB.test(c.text) ? 0.5 : 0) + (POINTER.test(c.text) ? 1 : 0);
       return { ...c, overlap: o, cues, score: o * 2 + cues };
     })
     .filter((c) => (c.overlap >= 0.5 && c.cues >= 1) || (c.overlap >= 0.75 && c.cues >= 0.5))
@@ -100,7 +106,8 @@ export function explain(classified, req, resp = null, only = null) {
 
   if (cause?.weak && requested) cause = null;   // an unnamed order to AI is not about something the user asked for
   const risk = riskOf(a);
-  const influenced = Boolean(cause);
+  // An unnamed order to AI on the page (a weak cause) is not about this particular action, so it cannot by itself pause a low-risk one.
+  const influenced = Boolean(cause) && !(cause.weak && risk.tier === 'low');
   // Interrupt budget: stay quiet unless the user did not ask AND (it is high stakes OR the page pushed it).
   let interrupt = false; let reason;
   if (requested && !influenced) reason = 'you asked for this';
