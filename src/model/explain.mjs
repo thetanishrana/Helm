@@ -51,6 +51,10 @@ export function pageChunks(req) {
   return chunks;
 }
 
+// Words that only move around or reveal content. A label made entirely of these (plus filler and numbers) is harmless.
+const SAFE_UI = new Set('refresh reload next previous prev back search find filter sort show hide more less expand collapse close open view views details detail history menu help settings cancel ok okay dismiss edit reply compose new change rename toggle tab page pages list grid table sidebar print dark light mode language zoom top bottom up down left right date name price rating newest oldest relevance recent popular'.split(' '));
+const isSafeUiLabel = (label) => { const w = (String(label).toLowerCase().match(/[a-z]+/g) || []); return w.length > 0 && w.every((t) => SAFE_UI.has(t) || STOP.has(t) || t.length < 2); };
+
 export function riskOf(a) {
   const label = a.label || a.selector || a.detail || '';
   if (a.risk === 'opaque') return { tier: 'high', why: 'runs code the proxy cannot inspect' };
@@ -58,6 +62,8 @@ export function riskOf(a) {
   if (['fill', 'type'].includes(a.verb) && SECRET_FIELD.test(label)) return { tier: 'high', why: 'types into a sensitive field' };
   if (HIGH_VERBS.test(label) || HIGH_PHRASES.some((r) => r.test(label))) return { tier: 'high', why: `the control says "${label}", which changes something outside the page` };
   if (['fill', 'type', 'press', 'select', 'upload', 'check', 'uncheck'].includes(a.verb)) return { tier: 'medium', why: 'enters or changes data on the page' };
+  // Allowlist, not denylist: a named button or menu item is consequential unless every word of its label is a known harmless UI word.
+  if (a.verb === 'click' && ['button', 'menuitem'].includes(a.role) && a.label && !isSafeUiLabel(a.label)) return { tier: 'high', why: `the ${a.role} "${a.label}" is not a known harmless control, so it could change something`, viaAllowlist: true };
   return { tier: 'low', why: 'looks like navigation or a harmless control' };
 }
 
@@ -84,7 +90,9 @@ export function explain(classified, req, resp = null, only = null) {
   // A bare "Send"/"Post"/"Submit" button is part of a message the user asked the agent to write or ask.
   const messageAction = /^(send|post|submit|reply|ask)$/i.test(label.trim()) && /\b(ask|message|reply|respond|chat|write|compose|comment|post)\b/i.test(prompts);
   // High-stakes controls must be named almost fully; for low- and medium-risk ones, sharing half their words with the request is enough.
-  const requested = asked >= (riskOf(a).tier === 'high' ? 0.75 : 0.5) || namedLink || messageAction;
+  const tier0 = riskOf(a); const strict = tier0.tier === 'high' && !tier0.viaAllowlist;   // named by the denylist: needs nearly all of its words in the request
+  const strongMatch = asked >= 0.75 || namedLink || messageAction;
+  let requested = asked >= (strict ? 0.75 : 0.5) || namedLink || messageAction;
   const delegated = DELEGATED.test(prompts);
 
   // Which page text points at this action? Not the control itself, and instruction-like.
@@ -104,6 +112,8 @@ export function explain(classified, req, resp = null, only = null) {
     if (weak) cause = { ...weak, overlap: 0, cues: 1, score: 1, weak: true };
   }
 
+  // A half match for an unknown button is not enough once page text names (most of the words of) that button.
+  if (requested && !strongMatch && tier0.viaAllowlist && cause && !cause.weak && cause.overlap >= 0.75) requested = false;
   if (cause?.weak && requested) cause = null;   // an unnamed order to AI is not about something the user asked for
   const risk = riskOf(a);
   // An unnamed order to AI on the page (a weak cause) is not about this particular action, so it cannot by itself pause a low-risk one.
