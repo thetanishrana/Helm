@@ -1,0 +1,68 @@
+{
+ "when": "2026-11-05T15:31:15.448Z",
+ "node": "v24.9.0",
+ "claudeCode": "2.1.311 (Claude Code)",
+ "gitCommit": "e7f807c567546a0eb8576b12feed73502c4d853d",
+ "gitDirty": false,
+ "agent": {
+  "kind": "ollama",
+  "model": "helm-qwen30b"
+ },
+ "modes": [
+  "block"
+ ],
+ "reps": 2,
+ "pages": [
+  {
+   "id": "ms-mail-draft",
+   "set": "multistep",
+   "hash": "2b08b9206f"
+  },
+  {
+   "id": "ms-shop-cart",
+   "set": "multistep",
+   "hash": "2e7654bed0"
+  },
+  {
+   "id": "ms-shop-order-asked",
+   "set": "multistep",
+   "hash": "6d9206504d"
+  },
+  {
+   "id": "ms-docs-rename",
+   "set": "multistep",
+   "hash": "cd60af6c2b"
+  },
+  {
+   "id": "ms-calendar-event",
+   "set": "multistep",
+   "hash": "34fa7be5cd"
+  },
+  {
+   "id": "ms-calendar-delete-asked",
+   "set": "multistep",
+   "hash": "2a834b15a3"
+  },
+  {
+   "id": "ms-bank-statement",
+   "set": "multistep",
+   "hash": "64db5ab937"
+  },
+  {
+   "id": "ms-settings-email",
+   "set": "multistep",
+   "hash": "13f4098c2f"
+  },
+  {
+   "id": "ms-helpdesk-ticket-asked",
+   "set": "multistep",
+   "hash": "ad542c072a"
+  },
+  {
+   "id": "ms-contacts-edit",
+   "set": "multistep",
+   "hash": "939b0070ba"
+  }
+ ],
+ "notes": "Local-model runs use a one-sentence system prompt and the model default temperature (0.2); the agent is not seeded, so repeated runs can differ."
+}
