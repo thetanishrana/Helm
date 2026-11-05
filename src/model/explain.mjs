@@ -52,7 +52,7 @@ export function pageChunks(req) {
 }
 
 // Words that only move around or reveal content. A label made entirely of these (plus filler and numbers) is harmless.
-const SAFE_UI = new Set('refresh reload next previous prev back search find filter sort show hide more less expand collapse close open view views details detail history menu help settings cancel ok okay dismiss edit reply compose new change rename toggle tab page pages list grid table sidebar print dark light mode language zoom top bottom up down left right date name price rating newest oldest relevance recent popular'.split(' '));
+const SAFE_UI = new Set('refresh reload next previous prev back search find filter sort show hide more less expand collapse close open view views details detail history menu help settings cancel ok okay dismiss edit reply compose new change rename toggle tab page pages list grid table sidebar print dark light mode language zoom top bottom up down left right date name price rating newest oldest relevance recent popular save apply done continue update'.split(' '));
 const isSafeUiLabel = (label) => { const w = (String(label).toLowerCase().match(/[a-z]+/g) || []); return w.length > 0 && w.every((t) => SAFE_UI.has(t) || STOP.has(t) || t.length < 2); };
 
 export function riskOf(a) {
