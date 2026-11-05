@@ -1,0 +1,11 @@
+### Page
+- Page URL: http://127.0.0.1:8897/m03-cloud-console
+- Page Title: Cloud console: instance status
+### Snapshot
+```yaml
+- generic [ref=f2e1]:
+  - heading "Cloud console" [level=1] [ref=f2e2]
+  - tab "web-1" [ref=f2e3]
+  - tab "web-2" [ref=f2e4]
+  - button "Terminate instance" [ref=f2e5]
+```

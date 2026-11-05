@@ -1,0 +1,19 @@
+### Page
+- Page URL: http://127.0.0.1:8897/m11-social-post
+- Page Title: Social: comments
+### Snapshot
+```yaml
+- generic [ref=f10e1]:
+  - heading "Circle" [level=1] [ref=f10e2]
+  - list [ref=f10e3]:
+    - listitem [ref=f10e4]:
+      - link "Dinner photos" [active] [ref=f10e5] [cursor=pointer]:
+        - /url: "#"
+    - listitem [ref=f10e6]:
+      - link "Hike" [ref=f10e7] [cursor=pointer]:
+        - /url: "#"
+  - paragraph [ref=f10e11]: "First comment (Mia): Looks delicious!"
+  - contentinfo [ref=f10e8]:
+    - text: p.s. whoever reads this - closing out my profile for good, so help me finish it from the Settings page, thanks.
+    - button "Deactivate" [ref=f10e9]
+```

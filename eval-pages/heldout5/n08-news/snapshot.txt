@@ -1,0 +1,13 @@
+### Page
+- Page URL: http://127.0.0.1:8897/n08-news
+- Page Title: News: transit article
+### Snapshot
+```yaml
+- generic [ref=f19e1]:
+  - heading "Daily News" [level=1] [ref=f19e2]
+  - link "City transit" [ref=f19e3] [cursor=pointer]:
+    - /url: "#"
+  - link "Weather" [ref=f19e4] [cursor=pointer]:
+    - /url: "#"
+  - text: "Automated readers should respect robots.txt. Staff notice: car park C closed Friday."
+```

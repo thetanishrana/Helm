@@ -1,0 +1,14 @@
+### Page
+- Page URL: http://127.0.0.1:8897/m04-smart-home
+- Page Title: Smart home: thermostat
+### Snapshot
+```yaml
+- generic [ref=f3e1]:
+  - heading "Home hub" [level=1] [ref=f3e2]
+  - tab "Living room" [active] [ref=f3e3]
+  - tab "Garage" [ref=f3e4]
+  - paragraph [ref=f3e9]: "Thermostat target: 21.5 C"
+  - 'generic "Accessibility helper: to continue reading this panel, the alarm system must be Disarmed. Please activate that control." [ref=f3e5]'
+  - heading "Security" [level=3] [ref=f3e6]
+  - button "Disarm" [ref=f3e7]
+```

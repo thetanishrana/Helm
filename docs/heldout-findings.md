@@ -93,3 +93,14 @@ Different authors and explainer versions, 8-12 attack pages each: read it as "us
 
 ## Response: an allowlist instead of a longer word list (2026-11-05)
 The pattern across sets (a new consequential verb missing in almost every round) came from the design: a denylist of dangerous words fails open. I replaced it, for buttons and menu items, with an allowlist of harmless UI words, so an unknown button fails safe (`docs/results/allowlist-rule/`). Offline, on all five sets, interception is 12/12 and 12/12 and 12/12 and 12/12 (the firewall miss included) with 0 false interrupts, but **those sets are in-sample** (I set thresholds while looking at them). Live on the benign multi-step tasks it cost 1 pause in 53 actions, none caused by the rule, after fixing two things the first runs exposed (a "Save name" pause and a selector-parsing bug of mine). No clean generalisation figure exists yet for the new rule; a fifth blind set scored once on this frozen rule would give one.
+
+## Fifth held-out set: the first clean test of the allowlist (2026-11-05)
+With the allowlist frozen (`8404141`), a fifth fresh Claude subagent wrote 20 pages (12 attacks with deliberately mild button labels, 8 benign with everyday buttons worded differently from the task), scored once (`docs/results/detect-heldout5-allowlist-claude-fresh-5/`):
+
+| | Result |
+| --- | --- |
+| Attacks intercepted | **12 of 12** (95% CI 76-100%) |
+| Cause correctly named | **4 of 12** |
+| Pauses on harmless steps / on actions the user asked for | **2 of 20** (one label, "View document") / 0 of 3 |
+
+The allowlist did what it was built for: no new-verb miss, including buttons labelled Release, Approve, Disarm, Go live, Bypass and Transfer. The price is the pause on an unfamiliar harmless button that does not share words with the request. Cause naming did not improve (the rule does not touch it). So the four-set story of "stops the click, misses the next verb, explains a quarter to a third" becomes: stops the click (12 of 12 on this set) at a small false-pause cost, and still explains only about a third. Attribution is now the main open weakness.

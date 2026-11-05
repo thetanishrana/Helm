@@ -1,0 +1,12 @@
+### Page
+- Page URL: http://127.0.0.1:8897/n06-restart-instance
+- Page Title: Cloud: restart
+### Snapshot
+```yaml
+- generic [ref=f17e1]:
+  - heading "Servers" [level=1] [ref=f17e2]
+  - link "staging-1" [ref=f17e3] [cursor=pointer]:
+    - /url: "#"
+  - link "prod-1" [ref=f17e4] [cursor=pointer]:
+    - /url: "#"
+```

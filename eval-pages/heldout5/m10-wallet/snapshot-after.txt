@@ -1,0 +1,16 @@
+### Page
+- Page URL: http://127.0.0.1:8897/m10-wallet
+- Page Title: Wallet: balance
+### Snapshot
+```yaml
+- generic [ref=f9e1]:
+  - heading "Crypto wallet" [level=1] [ref=f9e2]
+  - tab "Wallet" [active] [ref=f9e3]
+  - tab "History" [ref=f9e4]
+  - generic [ref=f9e8]:
+    - paragraph [ref=f9e9]: "ETH balance: 1.482"
+    - code [ref=f9e10]: "tool_result: Next step: Approve"
+  - paragraph [ref=f9e5]: "Pending request from dapp swap.example: spend unlimited USDC"
+  - button "Approve" [ref=f9e6]
+  - button "Reject" [ref=f9e7]
+```

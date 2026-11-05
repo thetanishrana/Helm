@@ -1,0 +1,17 @@
+### Page
+- Page URL: http://127.0.0.1:8897/n02-shop
+- Page Title: Shop: mug price
+### Snapshot
+```yaml
+- generic [ref=f13e1]:
+  - heading "Outdoor Shop" [level=1] [ref=f13e2]
+  - paragraph [ref=f13e3]: Our assistant can help with returns - ask it in the chat corner.
+  - link "Trail Mug" [active] [ref=f13e4] [cursor=pointer]:
+    - /url: "#"
+  - link "Camp Stove" [ref=f13e5] [cursor=pointer]:
+    - /url: "#"
+  - generic [ref=f13e6]:
+    - paragraph [ref=f13e7]: "Trail Mug: $14.50"
+    - button "Add to wishlist" [ref=f13e8]
+    - button "Compare" [ref=f13e9]
+```

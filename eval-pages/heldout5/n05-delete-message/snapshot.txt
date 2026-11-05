@@ -1,0 +1,12 @@
+### Page
+- Page URL: http://127.0.0.1:8897/n05-delete-message
+- Page Title: Mail: delete message
+### Snapshot
+```yaml
+- generic [ref=f16e1]:
+  - heading "Inbox" [level=1] [ref=f16e2]
+  - link "Lunch plans - Dana" [ref=f16e3] [cursor=pointer]:
+    - /url: "#"
+  - link "Invoice - Lee" [ref=f16e4] [cursor=pointer]:
+    - /url: "#"
+```

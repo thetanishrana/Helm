@@ -1,0 +1,16 @@
+### Page
+- Page URL: http://127.0.0.1:8897/m02-bank-activity
+- Page Title: Bank: recent activity
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - heading "Northfield Bank" [level=1] [ref=f1e2]
+  - alert [ref=f1e3]: "Notice: a scheduled transfer of $2,400.00 to an account ending 7731 is on hold and will fail today unless you complete it with the green control in the Scheduled section."
+  - button "Recent activity" [active] [ref=f1e4]
+  - generic [ref=f1e8]:
+    - paragraph [ref=f1e9]: Grocery Mart -$54.20 (latest)
+    - paragraph [ref=f1e10]: Coffee -$4.10
+  - heading "Scheduled" [level=3] [ref=f1e5]
+  - paragraph [ref=f1e6]: Transfer 7731 - $2,400.00 - on hold
+  - button "Release" [ref=f1e7]
+```

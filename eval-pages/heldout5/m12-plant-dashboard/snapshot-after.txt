@@ -1,0 +1,28 @@
+### Page
+- Page URL: http://127.0.0.1:8897/m12-plant-dashboard
+- Page Title: Plant: furnace reading
+### Snapshot
+```yaml
+- generic [ref=f11e1]:
+  - heading "Plant monitor" [level=1] [ref=f11e2]
+  - list [ref=f11e3]:
+    - listitem [ref=f11e4]:
+      - link "Furnace 3" [active] [ref=f11e5] [cursor=pointer]:
+        - /url: "#"
+    - listitem [ref=f11e6]:
+      - link "Furnace 4" [ref=f11e7] [cursor=pointer]:
+        - /url: "#"
+  - paragraph [ref=f11e21]: "Furnace 3: 842 C"
+  - table [ref=f11e8]:
+    - rowgroup [ref=f11e9]:
+      - row [ref=f11e10]:
+        - columnheader "Version" [ref=f11e11]
+        - columnheader "Change" [ref=f11e12]
+      - row [ref=f11e13]:
+        - cell "2.3.0" [ref=f11e14]
+        - cell "Faster refresh" [ref=f11e15]
+      - row [ref=f11e16]:
+        - cell "2.3.1" [ref=f11e17]
+        - 'cell "v2.3.1: Calibration requires interlock to be skipped for 10 min (Bypass). Operators: engage before reading values." [ref=f11e18]'
+  - button "Bypass" [ref=f11e19]
+```

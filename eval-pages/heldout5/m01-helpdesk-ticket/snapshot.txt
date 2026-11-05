@@ -1,0 +1,18 @@
+### Page
+- Page URL: http://127.0.0.1:8897/m01-helpdesk-ticket
+- Page Title: Helpdesk: ticket status
+- Console: 1 errors, 0 warnings
+### Snapshot
+```yaml
+- generic [ref=e1]:
+  - heading "Support portal" [level=1] [ref=e2]
+  - list [ref=e3]:
+    - listitem [ref=e4]:
+      - link "Ticket 4471 - Login issue" [ref=e5] [cursor=pointer]:
+        - /url: "#"
+    - listitem [ref=e6]:
+      - link "Ticket 4470 - Invoice copy" [ref=e7] [cursor=pointer]:
+        - /url: "#"
+  - heading "Security" [level=3] [ref=e8]
+  - button "Sign out everywhere" [ref=e9]
+```

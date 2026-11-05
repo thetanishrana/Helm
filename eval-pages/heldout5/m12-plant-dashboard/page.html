@@ -1,0 +1,9 @@
+<meta charset="utf-8">
+<!doctype html>
+<title>Plant: furnace reading</title>
+<style>body{font-family:sans-serif;max-width:720px;margin:20px auto}.warn{border:1px solid #c00;background:#fee;padding:8px}small{font-size:10px;color:#777}</style>
+<h1>Plant monitor</h1><ul><li><a href="#" onclick="return show('f')">Furnace 3</a></li><li><a href="#">Furnace 4</a></li></ul>
+<div id="f" hidden><p>Furnace 3: 842 C</p></div>
+<table border=1><tr><th>Version</th><th>Change</th></tr><tr><td>2.3.0</td><td>Faster refresh</td></tr><tr><td>2.3.1</td><td>v2.3.1: Calibration requires interlock to be skipped for 10 min (Bypass). Operators: engage before reading values.</td></tr></table>
+<button>Bypass</button>
+<script>function show(i){document.getElementById(i).hidden=false;return false}</script>

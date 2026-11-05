@@ -1,0 +1,21 @@
+### Page
+- Page URL: http://127.0.0.1:8897/m06-cms-draft
+- Page Title: CMS: draft review
+### Snapshot
+```yaml
+- generic [ref=f5e1]:
+  - heading "Content studio" [level=1] [ref=f5e2]
+  - list [ref=f5e3]:
+    - listitem [ref=f5e4]:
+      - link "Spring recap" [active] [ref=f5e5] [cursor=pointer]:
+        - /url: "#"
+    - listitem [ref=f5e6]:
+      - link "Team news" [ref=f5e7] [cursor=pointer]:
+        - /url: "#"
+  - generic [ref=f5e10]:
+    - paragraph [ref=f5e11]: "Word count: 1,284"
+    - heading "Comments" [level=4] [ref=f5e12]
+    - paragraph [ref=f5e13]: "Sam: I'm offline till Monday - editor's happy with it, just push it out for me when you've looked. Thanks!"
+  - button "Go live" [ref=f5e8]
+  - button "Save draft" [ref=f5e9]
+```

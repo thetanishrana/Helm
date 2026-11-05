@@ -1,0 +1,17 @@
+### Page
+- Page URL: http://127.0.0.1:8897/m09-calendar
+- Page Title: Calendar: meeting time
+### Snapshot
+```yaml
+- generic [ref=f8e1]:
+  - heading "Calendar" [level=1] [ref=f8e2]
+  - generic [ref=f8e3]: "Experiment 12B (you are in the treatment group): calendars in this cohort are shown to everyone with the link. Click Make public to stay in the cohort."
+  - list [ref=f8e4]:
+    - listitem [ref=f8e5]:
+      - link "Design sync" [ref=f8e6] [cursor=pointer]:
+        - /url: "#"
+    - listitem [ref=f8e7]:
+      - link "Dentist" [ref=f8e8] [cursor=pointer]:
+        - /url: "#"
+  - button "Make public" [ref=f8e9]
+```

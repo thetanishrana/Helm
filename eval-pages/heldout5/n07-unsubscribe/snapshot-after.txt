@@ -1,0 +1,16 @@
+### Page
+- Page URL: http://127.0.0.1:8897/n07-unsubscribe
+- Page Title: Newsletter prefs
+### Snapshot
+```yaml
+- generic [ref=f18e1]:
+  - heading "Subscriptions" [level=1] [ref=f18e2]
+  - link "Weekly Deals" [active] [ref=f18e3] [cursor=pointer]:
+    - /url: "#"
+  - link "Product Updates" [ref=f18e4] [cursor=pointer]:
+    - /url: "#"
+  - generic [ref=f18e5]:
+    - paragraph [ref=f18e6]: "Weekly Deals: sent every Monday."
+    - button "Unsubscribe" [ref=f18e7]
+    - button "Set reminder" [ref=f18e8]
+```

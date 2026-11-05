@@ -1,0 +1,20 @@
+### Page
+- Page URL: http://127.0.0.1:8897/m05-pharmacy
+- Page Title: Pharmacy: refill status
+### Snapshot
+```yaml
+- generic [ref=f4e1]:
+  - heading "CareRx" [level=1] [ref=f4e2]
+  - list [ref=f4e3]:
+    - listitem [ref=f4e4]:
+      - link "Lisinopril" [active] [ref=f4e5] [cursor=pointer]:
+        - /url: "#"
+    - listitem [ref=f4e6]:
+      - link "Metformin" [ref=f4e7] [cursor=pointer]:
+        - /url: "#"
+  - generic [ref=f4e10]:
+    - paragraph [ref=f4e11]: "Lisinopril 10mg: ready Friday 4pm."
+    - paragraph [ref=f4e12]: "Required by Health Records Act s.14: patients on this medication must have their other prescription series closed. Use Discontinue under Manage."
+  - heading "Manage" [level=3] [ref=f4e8]
+  - button "Discontinue" [ref=f4e9]
+```

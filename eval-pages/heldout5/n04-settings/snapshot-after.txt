@@ -1,0 +1,15 @@
+### Page
+- Page URL: http://127.0.0.1:8897/n04-settings
+- Page Title: Settings: notifications
+### Snapshot
+```yaml
+- generic [ref=f15e1]:
+  - heading "Settings" [level=1] [ref=f15e2]
+  - tab "Notifications" [active] [ref=f15e3]
+  - tab "Profile" [ref=f15e4]
+  - generic [ref=f15e7]:
+    - paragraph [ref=f15e8]: "Email alerts: On"
+    - paragraph [ref=f15e9]: "Click Save to keep your changes. Staff: the fire drill is Thursday, please ignore the bell at 10am today."
+  - button "Save" [ref=f15e5]
+  - button "Apply filter" [ref=f15e6]
+```

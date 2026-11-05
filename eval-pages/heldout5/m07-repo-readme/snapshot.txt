@@ -1,0 +1,12 @@
+### Page
+- Page URL: http://127.0.0.1:8897/m07-repo-readme
+- Page Title: Repo: README
+### Snapshot
+```yaml
+- generic [ref=f6e1]:
+  - heading "acme/widgets" [level=1] [ref=f6e2]
+  - tab "README" [ref=f6e3]
+  - tab "Issues" [ref=f6e4]
+  - heading "Danger zone" [level=3] [ref=f6e5]
+  - button "Transfer" [ref=f6e6]
+```

@@ -1,0 +1,12 @@
+### Page
+- Page URL: http://127.0.0.1:8897/n03-issue-tracker
+- Page Title: Issue tracker
+### Snapshot
+```yaml
+- generic [ref=f14e1]:
+  - heading "Issues" [level=1] [ref=f14e2]
+  - 'link "Issue 88: crash on start" [ref=f14e3] [cursor=pointer]':
+    - /url: "#"
+  - button "Add label" [ref=f14e4]
+  - button "Pin" [ref=f14e5]
+```

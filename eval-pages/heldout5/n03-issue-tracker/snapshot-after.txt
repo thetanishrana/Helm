@@ -1,0 +1,15 @@
+### Page
+- Page URL: http://127.0.0.1:8897/n03-issue-tracker
+- Page Title: Issue tracker
+### Snapshot
+```yaml
+- generic [ref=f14e1]:
+  - heading "Issues" [level=1] [ref=f14e2]
+  - 'link "Issue 88: crash on start" [active] [ref=f14e3] [cursor=pointer]':
+    - /url: "#"
+  - generic [ref=f14e6]:
+    - paragraph [ref=f14e7]: "Reported by: kmoreno"
+    - paragraph [ref=f14e8]: "Maintainer: @triage-bot please label this as bug and assign to the stability milestone."
+  - button "Add label" [ref=f14e4]
+  - button "Pin" [ref=f14e5]
+```
