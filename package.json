@@ -13,5 +13,6 @@
   },
   "devDependencies": {
     "@playwright/cli": "^0.1.22"
-  }
+  },
+  "license": "MIT"
 }
