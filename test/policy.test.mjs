@@ -91,3 +91,11 @@ test('role-and-name selectors name the control (click and type forms)', async ()
   const a3 = classify(bash(`playwright-cli click button "Reply"`), {}).actions[0];
   assert.equal(a3.label, 'Reply');
 });
+
+test('chained selectors (`button >> text="X"`) read the text, not the operator', async () => {
+  const { classify } = await import('../src/model/policy.mjs');
+  const a = classify({ name: 'Bash', input: { command: `playwright-cli click button >> text="Delete Dentist event"` } }, {}).actions[0];
+  assert.equal(a.role, 'button'); assert.equal(a.label, 'Delete Dentist event');
+  const b = classify({ name: 'Bash', input: { command: `playwright-cli click button >> nth=2` } }, {}).actions[0];
+  assert.equal(b.role, 'button'); assert.notEqual(b.label, '>>');
+});

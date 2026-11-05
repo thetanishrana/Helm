@@ -91,7 +91,10 @@ function classifySegment(words, req, out) {
     // role-and-name selectors: `click 'button "Submit ticket"'` or `type textbox "Message" "text"`
     const rn = ROLE_NAME.exec(args[0]);
     if (rn) Object.assign(entry, { role: rn[1], label: rn[2] });
-    else if (ROLE_WORD.test(args[0]) && args[1]) Object.assign(entry, { role: args[0], label: args[1] });
+    else if (ROLE_WORD.test(args[0]) && args[1]) {   // `button "Reply"`, or a chained selector: `button >> text="Reply"`
+      const label = args[1] === '>>' ? labelFromSelector(args[2] || '') : args[1];
+      Object.assign(entry, label ? { role: args[0], label } : { role: args[0] });
+    }
     else { const l = labelFromSelector(args[0]); if (l) entry.label = l; }
   }
   // `agent-browser find role button click --name "X"` style
