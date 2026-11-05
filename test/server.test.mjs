@@ -57,3 +57,16 @@ test('the UI never injects page text as HTML', () => {
   const js = readFileSync(new URL('../src/ui/app.js', import.meta.url), 'utf8');
   for (const bad of ['innerHTML', 'insertAdjacentHTML', 'document.write', 'outerHTML', 'eval(']) assert.ok(!js.includes(bad), `app.js must not use ${bad}`);
 });
+
+test('the page is served with a strict content-security-policy and only whitelisted files are served', async () => {
+  const { ui, base } = await setup();
+  try {
+    const page = await fetch(`${base}/`);
+    const csp = page.headers.get('content-security-policy');
+    assert.match(csp, /default-src 'none'/); assert.match(csp, /script-src 'self'/); assert.match(csp, /frame-ancestors 'none'/); assert.doesNotMatch(csp, /unsafe-inline|unsafe-eval|\*/);
+    assert.equal(page.headers.get('x-content-type-options'), 'nosniff');
+    assert.equal((await fetch(`${base}/ui/app.js`)).status, 200);
+    assert.equal((await fetch(`${base}/ui/fonts/AtkinsonHyperlegibleNext.ttf`)).headers.get('content-type'), 'font/ttf');
+    for (const bad of ['/ui/index.html', '/ui/fonts/OFL.txt', '/ui/fonts/README.md', '/ui/../server.mjs', '/ui/%2e%2e/server.mjs', '/ui/fonts/..%2fapp.js.map']) assert.equal((await rawGet(ui.port, bad, { host: `127.0.0.1:${ui.port}` })).status, 404, bad);
+  } finally { ui.close(); }
+});

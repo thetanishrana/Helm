@@ -5,7 +5,14 @@ import { readFileSync } from 'node:fs';
 import { randomBytes } from 'node:crypto';
 
 const UI = new URL('./ui/', import.meta.url);
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.ttf': 'font/ttf' };
+// Only these files are served from the UI folder. Everything on the page can contain text from untrusted web pages,
+// so the page also refuses to load or run anything that is not one of these files.
+const STATIC = new Set(['app.js', 'style.css', 'fonts/AtkinsonHyperlegibleNext.ttf', 'fonts/AtkinsonHyperlegibleMono.ttf']);
+export const SECURITY_HEADERS = {
+  'content-security-policy': "default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
+  'x-content-type-options': 'nosniff', 'referrer-policy': 'no-referrer', 'cross-origin-opener-policy': 'same-origin',
+};
 
 export function startServer({ store, approvals, port = 7777, token = randomBytes(16).toString('hex'), hooks = {} }) {
   const hostOk = (h) => h === `127.0.0.1:${server.address().port}` || h === `localhost:${server.address().port}`;
@@ -18,11 +25,12 @@ export function startServer({ store, approvals, port = 7777, token = randomBytes
 
     if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/index.html')) {
       const html = readFileSync(new URL('index.html', UI), 'utf8').replace('__TOKEN__', token);
-      return res.writeHead(200, { 'content-type': TYPES['.html'], 'cache-control': 'no-store' }).end(html);
+      return res.writeHead(200, { 'content-type': TYPES['.html'], 'cache-control': 'no-store', ...SECURITY_HEADERS }).end(html);
     }
-    if (req.method === 'GET' && (url.pathname === '/ui/app.js' || url.pathname === '/ui/style.css')) {
+    if (req.method === 'GET' && url.pathname.startsWith('/ui/') && STATIC.has(url.pathname.slice(4))) {
       const ext = url.pathname.slice(url.pathname.lastIndexOf('.'));
-      return res.writeHead(200, { 'content-type': TYPES[ext], 'cache-control': 'no-store' }).end(readFileSync(new URL(url.pathname.slice(4), UI)));
+      const long = ext === '.ttf';   // fonts never change under one name; code and styles are reloaded on every start
+      return res.writeHead(200, { 'content-type': TYPES[ext], 'cache-control': long ? 'max-age=86400' : 'no-store', ...SECURITY_HEADERS }).end(readFileSync(new URL(url.pathname.slice(4), UI)));
     }
     if (req.method === 'GET' && url.pathname === '/favicon.ico') return res.writeHead(204).end();
     if (req.method === 'GET' && url.pathname === '/api/state') return json(res, 200, { meta: store.meta, status: store.status(), pending: store.pending(), receipt: store.receipt() });

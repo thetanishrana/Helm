@@ -38,6 +38,9 @@ Testing on attacks I did not write found real gaps, and I kept the record instea
 4. **It can pause harmless steps it cannot read.** Clicks made with CSS selectors or `eval` snippets show up as an unnamed target, and Helm pauses them as the safe default. This cost tasks in the local-model runs and did not appear with Claude Haiku, which uses snapshot references. I chose to leave this default and revisit it.
 5. **A user-requested "Send" button in a chat box was paused** as an unrequested send.
 
+## The interface
+A local web page beside the browser (`docs/assets/ui-pending.png`, dark and narrow variants alongside). The person's request is the destination; the agent's steps are marks on a course; an action outside the request leaves the course in red and waits. The decision says what was asked and what the agent wants, in plain words, quotes the page text that pushed it, says how risky it is, and reports whether re-running the agent without that text removed the action. Approving a high-risk action means pressing and holding. It is designed to be quiet when the person asked for the step. It ships with a strict content-security-policy, bundled fonts, light and dark modes, keyboard operation and reduced-motion support, and an automated check that drives it in Chrome. It has not been tried with a person: the wording, the hold-to-confirm friction and the framing are hypotheses for the pilot to test.
+
 ## What I did not do
 - **No user study.** I had no participant pool, so the human-factors claim (that explanations help people decide) is a design hypothesis, not a result. An instrument for a qualitative pilot exists (`src/replay/`) and has only been tested with simulated participants.
 - **No activation-level detection** (reading model internals for task drift). It was the first thing cut.

@@ -1,109 +1,246 @@
 // Everything shown here can contain text from untrusted web pages: always set text with textContent
-// and never build markup from it.
+// and never build markup from it. Icons come from <template> elements in index.html, never from strings.
 const token = document.querySelector('meta[name=helm-token]').content;
 const $ = (id) => document.getElementById(id);
-let events = []; let confirmed = new Map(); let decided = new Set(); let meta = {}; let studyDone = false;
-const ALLOW_DELAY_MS = 1200;   // hypothesis: a short delay on Allow for high-risk cards discourages reflexive approval
-const TLX = [['mental', 'Mental demand', 'How much thinking and attention did watching require?'], ['physical', 'Physical demand', 'How much physical activity did it take?'], ['temporal', 'Time pressure', 'How hurried or rushed did it feel?'], ['performance', 'Performance', 'How successful were you at catching problems? (0 = perfect, 100 = failure)'], ['effort', 'Effort', 'How hard did you have to work?'], ['frustration', 'Frustration', 'How irritated, stressed or annoyed were you?']];
+let events = []; let confirmed = new Map(); let decided = new Set(); let meta = {}; let studyDone = false; let connection = 'connecting';
+const openKeys = new Set();   // <details> the person opened, kept across redraws
+const HOLD_MS = 1200;         // hypothesis: pressing and holding to say "yes, I asked for this" discourages reflexive approval
+const TLX = [['mental', 'Mental demand', 'How much thinking and attention did watching require?'], ['physical', 'Physical demand', 'How much physical activity did it take?'], ['temporal', 'Time pressure', 'How hurried or rushed did it feel?'], ['performance', 'Performance', 'How successful were you in watching for problems?'], ['effort', 'Effort', 'How hard did you have to work to stay on top of it?'], ['frustration', 'Frustration', 'How irritated, stressed or annoyed did you feel?']];
 
 const el = (tag, props = {}, ...kids) => { const n = Object.assign(document.createElement(tag), props); for (const k of kids) n.append(k); return n; };
+const icon = (id) => $(id).content.firstElementChild.cloneNode(true);
 const clock = (t) => new Date(t).toLocaleTimeString([], { hour12: false });
+const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
+const curly = (s) => String(s ?? '').replace(/"([^"]*)"/g, '\u201c$1\u201d');
+const sentence = (s) => { const t = curly(s).trim().replace(/[.\s]+$/, ''); return t ? `${cap(t)}.` : ''; };
 const cond = () => (meta.mode === 'replay' ? meta.condition : 'C');   // live runs behave like condition C
 const post = (path, body) => fetch(path, { method: 'POST', headers: { 'content-type': 'application/json', 'x-helm-token': token }, body: JSON.stringify(body || {}) });
 
+// `click button "Refresh"` -> { verb: 'Click button', label: 'Refresh' }; anything else is shown as it is.
+function parseWhat(what) {
+  const m = /^([\w-]+)(?: ([\w-]+))? "((?:[^"\\]|\\.)*)"$/.exec(String(what ?? ''));
+  return m ? { verb: `${cap(m[1])}${m[2] ? ` ${m[2]}` : ''}`, label: m[3].replace(/\\"/g, '"') } : { verb: cap(String(what ?? '')), label: null };
+}
+function whatNodes(what) {
+  const w = parseWhat(what); const out = [el('span', { className: 'verb', textContent: w.verb })];
+  if (w.label !== null) out.push(' ', el('span', { className: 'target', textContent: `“${w.label}”` }));
+  return out;
+}
+const hostOf = (page) => { try { return new URL(page).host || page; } catch { return page || 'the page'; } };
+
+// ---- what the person asked
+const request = () => meta.mode === 'replay' ? (meta.scenario?.userTask ?? '') : ([...events].reverse().find((e) => e.type === 'model.turn' && e.request)?.request ?? '');
+function setTask() {
+  const text = request(); const box = $('task');
+  box.hidden = !text || Boolean(document.querySelector('#pending .card:not(.plain)'));   // a pending decision already sets the request beside what the agent wants
+  if (!text) return;
+  const p = $('task-text'); p.textContent = text; p.className = 'request';
+  box.querySelector('.more')?.remove();
+  if (text.length > 220) {
+    p.classList.add('clamp');
+    const more = el('button', { className: 'more', type: 'button', textContent: 'Show all' });
+    more.onclick = () => { const open = p.classList.toggle('clamp'); more.textContent = open ? 'Show all' : 'Show less'; };
+    box.append(more);
+  }
+}
+
+// ---- status line, tab title and tab icon
+const FAVICON = { idle: '#8fa2b2', ok: '#2d6ea6', untrusted: '#c58a12', paused: '#b3301b', done: '#8fa2b2', lost: '#8fa2b2' };
+function setFavicon(level) {
+  const c = FAVICON[level] ?? FAVICON.ok; const ring = level === 'idle' || level === 'lost';
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle cx='8' cy='8' r='${ring ? 6 : 7}' fill='${ring ? 'none' : c}' stroke='${c}' stroke-width='2'/></svg>`;
+  $('favicon').href = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
 function setStatus() {
   const pending = events.filter((e) => e.type === 'gate.pending' && !decided.has(e.id));
   const ended = events.some((e) => e.type === 'task.end');
   const untrusted = events.some((e) => e.type === 'model.turn' && e.untrustedChunks > 0);
-  const h = $('status'); let level = 'ok', text = 'On task';
-  if (cond() !== 'C') { level = ended ? 'done' : 'ok'; text = ended ? 'The agent has finished' : 'The agent is working'; }   // the ambient line is part of Helm only
-  else if (pending.length) { level = 'paused'; text = `Paused: ${pending.length} decision${pending.length > 1 ? 's' : ''} waiting`; }
+  const started = events.length > 0;
+  let level = 'ok', text = 'On task';
+  if (connection === 'lost') { level = 'lost'; text = 'Connection lost. Reload to reconnect.'; }
+  else if (studyDone) { level = 'done'; text = 'All tasks finished. Thank you.'; }
+  else if (cond() !== 'C') { level = ended ? 'done' : 'ok'; text = ended ? 'The agent has finished' : 'The agent is working'; }   // the ambient line is part of Helm only
+  else if (pending.length) { level = 'paused'; text = 'Needs your decision'; }
   else if (ended) { level = 'done'; text = 'Task finished'; }
-  else if (untrusted) { level = 'untrusted'; text = 'Agent has read untrusted content'; }
-  if (studyDone) { level = 'done'; text = 'All tasks finished. Thank you.'; }
-  h.className = level; $('status-text').textContent = text;
-  $('receipt-btn').hidden = cond() !== 'C';
-  document.title = (pending.length ? `(${pending.length}) ` : '') + 'Helm';
+  else if (untrusted) { level = 'untrusted'; text = 'Reading untrusted content'; }
+  else if (!started) { level = 'idle'; text = 'Waiting for the agent'; }
+  $('status').className = level; $('status-text').textContent = text;
+  const n = level === 'paused' ? pending.length : 0; $('status-count').hidden = n < 1; $('status-count').textContent = String(n);
+  $('receipt-btn').hidden = cond() !== 'C' || !started;
+  document.title = `${n ? `(${n}) ` : ''}Helm`; setFavicon(level);
+}
+
+// ---- the decision panel
+function holdButton(btn, ms, done) {
+  const fill = btn.querySelector('.fill'); const hint = btn.closest('.card').querySelector('.hint-main'); const rest = hint.textContent; let timer = null;
+  const start = () => { if (btn.disabled || timer) return; fill.style.transition = `transform ${ms}ms linear`; fill.style.transform = 'scaleX(1)'; hint.textContent = 'Keep holding…'; timer = setTimeout(() => { timer = null; done(); }, ms); };
+  const cancel = () => { if (!timer) return; clearTimeout(timer); timer = null; fill.style.transition = 'transform 160ms ease-out'; fill.style.transform = 'scaleX(0)'; hint.textContent = rest; };
+  btn.addEventListener('pointerdown', (e) => { if (e.button === 0) start(); });
+  for (const ev of ['pointerup', 'pointerleave', 'pointercancel', 'blur']) btn.addEventListener(ev, cancel);
+  btn.addEventListener('keydown', (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) start(); } });
+  btn.addEventListener('keyup', (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); cancel(); } });
+  btn.addEventListener('contextmenu', (e) => e.preventDefault());
+  btn.addEventListener('click', (e) => { e.preventDefault(); if (!e.isTrusted) done(); });   // a script's click (the simulated participant) skips the hold; a person's does not
 }
 
 function renderCard(p) {
   const x = p.explanation || {};
-  const card = el('div', { className: 'card' + (x.commandOnly ? ' plain' : ''), id: `card-${p.id}`, role: 'group' });
+  const card = el('section', { className: `card${x.commandOnly ? ' plain' : ''}`, id: `card-${p.id}` });
   card.setAttribute('aria-label', `Decision needed: ${p.what}`);
-  const block = el('button', { className: 'block', textContent: x.commandOnly ? 'Deny' : 'Block' });
-  const allow = el('button', { className: 'allow', textContent: x.commandOnly ? 'Approve' : 'Allow once' });
-  block.onclick = () => decide(p.id, false); allow.onclick = () => decide(p.id, true);
+  const block = el('button', { className: 'block', type: 'button', textContent: x.commandOnly ? 'Deny' : 'No, block it' });
+  const allow = el('button', { className: 'allow', type: 'button' });
+  block.onclick = () => decide(p.id, false);
+
   if (x.commandOnly) {   // the standard prompt: the command and nothing else
-    card.append(el('h3', { textContent: 'The agent wants to run a command' }), el('code', { textContent: x.command }), el('div', { className: 'actions' }, allow, block));
+    allow.textContent = 'Approve'; allow.onclick = () => decide(p.id, true);
+    card.append(el('h3', { textContent: 'The agent wants to run a command' }), el('code', { textContent: x.command }), el('div', { className: 'actions' }, block, allow));
     return card;
   }
-  card.append(el('h3', { textContent: `Paused: ${p.what}` }));
-  card.append(el('div', { className: 'line', textContent: x.requested ? `You asked for this (your request mentions "${x.action?.label ?? ''}").` : 'You did not ask for this.' }));
+
+  const tier = x.risk?.tier ?? 'high';
+  card.append(el('div', { className: 'card-head' }, el('h3', { textContent: x.requested ? 'Check this before it runs' : 'Did you ask for this?' }), el('span', { className: `risk ${tier}`, textContent: `${cap(tier)} risk` })));
+
+  const gap = el('dl', { className: 'gap' });
+  const asked = request();
+  if (asked) gap.append(el('div', {}, el('dt', { textContent: 'You asked' }), el('dd', { textContent: asked.length > 160 ? `${asked.slice(0, 157)}…` : asked })));
+  gap.append(el('div', { className: 'wants' }, el('dt', { textContent: 'Agent wants' }), el('dd', {}, ...whatNodes(p.what))));
+  card.append(gap, el('p', { className: 'verdict', textContent: x.requested ? 'Your request mentions this control.' : 'That isn’t part of what you asked.' }));
+
+  const reasons = el('ul', { className: 'reasons' }); card.append(el('h4', { className: 'why-h', textContent: 'Why Helm held it' }));
   if (x.cause) {
-    const label = x.cause.weak ? `Text on ${x.cause.page || 'the page'} is addressed to AI agents and gives orders:` : `Text on ${x.cause.page || 'the page'} pointed the agent at it:`;
-    card.append(el('div', { className: 'line', textContent: label }), el('blockquote', { textContent: x.cause.text }));
-  } else if (!x.requested) card.append(el('div', { className: 'line', textContent: 'The agent had read page content, but no single passage clearly told it to do this.' }));
-  if (x.emails?.length) card.append(el('div', { className: 'line', textContent: `Involves: ${x.emails.join(', ')}` }));
-  card.append(el('div', { className: 'line', textContent: `Risk: ${x.risk?.tier ?? '?'} - ${x.risk?.why ?? ''}.` }));
-  const conf = el('span', { className: 'tag', id: `conf-${p.id}`, textContent: meta.mode === 'replay' ? '' : 'checking by re-run…' });
-  card.append(el('div', { className: 'why' }, `Why you are being asked: ${x.reason ?? p.reason ?? ''}.`, conf));
-  if (x.risk?.tier === 'high') { allow.disabled = true; allow.textContent = 'Allow once…'; setTimeout(() => { allow.disabled = false; allow.textContent = 'Allow once'; }, ALLOW_DELAY_MS); }
-  card.append(el('div', { className: 'actions' }, block, allow));
-  applyConfirmation(card, p.id);
-  setTimeout(() => block.focus(), 0);
+    const host = hostOf(x.cause.page);
+    reasons.append(el('li', {}, x.cause.weak ? `Text on ${host} is addressed to AI agents and gives orders, though it doesn’t name this control:` : `Text on ${host} told the agent to do this:`,
+      el('figure', { className: 'page-text' }, el('figcaption', { textContent: 'Quoted from the page' }), el('blockquote', { textContent: x.cause.text }))));
+  } else if (!x.requested) reasons.append(el('li', { textContent: 'The agent had read page content, but no single passage clearly told it to do this.' }));
+  if (x.risk?.why) reasons.append(el('li', { textContent: sentence(x.risk.why) }));
+  if (x.emails?.length) reasons.append(el('li', { textContent: `Involves ${x.emails.join(', ')}.` }));
+  card.append(reasons);
+
+  card.append(el('p', { className: 'check', id: `conf-${p.id}` }));
+  const high = tier === 'high';
+  const hint = el('p', { className: 'hint' }, el('span', { className: 'hint-main', textContent: high ? 'Press and hold “Yes” to confirm.' : '' }), ' ', el('span', { className: 'hint-time' }));
+  countdown(hint.querySelector('.hint-time'), p);
+  if (high) { allow.classList.add('hold'); allow.append(el('span', { className: 'fill' }), el('span', { className: 'label', textContent: 'Yes, I asked for this' })); allow.setAttribute('aria-describedby', `hint-${p.id}`); }
+  else { allow.textContent = 'Yes, I asked for this'; allow.onclick = () => decide(p.id, true); }
+  hint.id = `hint-${p.id}`;
+  card.append(el('div', { className: 'actions' }, block, allow), hint);
+  if (high) holdButton(allow, HOLD_MS, () => decide(p.id, true));
+  setConfirmation(card.querySelector('.check'), p.id);
+  setTimeout(() => block.focus({ preventScroll: true }), 0);
   return card;
 }
 
-function applyConfirmation(root, id) {
-  const c = confirmed.get(id); const tag = root.querySelector?.(`#conf-${id}`); if (!tag || !c) return;
-  tag.className = 'tag ' + (c.verdict === 'confirmed' ? 'confirmed' : 'unconfirmed');
-  tag.textContent = c.verdict === 'confirmed' ? 'confirmed by re-run' : c.verdict === 'skipped' ? 're-run check off' : 'could not confirm';
+// "If you don't decide, Helm blocks it in 4:58." Recorded replays have no live clock, so they say it without a time.
+function countdown(span, p) {
+  if (meta.mode === 'replay' || !p.timeoutMs) { span.textContent = 'If you don’t decide, Helm blocks it.'; return; }
+  let seen = false;   // stop ticking once the card has been shown and then removed
+  const draw = () => {
+    if (span.isConnected) seen = true; else if (seen) { clearInterval(timer); return; }
+    const left = Math.max(0, Math.round((p.t + p.timeoutMs - Date.now()) / 1000));
+    span.textContent = `If you don’t decide, Helm blocks it in ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}.`;
+  };
+  const timer = setInterval(draw, 1000); draw();
+}
+
+const CHECK_TEXT = {
+  pending: 'Checking by re-run…',
+  confirmed: 'Confirmed by re-run: without this text, the agent did not try this action.',
+  distributed: 'Re-run check: several passages share the push, and none alone explains it.',
+  'not-from-page-text': 'Re-run check: the agent still tried it without any page text, so the page may not be the cause.',
+  'not-reproducible': 'Re-run check: the agent did not repeat the action, so this could not be tested.',
+  skipped: 'Re-run check is off.',
+};
+function setConfirmation(box, id) {
+  if (!box) return; const c = confirmed.get(id);
+  const state = c ? (c.verdict === 'confirmed' ? 'confirmed' : c.verdict === 'skipped' ? 'skipped' : 'unconfirmed') : (meta.mode === 'replay' ? 'none' : 'pending');
+  box.dataset.state = state; box.textContent = ''; box.hidden = state === 'none';
+  if (state === 'none') return;
+  box.append(icon(state === 'pending' ? 'ico-wait' : state === 'confirmed' ? 'ico-check' : 'ico-note'), el('span', { textContent: CHECK_TEXT[c?.verdict ?? 'pending'] ?? 'Re-run check: inconclusive.' }));
 }
 
 async function decide(id, allow) {
   document.querySelectorAll(`#card-${id} button`).forEach((b) => (b.disabled = true));
   const r = await post('/api/decide', { id, allow });
-  if (!r.ok) document.querySelector(`#card-${id}`)?.append(el('div', { className: 'why', textContent: 'That decision was no longer pending.' }));
+  if (!r.ok) document.querySelector(`#card-${id}`)?.append(el('p', { className: 'hint', textContent: 'That decision was no longer pending.' }));
 }
 
 function renderPending() {
-  const box = $('pending');
+  const box = $('pending'); const A = cond() === 'A';
+  box.parentElement.hidden = A;
   const pending = events.filter((e) => e.type === 'gate.pending' && !decided.has(e.id));
   const have = new Set([...box.querySelectorAll('.card')].map((c) => c.id));
-  for (const p of pending) if (!have.has(`card-${p.id}`)) { if (box.classList.contains('empty')) { box.textContent = ''; box.classList.remove('empty'); } box.append(renderCard(p)); }
+  for (const p of pending) if (!have.has(`card-${p.id}`)) { if (!box.querySelector('.card')) { box.className = ''; box.textContent = ''; } box.append(renderCard(p)); $('announce').textContent = `Decision needed: ${p.what}`; }
   for (const c of box.querySelectorAll('.card')) if (!pending.some((p) => `card-${p.id}` === c.id)) c.remove();
-  if (!box.querySelector('.card')) { box.className = 'empty'; box.textContent = cond() === 'A' ? '' : 'Nothing is waiting on you.'; }
-  $('h-pending').hidden = cond() === 'A';
+  if (!box.querySelector('.card')) {
+    box.className = 'empty'; box.textContent = '';
+    if (!A) box.append(icon('ico-check'), el('span', { className: 'none', textContent: events.length ? 'Nothing needs your decision. Helm stops here if the agent does something you didn’t ask for.' : 'Nothing needs your decision yet.' }));
+  }
+  setTask();
 }
 
-function line(e) {
-  const raw = cond() !== 'C'; const A = cond() === 'A';
-  switch (e.type) {
-    case 'task.start': return ['', 'Task started'];
-    case 'navigate': return ['', `Opened ${e.url}`];
-    case 'model.turn': return e.tools?.length ? [raw ? 'cmd' : 'quiet', raw ? `$ ${e.tools.join('\n$ ')}` : `Agent decided: ${e.tools.join('; ')}`] : (e.say ? ['', `Agent: ${e.say}`] : null);
-    case 'agent.say': return ['', `Agent: ${e.text}`];
-    case 'agent.command': return A ? ['cmd', `$ ${e.command}`] : null;
-    case 'agent.stopped': return ['blocked', 'You stopped the agent'];
-    case 'model.error': return ['blocked', `Model request failed${e.status ? ` (HTTP ${e.status})` : ''}${e.error ? `: ${e.error}` : ''}`];
-    case 'gate.allowed': return raw ? null : ['quiet', `Allowed without asking: ${e.what} (${e.reason})`];
-    case 'gate.pending': return raw ? null : ['blocked', `Held for your decision: ${e.what}`];
-    case 'gate.decided': return [e.allow ? '' : 'blocked', `${e.allow ? (raw ? 'You approved it' : 'You allowed') : e.by === 'timeout' ? 'Blocked (no decision in time)' : (raw ? 'You denied it' : 'Blocked')}${e.reflexive && !raw ? ' - answered in under a second' : ''}`];
-    case 'gate.repeat-blocked': return ['blocked', `Agent tried again after you declined: ${e.what} (blocked without asking)`];
-    case 'action': return raw ? null : ['', `Browser did: ${e.what}`];
-    case 'task.end': return ['', 'Task finished'];
-    default: return null;
-  }
+// ---- the course
+// Each entry: { kind, t, parts, sub, key }. Kinds: milestone, step, thought, cmd, say, held, blocked, rejoin, stopped, error, output.
+function buildRows() {
+  const raw = cond() !== 'C'; const A = cond() === 'A'; const rows = []; const open = new Set(); let allowed = null;
+  const flush = () => { if (allowed) { rows.push({ kind: 'step', t: allowed.t, parts: whatNodes(allowed.what), sub: sentence(allowed.reason) }); allowed = null; } };
+  events.forEach((e, i) => {
+    if (e.type !== 'action') flush();
+    const add = (r) => rows.push({ key: i, t: e.t, lane: open.size > 0, ...r });
+    switch (e.type) {
+      case 'task.start': add({ kind: 'milestone', parts: ['Task started'] }); break;
+      case 'navigate': add({ kind: 'step', parts: [el('span', { className: 'verb', textContent: 'Opened ' }), el('span', { className: 'target', textContent: hostOf(e.url) })] }); break;
+      case 'model.turn':
+        if (e.tools?.length) add(raw ? { kind: 'cmd', parts: [e.tools.map((c) => `$ ${c}`).join('\n')] } : { kind: 'thought', parts: [e.tools.join('\n')] });
+        else if (e.say) add({ kind: 'say', parts: [`Agent: ${e.say}`] });
+        break;
+      case 'agent.say': add({ kind: 'say', parts: [`Agent: ${e.text}`] }); break;
+      case 'agent.command': if (A) add({ kind: 'cmd', parts: [`$ ${e.command}`] }); break;
+      case 'agent.output': add({ kind: 'output', text: e.text }); break;
+      case 'agent.stopped': add({ kind: 'stopped', parts: [el('span', { className: 'state', textContent: 'You stopped the agent' })] }); break;
+      case 'model.error': add({ kind: 'error', parts: [`Model request failed${e.status ? ` (HTTP ${e.status})` : ''}${e.error ? `: ${e.error}` : ''}`] }); break;
+      case 'gate.allowed': if (!raw) allowed = { t: e.t, what: e.what, reason: e.reason }; break;
+      case 'action':
+        if (raw) break;
+        if (allowed && allowed.what === e.what) { rows.push({ kind: 'step', t: e.t, parts: whatNodes(e.what), sub: sentence(allowed.reason), lane: open.size > 0 }); allowed = null; }
+        else { flush(); add({ kind: 'step', parts: whatNodes(e.what) }); }
+        break;
+      case 'gate.pending': if (!raw) { open.add(e.id); rows.push({ kind: 'held', t: e.t, key: i, parts: [el('span', { className: 'state', textContent: 'Held for your decision ' }), ...whatNodes(e.what)] }); } break;
+      case 'gate.decided': {
+        open.delete(e.id);
+        const note = e.reflexive && !raw ? ' (answered in under a second)' : '';
+        if (e.allow) add({ kind: raw ? 'step' : 'rejoin', lane: false, parts: [raw ? 'You approved it' : `You allowed it${note}`] });
+        else add({ kind: raw ? 'step' : 'blocked', lane: false, parts: [el('span', { className: 'state', textContent: raw ? 'You denied it' : e.by === 'timeout' ? 'Blocked: no decision in time' : 'Blocked' }), note] });
+        break;
+      }
+      case 'gate.repeat-blocked': add({ kind: 'blocked', parts: [el('span', { className: 'state', textContent: 'Blocked without asking ' }), `The agent tried again after you declined: ${e.what}`] }); break;
+      case 'task.end': add({ kind: 'milestone', parts: ['Task finished'] }); break;
+    }
+  });
+  flush();
+  return rows;
 }
 function renderTimeline() {
   const ol = $('timeline'); ol.textContent = '';
-  for (const e of events) {
-    if (e.type === 'agent.output') {   // what the command printed, as an agent transcript would show it (collapsed)
-      const lines = e.text.split('\n').length;
-      ol.append(el('li', {}, el('time', { textContent: clock(e.t) }), el('details', {}, el('summary', { textContent: `output (${lines} lines)` }), el('pre', { className: 'out', textContent: e.text }))));
-      continue;
-    }
-    const l = line(e); if (!l) continue; ol.append(el('li', {}, el('time', { textContent: clock(e.t) }), el('span', { className: l[0], textContent: l[1] })));
+  const rows = buildRows();
+  for (const r of rows) {
+    const li = el('li', { className: [r.kind, r.lane ? 'lane' : ''].filter(Boolean).join(' ') });
+    li.append(el('time', { textContent: clock(r.t) }), el('span', { className: 'track' }));
+    li.append(el('span', { className: 'node', ariaHidden: 'true' }));
+    if (['held', 'blocked', 'stopped', 'rejoin'].includes(r.kind)) li.append(el('span', { className: 'branch', ariaHidden: 'true' }));
+    const body = el('div', { className: 'body' });
+    if (r.kind === 'output') {
+      const lines = r.text.split('\n').length; const d = el('details', { className: 'out-row' }, el('summary', { textContent: `Output (${lines} line${lines === 1 ? '' : 's'})` }), el('pre', { className: 'out', textContent: r.text }));
+      body.append(d); li.className = 'output';
+    } else if (r.kind === 'thought') {
+      const d = el('details', {}, el('summary', { textContent: r.parts[0] }));   // collapsed: one truncated line; open: every command, wrapped
+      const k = `d${r.key}`; d.open = openKeys.has(k); d.ontoggle = () => (d.open ? openKeys.add(k) : openKeys.delete(k)); body.append(d);
+    } else { body.append(...r.parts); if (r.sub) body.append(el('span', { className: 'sub', textContent: r.sub })); }
+    li.append(body); ol.append(li);
+  }
+  const empty = $('timeline-empty'); empty.textContent = '';
+  if (!rows.length) {
+    empty.append(el('p', { textContent: meta.mode === 'replay' ? 'The recorded session begins when you press Start.' : 'Waiting for the agent. Its steps appear here as it works.' }));
+    if (meta.mode !== 'replay') empty.append(el('code', { textContent: 'node src/cli.mjs run -- <your agent command>' }));
   }
 }
 
@@ -127,7 +264,7 @@ function showIntro(e) {
   $('intro-block').textContent = b ? (b.n === 0 ? 'Practice (not scored)' : `Block ${b.n} of ${b.of}`) : '';
   $('intro-title').textContent = e.practice ? 'Practice task' : 'The next task';
   $('intro-task').textContent = e.userTask;
-  $('intro-help').textContent = firstOfBlock ? (e.help ?? ({ A: 'Watch what the agent does. If it starts to do something the person did not ask for, press Stop.', B: 'The agent will ask before each command. Approve or deny each one.', C: 'Helm will stay quiet unless something needs your decision.' })[meta.condition] ?? '') : '';
+  $('intro-help').textContent = firstOfBlock ? (e.help ?? ({ A: 'Watch what the agent does. If it starts to do something the person did not ask for, press Stop.', B: 'The agent will ask before each command. Approve or deny each one.', C: 'Helm will stay quiet unless something needs your decision.' }[cond()] ?? '')) : '';
   $('intro').showModal();
 }
 $('intro-start').onclick = async () => { await post('/api/start'); $('intro').close(); };
@@ -135,28 +272,27 @@ $('consent-ok').onchange = () => { $('consent-go').disabled = !$('consent-ok').c
 $('consent-go').onclick = async () => { await post('/api/consent', { agree: true }); $('consent').close(); };
 function showTlx() {
   const box = $('tlx-items'); box.textContent = '';
-  for (const [k, name, hint] of TLX) box.append(el('div', { className: 'tlxrow' }, el('label', { htmlFor: `tlx-${k}`, textContent: name }), el('small', { textContent: hint }), Object.assign(el('input', { type: 'range', min: 0, max: 100, value: 50, id: `tlx-${k}`, name: k }), {})));
+  for (const [k, name, hint] of TLX) box.append(el('div', { className: 'tlxrow' }, el('label', { htmlFor: `tlx-${k}`, textContent: name }), el('small', { textContent: hint }), el('input', { type: 'range', min: 0, max: 100, value: 50, id: `tlx-${k}`, name: k })));
   $('tlx').showModal();
 }
 $('tlx-form').onsubmit = async (ev) => {
   ev.preventDefault(); const a = {}; for (const [k] of TLX) a[k] = Number($(`tlx-${k}`).value);
   await post('/api/tlx', a); $('tlx').close();
 };
-function setTask() {
-  const t = $('task'); if (meta.mode !== 'replay' || !meta.scenario) { t.hidden = true; return; }
-  t.hidden = false; t.textContent = ''; t.append(el('b', { textContent: 'The agent was asked: ' }), meta.scenario.userTask);
-}
 
+// ---- receipt
 async function showReceipt() {
   const r = await (await fetch('/api/receipt')).json(); const b = $('receipt-body'); b.textContent = '';
-  const ul = (items, empty) => { const u = el('ul'); if (!items.length) u.append(el('li', { textContent: empty })); for (const i of items) u.append(el('li', { textContent: i })); return u; };
-  b.append(el('h3', { textContent: 'Receipt' }),
-    el('p', { textContent: `${r.modelTurns} agent steps${r.modelErrors ? ` (${r.modelErrors} model requests failed)` : ''}. ${r.held.length} held for you, ${r.blocked} blocked.` }),
-    el('h4', { textContent: 'Blocked or held' }), ul(r.held.map((h) => `${h.what} - ${h.outcome}${h.cause ? ` (page text: "${h.cause.slice(0, 120)}")` : ''}`), 'Nothing was held.'),
-    el('h4', { textContent: 'Done in the browser' }), ul(r.actionsExecuted.map((a) => a.what), 'No browser actions recorded.'),
-    el('h4', { textContent: 'Allowed without asking' }), ul(r.allowedWithoutAsking.map((a) => `${a.what} (${a.reason})`), 'None.'),
-    el('h4', { textContent: 'Pages visited' }), ul(r.pagesVisited, 'None recorded.'),
-    el('p', { className: 'why', textContent: `Not tracked in this version: ${r.notTracked.join(', ')}.` }));
+  const list = (items, empty) => { items = items.filter(Boolean); const u = el('ul'); if (!items.length) u.append(el('li', { textContent: empty })); for (const i of items) u.append(el('li', {}, ...(Array.isArray(i) ? i : [i]))); return u; };
+  const num = (n) => el('b', { textContent: String(n) });
+  const heldItems = r.held.map((h) => { const li = el('span', {}, ...whatNodes(h.what), ` – ${h.outcome}`); if (h.cause) li.append(el('span', { className: 'receipt-cause', textContent: `Page text: “${h.cause.slice(0, 120)}${h.cause.length > 120 ? '…' : ''}”` })); return li; });
+  b.append(el('h3', { id: 'receipt-h', textContent: 'Run receipt' }),
+    el('p', { className: 'receipt-summary' }, num(r.modelTurns), ` agent step${r.modelTurns === 1 ? '' : 's'}${r.modelErrors ? ` (${r.modelErrors} model request${r.modelErrors === 1 ? '' : 's'} failed)` : ''}. `, num(r.held.length), ' held for you, ', num(r.blocked), ' blocked.'),
+    el('h4', { textContent: 'Blocked or held' }), list(heldItems, 'Nothing was held.'),
+    el('h4', { textContent: 'Done in the browser' }), list(r.actionsExecuted.map((a) => whatNodes(a.what)), 'No browser actions recorded.'),
+    el('h4', { textContent: 'Allowed without asking' }), list(r.allowedWithoutAsking.map((a) => [...whatNodes(a.what), ` – ${String(a.reason ?? '').toLowerCase()}`]), 'None.'),
+    el('h4', { textContent: 'Pages visited' }), list(r.pagesVisited, 'None recorded.'),
+    el('p', { className: 'why-note', textContent: `Not tracked in this version: ${r.notTracked.join(', ')}.` }));
   $('receipt').showModal();
 }
 $('receipt-btn').onclick = showReceipt;
@@ -167,18 +303,21 @@ async function onEvent(e) {
   if (e.type === 'study.declined') $('status-text').textContent = 'Session ended.';
   if (e.type === 'study.debrief') { $('debrief-text').textContent = e.text; $('debrief').showModal(); }
   if (e.type === 'study.ready') { await refreshMeta(); showIntro(e); }
-  if (e.type === 'task.start') { studyDone = false; events = []; confirmed = new Map(); decided = new Set(); closeStopWindow(); $('pending').textContent = ''; }
+  if (e.type === 'task.start') { studyDone = false; events = []; confirmed = new Map(); decided = new Set(); openKeys.clear(); closeStopWindow(); $('pending').textContent = ''; }
   events.push(e);
   if (e.type === 'gate.decided') decided.add(e.id);
-  if (e.type === 'gate.confirmed') { confirmed.set(e.id, e); applyConfirmation(document, e.id); }
+  if (e.type === 'gate.confirmed') { confirmed.set(e.id, e); setConfirmation(document.getElementById(`conf-${e.id}`), e.id); }
   if (e.type === 'stop.window') openStopWindow(e);
   if (e.type === 'agent.stopped' || e.type === 'task.end') closeStopWindow();
   if (e.type === 'study.questionnaire') showTlx();
   if (e.type === 'study.done') studyDone = true;
+  if (e.type === 'model.turn') setTask();
   setStatus(); renderPending(); renderTimeline();
 }
 await refreshMeta();
+setStatus(); renderPending(); renderTimeline();
 const es = new EventSource('/api/events');
 let chain = Promise.resolve();
+es.onopen = () => { connection = 'open'; setStatus(); };
 es.onmessage = (m) => { const ev = JSON.parse(m.data); chain = chain.then(() => onEvent(ev)); };
-es.onerror = () => { $('status-text').textContent = 'Connection lost - reload to reconnect'; };
+es.onerror = () => { connection = 'lost'; setStatus(); };

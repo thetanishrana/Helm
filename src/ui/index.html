@@ -3,38 +3,57 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
 <meta name="helm-token" content="__TOKEN__">
 <title>Helm</title>
+<link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='none' stroke='%23586b7c' stroke-width='2'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="/ui/style.css">
 </head>
 <body>
-<header id="status" class="ok" role="status" aria-live="polite">
-  <span class="dot" aria-hidden="true"></span>
-  <span id="status-text">Connecting…</span>
-  <span class="spacer"></span>
-  <button id="receipt-btn" class="quiet">Receipt</button>
+<a class="skip" href="#main">Skip to content</a>
+<header id="status" class="idle">
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><path d="M12 2.5v3.5M12 18v3.5M2.5 12H6M18 12h3.5M5.3 5.3l2.5 2.5M16.2 16.2l2.5 2.5M18.7 5.3l-2.5 2.5M7.8 16.2l-2.5 2.5"/></svg>
+    <span>Helm</span>
+  </div>
+  <p class="statusline" role="status" aria-live="polite"><span class="dot" aria-hidden="true"></span><span id="status-text">Connecting…</span><span id="status-count" class="count" hidden></span></p>
+  <button id="receipt-btn" class="quiet" type="button" hidden>Receipt</button>
 </header>
-<div id="task" hidden></div>
 <div id="stopbar" hidden>
   <div><strong>The agent is about to run:</strong> <code id="stop-cmd"></code></div>
-  <div class="stoprow"><button id="stop-btn" class="block">Stop the agent</button><span id="stop-count"></span></div>
+  <div class="stoprow"><button id="stop-btn" class="block" type="button">Stop the agent</button><span id="stop-count"></span></div>
   <div id="stop-progress"><div id="stop-fill"></div></div>
 </div>
-<main>
-  <section aria-labelledby="h-pending">
-    <h2 id="h-pending">Needs your decision</h2>
-    <div id="pending" class="empty">Nothing is waiting on you.</div>
-  </section>
-  <section aria-labelledby="h-timeline">
-    <h2 id="h-timeline">What the agent did</h2>
-    <ol id="timeline"></ol>
-  </section>
+<p id="announce" class="sr-only" role="alert" aria-live="assertive"></p>
+<main id="main">
+  <div class="layout">
+    <div class="rail">
+      <section id="task" aria-labelledby="h-task" hidden>
+        <h2 id="h-task">You asked</h2>
+        <p class="request" id="task-text"></p>
+      </section>
+      <section aria-labelledby="h-pending">
+        <h2 id="h-pending">Decisions</h2>
+        <div id="pending" class="empty"></div>
+      </section>
+    </div>
+    <section class="course" aria-labelledby="h-timeline">
+      <h2 id="h-timeline">The course</h2>
+      <ol id="timeline"></ol>
+      <div id="timeline-empty" class="empty-course"></div>
+    </section>
+  </div>
 </main>
-<dialog id="consent"><article><pre id="consent-text"></pre><label class="check"><input type="checkbox" id="consent-ok"> I have read this and I agree to take part.</label></article><button id="consent-go" class="block" disabled>Continue</button></dialog>
-<dialog id="debrief"><article><pre id="debrief-text"></pre></article><form method="dialog"><button>Close</button></form></dialog>
-<dialog id="intro"><article><p id="intro-block" class="why"></p><h3 id="intro-title"></h3><p>A person asked an AI agent to do this:</p><blockquote id="intro-task"></blockquote><p id="intro-help"></p></article><button id="intro-start" class="block">Start</button></dialog>
-<dialog id="tlx"><form id="tlx-form"><h3>How was that?</h3><p class="why">Drag each slider. Answer about the task you just watched.</p><div id="tlx-items"></div><button class="block" type="submit">Submit</button></form></dialog>
-<dialog id="receipt"><article id="receipt-body"></article><form method="dialog"><button>Close</button></form></dialog>
+
+<template id="ico-check"><svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.2"/><path d="M5.2 8.2l2 2 3.6-4"/></svg></template>
+<template id="ico-wait"><svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M8 1.8a6.2 6.2 0 1 0 6.2 6.2"/></svg></template>
+<template id="ico-note"><svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.2"/><path d="M8 7.4v3.4M8 5.2v.1"/></svg></template>
+
+<dialog id="consent" aria-labelledby="consent-h"><article><h3 id="consent-h">Before we start</h3><pre id="consent-text"></pre><label class="check-row"><input type="checkbox" id="consent-ok"><span>I have read this and I agree to take part.</span></label></article><button id="consent-go" class="block" type="button" disabled>Continue</button></dialog>
+<dialog id="debrief" aria-labelledby="debrief-h"><article><h3 id="debrief-h">Thank you</h3><pre id="debrief-text"></pre></article><form method="dialog"><button class="block">Close</button></form></dialog>
+<dialog id="intro" aria-labelledby="intro-title"><article><p id="intro-block" class="why"></p><h3 id="intro-title"></h3><p>A person asked an AI agent to do this:</p><blockquote id="intro-task"></blockquote><p id="intro-help"></p></article><button id="intro-start" class="block" type="button">Start</button></dialog>
+<dialog id="tlx" aria-labelledby="tlx-h"><form id="tlx-form"><h3 id="tlx-h">How was that?</h3><p class="why">Drag each slider. Answer about the task you just watched.</p><div id="tlx-items"></div><button class="block" type="submit">Submit</button></form></dialog>
+<dialog id="receipt" aria-labelledby="receipt-h"><article id="receipt-body"></article><form method="dialog"><button class="block">Close</button></form></dialog>
 <script type="module" src="/ui/app.js"></script>
 </body>
 </html>

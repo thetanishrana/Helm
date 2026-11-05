@@ -6,7 +6,9 @@
   "scripts": {
     "test": "node --test test/*.test.mjs",
     "helm": "node src/cli.mjs",
-    "replay": "node src/replay/cli.mjs"
+    "replay": "node src/replay/cli.mjs",
+    "ui:preview": "node scripts/ui-preview.mjs",
+    "ui:check": "node scripts/ui-check.mjs"
   },
   "dependencies": {
     "ws": "8.18.3"

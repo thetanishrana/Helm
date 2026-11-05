@@ -49,6 +49,7 @@ export async function startSession({ store, approvals, tapPort = 8787, cdpPort =
         index: turns.findIndex((t) => t.startedAt === rec.reqStartMs), untrustedChunks: rec.req.toolResults.length,
         tools: (rec.resp?.toolUses || []).map((u) => short(u.input?.command || JSON.stringify(u.input))),
         say: short(rec.resp?.text), ms: rec.totalMs,
+        request: (rec.req.userPrompts?.[0] ?? '').replace(/\s+/g, ' ').slice(0, 600),   // what the person asked, so the interface can set it next to what the agent wants
       });
     },
   });
