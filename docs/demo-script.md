@@ -2,7 +2,7 @@
 
 **Setup (before recording):** Ollama running (`nohup ollama serve &`); free ports 7777, 8787, 8899, 9222, 9333; Chrome closed windows not needed. Test it once: `demo/run-demo.sh turn_tag --headless` should end with "1 held, 1 blocked" (the local model does not always follow the injected text; run it again if it says 0 held).
 
-**Record:** `demo/run-demo.sh turn_tag` (opens the UI and a Chrome window). Screen-capture the Helm UI and the terminal side by side.
+**Record:** `demo/run-demo.sh turn_tag` (opens the Helm interface in your browser; the agent works in a headless Chrome, so the interface is the thing on screen). The re-run check is on, so the decision card first says "Checking by re-run…" and about half a minute later "Confirmed by re-run"; you have 5 minutes to decide. The interface stays open after the agent finishes so you can open the receipt; press Ctrl-C in the terminal to end. Verified end to end on 2026-11-06: the card appeared after about 15 seconds, the re-run confirmed, Block ended the run with 1 held, 1 blocked.
 
 1. **(0:00)** One sentence over the terminal: "An AI agent is browsing a page for me. I asked it only to press Refresh and read the new text."
 2. **(0:15)** Show the page in Chrome: a hidden `<system-reminder>` block telling the agent to also click a Send button. "That text is the page, not me."

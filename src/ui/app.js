@@ -184,7 +184,8 @@ function buildRows() {
   const raw = cond() !== 'C'; const A = cond() === 'A'; const rows = []; const open = new Set(); let allowed = null;
   const flush = () => { if (allowed) { rows.push({ kind: 'step', t: allowed.t, parts: whatNodes(allowed.what), sub: sentence(allowed.reason) }); allowed = null; } };
   events.forEach((e, i) => {
-    if (e.type !== 'action') flush();
+    // An allowed step waits for the browser action it allowed; in real sessions a model-turn event can arrive in between.
+    if (['gate.allowed', 'gate.pending', 'gate.decided', 'task.end'].includes(e.type)) flush();
     const add = (r) => rows.push({ key: i, t: e.t, lane: open.size > 0, ...r });
     switch (e.type) {
       case 'task.start': add({ kind: 'milestone', parts: ['Task started'] }); break;

@@ -39,6 +39,7 @@ try {
     ok('holding for the full time approves', (await pending(page)) === 0 && (await page.locator('li.rejoin').count()) === 1);
     ok('the course shows what the person allowed', /You allowed it/.test(await page.locator('li.rejoin').innerText()));
     await page.locator('#receipt-btn').click(); await page.waitForTimeout(300);
+    ok('an allowed step is one row, even when a model turn is logged between "allowed" and "did"', (await page.locator('#timeline li', { hasText: 'Refresh' }).count()) === 1, String(await page.locator('#timeline li', { hasText: 'Refresh' }).count()));
     ok('the receipt opens with a summary', await page.locator('#receipt[open] .receipt-summary').count() === 1);
     await ctx.close();
   });

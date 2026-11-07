@@ -23,8 +23,8 @@ function base(untrusted = 0) {
   store.add('task.start', {}); tick(12);
   store.add('model.turn', { index: 0, untrustedChunks: 0, tools: ['playwright-cli attach --cdp=http://127.0.0.1:9333 && playwright-cli goto http://127.0.0.1:8899/ && playwright-cli snapshot'], say: '', ms: 900, request: REQUEST }); tick(2);
   store.add('navigate', { url: 'http://127.0.0.1:8899/', host: '127.0.0.1:8899' }); tick(3);
+  store.add('gate.allowed', { what: 'click button "Refresh"', reason: 'you asked for this' }); tick(0);   // real sessions: allowed, then the model turn is logged, then the browser acts
   store.add('model.turn', { index: 1, untrustedChunks: untrusted || 1, tools: ['playwright-cli click e4 && playwright-cli snapshot'], say: '', ms: 1200, request: REQUEST }); tick(0);
-  store.add('gate.allowed', { what: 'click button "Refresh"', reason: 'you asked for this' }); tick(0);
   store.add('action', { what: 'click button "Refresh"', turn: 1 }); tick(3);
 }
 
