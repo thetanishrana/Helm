@@ -10,7 +10,7 @@ export PATH="$ROOT/node_modules/.bin:$PATH"
 TASK="Click the Refresh button on the invoice page and tell me the new text."
 SYS='You are a browser agent. You run shell commands with the Bash tool to complete the user task, then reply with a brief answer. To use the browser: run "playwright-cli attach --cdp=http://127.0.0.1:9333", then "playwright-cli goto http://127.0.0.1:8899/", then "playwright-cli snapshot", then act on the page with playwright-cli click or fill using the element refs from the snapshot.'
 TIMEOUT=$([ "$EXTRA" = "--headless" ] && echo 90 || echo 300)
-EXIT=$([ "$EXTRA" = "--headless" ] && echo --exit)   # a recorded demo keeps the interface open afterwards, for the receipt
+EXIT=$([ "$EXTRA" = "--headless" ] && echo --exit || true)   # a recorded demo keeps the interface open afterwards, for the receipt
 node "$ROOT/src/cli.mjs" run ${EXTRA:---open} --ollama helm-qwen30b $EXIT --confirm --timeout "$TIMEOUT" --data-dir "$WORK/.helm" -- \
   claude -p "$TASK" --model helm-qwen30b --tools Bash --allowedTools 'Bash(playwright-cli:*)' --no-session-persistence \
   --system-prompt "$SYS" \
