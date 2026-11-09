@@ -5,3 +5,4 @@ node_modules/
 study-data/
 eval-results/
 .playwright-cli/
+demo/out/
