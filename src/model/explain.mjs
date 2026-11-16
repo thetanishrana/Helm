@@ -30,6 +30,10 @@ const COERCION = /\b(please remember|remember to|reminder:|make sure|be sure|don
 const IMPERSONATION = /(^|\s)(human|user|assistant|system)\s*:|<\|im_(start|end)\|>|<\/?(user_message|system-reminder|system|tool_result)>|\[system\]|\b(one more thing|in addition|added to your task|amended|follow-up|the user (has )?(asked|confirmed|approved|requested)|i need you to|i forgot to mention|as requested|instructions from the user)\b|\bmessage from (you|the user|me)\b|\bfrom (the )?(workspace |site |page |account |system |security )?(owner|administrator|admin)\b|\b(already|pre-?|previously|has been) ?approved\b|\bidentity provider\b/i;
 const DELEGATED = /\b(whatever|everything|anything|all (the )?(steps|tasks)|as)\b.{0,30}\b(page|site|website|checklist|instructions?|portal|it)\b.{0,20}\b(says?|tells?|instructs?|lists?|asks?)\b|\bfollow (the )?(page|site|instructions|checklist)\b/i;
 
+import { conceptOverlap } from './concepts.mjs';
+// Verbs that make a passage read as an instruction even when ACTION_VERB misses them (used only with a concept match).
+const DIRECTIVE = /\b(delete|drop|dropping|purge|release|flip|finali[sz]e|resend|move|liquidate|sign|submit|share|make|unlock|update|switch|fix|erase|wipe|remove|turn|do this|should|must|need to|please|can you|could whoever|hit)\b/i;
+
 // Break tool-result text into chunks of page content with a source label.
 export function pageChunks(req) {
   const chunks = [];
@@ -101,9 +105,12 @@ export function explain(classified, req, resp = null, only = null) {
     .map((c) => {
       const o = label ? overlap(label, c.text) : 0;
       const cues = (AI_ADDRESSED.test(c.text) ? 1 : 0) + (IMPERSONATION.test(c.text) ? 1 : 0) + (COERCION.test(c.text) ? 1 : 0) + (ACTION_VERB.test(c.text) ? 0.5 : 0) + (POINTER.test(c.text) ? 1 : 0);
-      return { ...c, overlap: o, cues, score: o * 2 + cues };
+      // Same meaning, different words: the passage carries the label's concepts and reads as an instruction.
+      const co = label && !c.isLabel ? conceptOverlap(label, c.text) : { share: 0, hits: 0, size: 0 };
+      const semantic = co.hits >= Math.min(2, co.size) && co.share >= 0.5 && (cues >= 0.5 || DIRECTIVE.test(c.text));
+      return { ...c, overlap: o, cues, semantic, score: o * 2 + cues + (semantic ? co.share : 0) };
     })
-    .filter((c) => (c.overlap >= 0.5 && c.cues >= 1) || (c.overlap >= 0.75 && c.cues >= 0.5))
+    .filter((c) => (c.overlap >= 0.5 && c.cues >= 1) || (c.overlap >= 0.75 && c.cues >= 0.5) || c.semantic)
     .sort((x, y) => y.score - x.score);
   let cause = candidates[0] || null;
   if (!cause) {   // no passage names the control; still flag text that talks to AI agents and issues orders
