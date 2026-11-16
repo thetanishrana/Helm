@@ -77,3 +77,6 @@ Built in `src/ui/` (vanilla JavaScript, no build step), served with a strict con
 - The floating-pill window, OS notifications, and rendering the page snapshot with the injected text outlined were in earlier notes and are not built.
 - The window is designed to sit beside the browser; it has not been fitted to a real narrow window on screen.
 - The status line could carry a "connection lost" action; it currently says to reload.
+
+## Finish pass (2026-11-16)
+The owner found the first rebuild too plain and clinical. CSS only (no markup or script changes, so behaviour and the checks are unchanged): a warm paper tone instead of cool white, brass as a second accent (brand tile, heading rules, header hairline), soft radial halos and a fine grain on the page, a translucent blurred header, layered shadows and a red top edge on the decision card, glowing track nodes, a rise-in for the card only (the course is rebuilt on every event, so it is not animated), and a deeper dark theme. Screenshots: `docs/assets/ui-2026-11-16-light.png`, `-dark.png`. Contrast was kept; `npm run ui:check` passes 21/21 (one expected dark-paper colour in the check was updated).

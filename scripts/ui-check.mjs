@@ -75,7 +75,7 @@ try {
     const { ctx, page } = await open(url, { colorScheme: 'dark', reducedMotion: 'reduce' });
     const anim = await page.evaluate(() => getComputedStyle(document.querySelector('header .dot')).animationName);
     ok('reduced motion stops the pulsing dot', anim === 'none', anim);
-    ok('dark mode applies', await page.evaluate(() => getComputedStyle(document.body).backgroundColor) === 'rgb(15, 26, 36)');
+    ok('dark mode applies', await page.evaluate(() => getComputedStyle(document.body).backgroundColor) === 'rgb(10, 18, 26)');
     const names = await page.evaluate(() => [...document.querySelectorAll('button')].filter((b) => !(b.textContent || '').trim() && !b.getAttribute('aria-label')).length);
     ok('every button has a visible name', names === 0);
     await ctx.close();
