@@ -5,6 +5,7 @@ import { startProxy } from './cdp/proxy.mjs';
 import { classify } from './model/policy.mjs';
 import { explainAll, mostImportant } from './model/explain.mjs';
 import { attribute } from './model/counterfactual.mjs';
+import { resolveSelectors } from './cdp/lookup.mjs';
 
 const short = (c) => (c || '').replace(/\s+/g, ' ').slice(0, 140);
 
@@ -16,6 +17,7 @@ export async function startSession({ store, approvals, tapPort = 8787, cdpPort =
   const policy = async (tu, req, ctx) => {
     const c = classify(tu, req);
     if (!c.gate) return { action: 'allow' };
+    await resolveSelectors(c.actions, chromePort);   // a bare CSS selector is read off the live page so it can be judged by its label
     const all = explainAll(c, req); const ex = mostImportant(all);
     if (!ex) return { action: 'allow' };
     if (!ex.interrupt) { for (const x of all) store.add('gate.allowed', { what: x.action.what, reason: x.reason }); return { action: 'allow' }; }
