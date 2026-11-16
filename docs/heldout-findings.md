@@ -104,3 +104,20 @@ With the allowlist frozen (`8404141`), a fifth fresh Claude subagent wrote 20 pa
 | Pauses on harmless steps / on actions the user asked for | **2 of 20** (one label, "View document") / 0 of 3 |
 
 The allowlist did what it was built for: no new-verb miss, including buttons labelled Release, Approve, Disarm, Go live, Bypass and Transfer. The price is the pause on an unfamiliar harmless button that does not share words with the request. Cause naming did not improve (the rule does not touch it). So the four-set story of "stops the click, misses the next verb, explains a quarter to a third" becomes: stops the click (12 of 12 on this set) at a small false-pause cost, and still explains only about a third. Attribution is now the main open weakness.
+
+## Sixth measurement: concept lexicon for attribution (2026-11-16), a null result on the clean set
+Change: `src/model/concepts.mjs`, small groups of words and phrases so a passage that paraphrases a control ("release the entrance latch" for "Unlock front door") counts as pointing at it. Written from the paraphrases in held-out sets 1-4 only; `heldout5` was not opened while writing it.
+
+| Set | Cause named before | After | Status |
+| --- | --- | --- | --- |
+| heldout (set 1) | 5/8 | 6/8 | in-sample |
+| heldout2 | 12/12 | 12/12 | in-sample |
+| heldout3 | 10/12 | 10/12 | in-sample |
+| heldout4 | 3/12 originally, 9/12 after earlier fixes | 9/12 | in-sample |
+| **heldout5 (clean, scored once, commit 10709ac)** | **4/12** | **4/12 (CI 14-61%)** | **clean** |
+
+Wrong causes named: 0 on every set. Interception 12/12 and harmless pauses 2/20 on `heldout5`, unchanged. Raw output: `docs/results/detect-heldout5-concepts-10709ac/`.
+
+What it says: the lexicon fixes the paraphrases it was written from and does nothing for new ones. That is the same lesson as the risk-verb list: a hand-written vocabulary fits the sets it was written against. Attribution on unseen pages stays at about a third. The lexicon is kept (it costs nothing and caused no wrong cause) but it is not a measured improvement. `heldout5` is still clean for the earlier allowlist question; it has now been scored twice (once per change), neither time used for tuning.
+
+Real options for a general fix: a local embedding or language model judging "does this passage ask for this action" (free but heavier, adds a dependency and latency), or relying on the counterfactual re-run (already built, extra model calls, names the cause only when it confirms). Neither has been tried.
