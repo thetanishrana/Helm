@@ -1,6 +1,16 @@
 # Several agents, several sites: how it fits the interface (design, not built)
 
-Status: a proposal written 2026-11-16. Nothing here is implemented. Helm today supervises one agent on one task.
+Status: **built 2026-11-16** (items 1-5 and 7 below; the Sites view, cross-agent taint and a shared-Chrome mode are not built). Written first as a proposal; this section records what exists.
+
+## What was built, and what it does not do
+- `node src/cli.mjs fleet <fleet.json>` (`src/fleet.mjs`): one process, one shared store, approvals and UI; each agent gets its own model tap (8787+i), browser tap (9333+i) and Chrome (9222+i). `demo/run-fleet.mjs` is a two-agent example (needs Ollama).
+- Every event an agent causes carries `agent`; `Store` derives status, pending decisions and receipts per agent and in total; `Approvals` remembers declines per agent. A run with no registered agents behaves exactly as before (all earlier tests and UI checks pass unchanged).
+- Interface (shown only when more than one agent is registered): a fleet strip with a chip per agent and its state; one decision queue across agents, each card naming its agent and that agent's request; one course lane per agent (click a chip to show just that lane); a receipt section per agent.
+- Tested: 6 store/approvals/fleet tests, 10 UI checks on a scripted three-agent preview (`npm run ui:preview -- fleet`), and two live runs of two local-model agents. Run 1: both agents ran, one decision held and blocked, per-agent state correct. Run 2: the local model wandered and never reached the browser step within five minutes, so it shows nothing about detection. Two agents on one local model are slow; this was not measured further.
+- **Agents must use separate browser sessions.** Two `playwright-cli` agents on the default session drove one shared browser in run 1, so their actions were credited to the wrong lane. Helm sees the Chrome each agent was given; it cannot tell agents apart inside one browser session. The fleet demo gives each agent `-s=<session>`.
+- Not built: the Sites view (item 6), cross-agent taint (item 8), several agents in one shared Chrome, attaching an already-running agent to a running hub, and any test with a person.
+
+Original proposal follows.
 
 ## What breaks with more than one agent
 - `Store` derives status, pending decisions and the receipt from "events since the last `task.start`": one task.

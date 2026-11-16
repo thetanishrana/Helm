@@ -33,8 +33,12 @@ export function startServer({ store, approvals, port = 7777, token = randomBytes
       return res.writeHead(200, { 'content-type': TYPES[ext], 'cache-control': long ? 'max-age=86400' : 'no-store', ...SECURITY_HEADERS }).end(readFileSync(new URL(url.pathname.slice(4), UI)));
     }
     if (req.method === 'GET' && url.pathname === '/favicon.ico') return res.writeHead(204).end();
-    if (req.method === 'GET' && url.pathname === '/api/state') return json(res, 200, { meta: store.meta, status: store.status(), pending: store.pending(), receipt: store.receipt() });
-    if (req.method === 'GET' && url.pathname === '/api/receipt') return json(res, 200, store.receipt());
+    if (req.method === 'GET' && url.pathname === '/api/state') return json(res, 200, { meta: store.meta, status: store.status(), agents: store.agents, pending: store.pending(), receipt: store.receipt(store.agents[0]?.id ?? null) });
+    if (req.method === 'GET' && url.pathname === '/api/receipt') {
+      const id = url.searchParams.get('agent');
+      if (id && !store.agents.some((x) => x.id === id)) return json(res, 404, { error: 'no such agent' });
+      return json(res, 200, id ? store.receipt(id) : store.agents.length ? { agents: store.agents.map((x) => ({ ...x, receipt: store.receipt(x.id) })) } : store.receipt());
+    }
     if (req.method === 'GET' && url.pathname === '/api/events') {
       res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-store', connection: 'keep-alive' });
       const send = (e) => res.write(`id: ${e.seq}\ndata: ${JSON.stringify(publicEvent(e))}\n\n`);

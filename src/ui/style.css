@@ -11,6 +11,7 @@
   --shadow-s: 0 1px 2px rgba(31,24,10,.08), 0 1px 1px rgba(31,24,10,.04);
   --shadow-l: 0 1px 0 rgba(255,255,255,.7) inset, 0 2px 4px rgba(31,24,10,.06), 0 18px 40px -14px rgba(31,24,10,.28);
   --grain: .06; --halo-a: 10%; --halo-b: 12%;
+  --hue-0: #2d6ea6; --hue-1: #7d4aa8; --hue-2: #1b7f68; --hue-3: #b25d17; --hue-4: #aa3b72; --hue-5: #5b7420;
   --course: #2d6ea6; --focus: #1b5fac;
   --off: #b3301b; --off-bg: #fbeae6;
   --caution: #7f4e00; --caution-bg: #fbf0d5; --caution-line: #c58a12;
@@ -30,6 +31,7 @@
     --shadow-s: 0 1px 2px rgba(0,0,0,.4);
     --shadow-l: 0 1px 0 rgba(255,255,255,.05) inset, 0 2px 4px rgba(0,0,0,.35), 0 22px 48px -14px rgba(0,0,0,.65);
     --grain: .09; --halo-a: 16%; --halo-b: 12%;
+    --hue-0: #74aee0; --hue-1: #b794dc; --hue-2: #5fc3a6; --hue-3: #e39a5c; --hue-4: #e18bb4; --hue-5: #a9c367;
     --course: #74aee0; --focus: #8db8f0;
     --off: #f28b76; --off-bg: #3a1e1b;
     --caution: #e8b650; --caution-bg: #33290f; --caution-line: #b98a2a;
@@ -215,6 +217,31 @@ dialog > button, dialog > form > button { margin-top: 16px; }
 .receipt-summary b { font-variant-numeric: tabular-nums; }
 .receipt-cause { display: block; margin-top: 2px; color: var(--muted); font-size: var(--t-s); }
 
-@media (prefers-reduced-motion: reduce) { .card { animation: none; } header.paused .dot, .check[data-state="pending"] .ico { animation: none; } button:active:not(:disabled) { transform: none; } }
+/* ---- several agents: fleet strip, chips, lanes */
+[data-hue="0"] { --hue: var(--hue-0); } [data-hue="1"] { --hue: var(--hue-1); } [data-hue="2"] { --hue: var(--hue-2); }
+[data-hue="3"] { --hue: var(--hue-3); } [data-hue="4"] { --hue: var(--hue-4); } [data-hue="5"] { --hue: var(--hue-5); }
+.chip-dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--hue, var(--muted)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--hue, var(--muted)) 22%, transparent); }
+.chip { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; padding: 2px 12px 2px 9px; border-radius: 99px; font-size: var(--t-s); font-weight: 700; background: color-mix(in srgb, var(--hue, var(--muted)) 11%, var(--surface)); border: 1px solid color-mix(in srgb, var(--hue, var(--muted)) 38%, transparent); }
+.chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fleet { position: sticky; top: 56px; z-index: 4; display: flex; gap: 8px; padding: 10px 24px; overflow-x: auto; background: color-mix(in srgb, var(--paper) 72%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-bottom: 1px solid var(--rule); }
+.fleet-item { flex: none; display: inline-flex; align-items: center; gap: 9px; min-height: 38px; padding: 4px 14px 4px 11px; border-radius: 99px; border: 1px solid var(--rule); background: var(--surface); box-shadow: var(--shadow-s); }
+.fleet-item.on { border-color: var(--hue, var(--ink)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--hue, var(--ink)) 20%, transparent); }
+.fleet-item[data-state="needs"] { border-color: var(--off); }
+.fleet-item[data-state="needs"] .chip-dot { background: var(--off); animation: ring 1.6s ease-out infinite; }
+.fleet-state { color: var(--muted); font-size: var(--t-s); font-weight: 500; }
+.fleet-item[data-state="needs"] .fleet-state { color: var(--off); font-weight: 700; }
+.fleet-item[data-state="done"] { opacity: .8; }
+.card-agent { margin-bottom: 12px; }
+.lanes { display: grid; gap: 22px; }
+.agent-lane { --course: var(--hue); padding: 14px 18px 8px; border: 1px solid var(--rule); border-left: 3px solid var(--hue); border-radius: var(--r-l); background: color-mix(in srgb, var(--surface) 55%, transparent); box-shadow: var(--shadow-s); }
+.agent-lane[data-state="needs"] { border-color: var(--off); border-left-color: var(--hue); }
+.lane-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-bottom: 8px; }
+.lane-state { color: var(--muted); font-size: var(--t-s); }
+.lane-ask { flex-basis: 100%; color: var(--ink-2); font-size: var(--t-s); overflow-wrap: anywhere; }
+.receipt-agent { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--rule); }
+.receipt-agent-h { margin: 0 0 8px; }
+@media (max-width: 600px) { .fleet { padding: 8px 16px; top: 0; position: static; } }
+
+@media (prefers-reduced-motion: reduce) { .fleet-item[data-state="needs"] .chip-dot { animation: none; } .card { animation: none; } header.paused .dot, .check[data-state="pending"] .ico { animation: none; } button:active:not(:disabled) { transform: none; } }
 @media (forced-colors: active) { .card { border: 2px solid CanvasText; box-shadow: none; } .node { forced-color-adjust: none; } }
 @media print { header#status, button, #stopbar { display: none; } }

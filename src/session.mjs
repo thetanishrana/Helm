@@ -9,10 +9,13 @@ import { resolveSelectors } from './cdp/lookup.mjs';
 
 const short = (c) => (c || '').replace(/\s+/g, ' ').slice(0, 140);
 
-export async function startSession({ store, approvals, tapPort = 8787, cdpPort = 9333, chromePort = 9222, upstream = null, confirm = false, log = () => {} }) {
+export async function startSession({ store, approvals, tapPort = 8787, cdpPort = 9333, chromePort = 9222, upstream = null, confirm = false, agent = null, log = () => {} }) {
+  // With several agents on one store, every event is tagged with the agent that caused it.
+  const tag = agent ? { agent: agent.id } : {};
+  const emit = (type, data = {}) => store.add(type, { ...tag, ...data });
   const turns = [];   // { index, startedAt } for correlating browser actions to model turns
   const ownerTurn = (at) => { let o = null; for (const t of turns) if (t.startedAt <= at) o = t; return o?.index ?? null; };
-  store.add('task.start', {});
+  emit('task.start', {});
 
   const policy = async (tu, req, ctx) => {
     const c = classify(tu, req);
@@ -20,20 +23,20 @@ export async function startSession({ store, approvals, tapPort = 8787, cdpPort =
     await resolveSelectors(c.actions, chromePort);   // a bare CSS selector is read off the live page so it can be judged by its label
     const all = explainAll(c, req); const ex = mostImportant(all);
     if (!ex) return { action: 'allow' };
-    if (!ex.interrupt) { for (const x of all) store.add('gate.allowed', { what: x.action.what, reason: x.reason }); return { action: 'allow' }; }
+    if (!ex.interrupt) { for (const x of all) emit('gate.allowed', { what: x.action.what, reason: x.reason }); return { action: 'allow' }; }
     const lastResult = req.toolResults?.at(-1)?.toolUseId ?? null;
     const key = createHash('sha256').update(JSON.stringify([ex.action.what, lastResult])).digest('hex').slice(0, 12);
     return {
       action: 'hold', key,
       ask: () => approvals.ask({
-        key: ex.action.what, what: ex.action.what, cause: ex.cause, risk: ex.risk.tier, reason: ex.reason, card: ex.card,
+        agent: agent?.id, key: ex.action.what, what: ex.action.what, cause: ex.cause, risk: ex.risk.tier, reason: ex.reason, card: ex.card,
         explanation: { action: { verb: ex.action.verb, label: ex.action.label, role: ex.action.role }, requested: ex.requested, cause: ex.cause, risk: ex.risk, reason: ex.reason, emails: ex.emails },
         onPending: (id) => {
-          if (!confirm || !ctx?.body) { store.add('gate.confirmed', { id, verdict: 'skipped' }); return; }
+          if (!confirm || !ctx?.body) { emit('gate.confirmed', { id, verdict: 'skipped' }); return; }
           const target = `${ex.action.verb}|${ex.action.label || ex.action.ref || ''}`;
           attribute({ body: ctx.body, target, resend: ctx.resend, heuristicCause: ex.cause })
-            .then((r) => store.add('gate.confirmed', { id, verdict: r.verdict, cause: r.cause?.text ?? null, calls: r.calls }))
-            .catch((e) => store.add('gate.confirmed', { id, verdict: 'error', error: String(e).slice(0, 120) }));
+            .then((r) => emit('gate.confirmed', { id, verdict: r.verdict, cause: r.cause?.text ?? null, calls: r.calls }))
+            .catch((e) => emit('gate.confirmed', { id, verdict: 'error', error: String(e).slice(0, 120) }));
         },
       }),
     };
@@ -45,9 +48,9 @@ export async function startSession({ store, approvals, tapPort = 8787, cdpPort =
     log: (rec) => {
       log(rec);
       if (!rec.path?.startsWith('/v1/messages')) return;
-      if (rec.error || rec.status !== 200) { store.add('model.error', { status: rec.status ?? null, error: rec.error ? String(rec.error).slice(0, 120) : null }); return; }
+      if (rec.error || rec.status !== 200) { emit('model.error', { status: rec.status ?? null, error: rec.error ? String(rec.error).slice(0, 120) : null }); return; }
       if (!rec.req) return;
-      store.add('model.turn', {
+      emit('model.turn', {
         index: turns.findIndex((t) => t.startedAt === rec.reqStartMs), untrustedChunks: rec.req.toolResults.length,
         tools: (rec.resp?.toolUses || []).map((u) => short(u.input?.command || JSON.stringify(u.input))),
         say: short(rec.resp?.text), ms: rec.totalMs,
@@ -60,14 +63,14 @@ export async function startSession({ store, approvals, tapPort = 8787, cdpPort =
     listen: cdpPort, chrome: chromePort, gate: async () => ({ action: 'allow' }),
     onEvent: (e) => {
       if (e.dir !== 'c2b') return;
-      if (e.method === 'Page.navigate' && e.params?.url) { let host = ''; try { host = new URL(e.params.url).host; } catch {} store.add('navigate', { url: e.params.url.slice(0, 200), host, turn: ownerTurn(Date.now()) }); }
-      if (e.note === 'GATE start' && e.semantic) store.add('action', { what: `click ${e.semantic.tag.toLowerCase()} "${short(e.semantic.text)}"`, turn: ownerTurn(e.at) });
+      if (e.method === 'Page.navigate' && e.params?.url) { let host = ''; try { host = new URL(e.params.url).host; } catch {} emit('navigate', { url: e.params.url.slice(0, 200), host, turn: ownerTurn(Date.now()) }); }
+      if (e.note === 'GATE start' && e.semantic) emit('action', { what: `click ${e.semantic.tag.toLowerCase()} "${short(e.semantic.text)}"`, turn: ownerTurn(e.at) });
     },
   });
 
   return {
     tap, cdp, store,
-    end() { approvals.closeAll(); store.add('task.end', {}); },
+    end() { approvals.closeAll(agent ? agent.id : undefined); emit('task.end', {}); },
     close() { tap.close(); cdp.close(); },
   };
 }

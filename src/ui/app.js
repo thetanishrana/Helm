@@ -2,6 +2,7 @@
 // and never build markup from it. Icons come from <template> elements in index.html, never from strings.
 const token = document.querySelector('meta[name=helm-token]').content;
 const $ = (id) => document.getElementById(id);
+let agents = []; let focus = null;   // several agents: [{ id, name, hue }], and the one whose lane is shown (null = all)
 let events = []; let confirmed = new Map(); let decided = new Set(); let meta = {}; let studyDone = false; let connection = 'connecting';
 const openKeys = new Set();   // <details> the person opened, kept across redraws
 const HOLD_MS = 1200;         // hypothesis: pressing and holding to say "yes, I asked for this" discourages reflexive approval
@@ -13,6 +14,9 @@ const clock = (t) => new Date(t).toLocaleTimeString([], { hour12: false });
 const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 const curly = (s) => String(s ?? '').replace(/"([^"]*)"/g, '\u201c$1\u201d');
 const sentence = (s) => { const t = curly(s).trim().replace(/[.\s]+$/, ''); return t ? `${cap(t)}.` : ''; };
+const multi = () => agents.length > 1;
+const agentOf = (id) => agents.find((a) => a.id === id);
+const evsOf = (id) => events.filter((e) => (e.agent ?? null) === (id ?? null));
 const cond = () => (meta.mode === 'replay' ? meta.condition : 'C');   // live runs behave like condition C
 const post = (path, body) => fetch(path, { method: 'POST', headers: { 'content-type': 'application/json', 'x-helm-token': token }, body: JSON.stringify(body || {}) });
 
@@ -28,11 +32,39 @@ function whatNodes(what) {
 }
 const hostOf = (page) => { try { return new URL(page).host || page; } catch { return page || 'the page'; } };
 
+// ---- several agents: one chip per agent, in a fixed hue so a card, a lane and a chip are recognisably the same agent
+const chipEl = (id) => { const a = agentOf(id); if (!a) return null; const c = el('span', { className: 'chip' }); c.dataset.hue = String(a.hue); c.append(el('span', { className: 'chip-dot', ariaHidden: 'true' }), el('span', { className: 'chip-name', textContent: a.name })); return c; };
+function agentState(id) {
+  const mine = evsOf(id); const waiting = mine.filter((e) => e.type === 'gate.pending' && !decided.has(e.id)).length;
+  if (waiting) return { key: 'needs', text: waiting === 1 ? 'Needs you' : `${waiting} need you`, n: waiting };
+  if (mine.some((e) => e.type === 'task.end')) return { key: 'done', text: 'Finished', n: 0 };
+  if (mine.some((e) => e.type === 'model.turn' && e.untrustedChunks > 0)) return { key: 'untrusted', text: 'Reading untrusted content', n: 0 };
+  return { key: 'ok', text: mine.some((e) => e.type === 'task.start') ? 'Working' : 'Waiting', n: 0 };
+}
+let fleetSig = '';
+function renderFleet() {
+  const nav = $('fleet'); nav.hidden = !multi(); if (!multi()) return;
+  const states = agents.map((a) => agentState(a.id)); const sig = JSON.stringify([agents.map((a) => a.id), states, focus]);
+  if (sig === fleetSig) return; fleetSig = sig;
+  const had = document.activeElement?.closest?.('#fleet') ? document.activeElement.dataset.agent ?? '' : null;
+  nav.textContent = '';
+  const mk = (id, label, st) => {
+    const b = el('button', { type: 'button', className: `fleet-item${(focus ?? '') === id ? ' on' : ''}`, onclick: () => { focus = id || null; fleetSig = ''; renderFleet(); renderTimeline(); } });
+    b.dataset.agent = id; b.setAttribute('aria-pressed', String((focus ?? '') === id));
+    if (id) { b.dataset.hue = String(agentOf(id).hue); b.dataset.state = st.key; b.append(el('span', { className: 'chip-dot', ariaHidden: 'true' }), el('span', { className: 'fleet-name', textContent: label }), el('span', { className: 'fleet-state', textContent: st.text })); if (st.n) b.append(el('span', { className: 'count', textContent: String(st.n) })); }
+    else b.append(el('span', { className: 'fleet-name', textContent: label }));
+    nav.append(b); return b;
+  };
+  mk('', 'All agents', null);
+  agents.forEach((a, i) => mk(a.id, a.name, states[i]));
+  if (had !== null) nav.querySelector(`[data-agent="${CSS.escape(had)}"]`)?.focus();
+}
+
 // ---- what the person asked
-const request = () => meta.mode === 'replay' ? (meta.scenario?.userTask ?? '') : ([...events].reverse().find((e) => e.type === 'model.turn' && e.request)?.request ?? '');
+const request = (agent) => meta.mode === 'replay' ? (meta.scenario?.userTask ?? '') : ([...events].reverse().find((e) => e.type === 'model.turn' && e.request && (!agent || e.agent === agent))?.request ?? '');
 function setTask() {
   const text = request(); const box = $('task');
-  box.hidden = !text || Boolean(document.querySelector('#pending .card:not(.plain)'));   // a pending decision already sets the request beside what the agent wants
+  box.hidden = multi() || !text || Boolean(document.querySelector('#pending .card:not(.plain)'));   // with several agents each lane and card carries its own request   // a pending decision already sets the request beside what the agent wants
   if (!text) return;
   const p = $('task-text'); p.textContent = text; p.className = 'request';
   box.querySelector('.more')?.remove();
@@ -53,9 +85,9 @@ function setFavicon(level) {
 }
 function setStatus() {
   const pending = events.filter((e) => e.type === 'gate.pending' && !decided.has(e.id));
-  const ended = events.some((e) => e.type === 'task.end');
+  const ended = multi() ? agents.every((a) => evsOf(a.id).some((e) => e.type === 'task.end')) : events.some((e) => e.type === 'task.end');
   const untrusted = events.some((e) => e.type === 'model.turn' && e.untrustedChunks > 0);
-  const started = events.length > 0;
+  const started = events.some((e) => e.type !== 'agent.register');
   let level = 'ok', text = 'On task';
   if (connection === 'lost') { level = 'lost'; text = 'Connection lost. Reload to reconnect.'; }
   else if (studyDone) { level = 'done'; text = 'All tasks finished. Thank you.'; }
@@ -98,10 +130,11 @@ function renderCard(p) {
   }
 
   const tier = x.risk?.tier ?? 'high';
+  if (multi() && p.agent) card.append(el('div', { className: 'card-agent' }, chipEl(p.agent)));
   card.append(el('div', { className: 'card-head' }, el('h3', { textContent: x.requested ? 'Check this before it runs' : 'Did you ask for this?' }), el('span', { className: `risk ${tier}`, textContent: `${cap(tier)} risk` })));
 
   const gap = el('dl', { className: 'gap' });
-  const asked = request();
+  const asked = request(p.agent);
   if (asked) gap.append(el('div', {}, el('dt', { textContent: 'You asked' }), el('dd', { textContent: asked.length > 160 ? `${asked.slice(0, 157)}…` : asked })));
   gap.append(el('div', { className: 'wants' }, el('dt', { textContent: 'Agent wants' }), el('dd', {}, ...whatNodes(p.what))));
   card.append(gap, el('p', { className: 'verdict', textContent: x.requested ? 'Your request mentions this control.' : 'That isn’t part of what you asked.' }));
@@ -180,13 +213,13 @@ function renderPending() {
 
 // ---- the course
 // Each entry: { kind, t, parts, sub, key }. Kinds: milestone, step, thought, cmd, say, held, blocked, rejoin, stopped, error, output.
-function buildRows() {
+function buildRows(events) {
   const raw = cond() !== 'C'; const A = cond() === 'A'; const rows = []; const open = new Set(); let allowed = null;
   const flush = () => { if (allowed) { rows.push({ kind: 'step', t: allowed.t, parts: whatNodes(allowed.what), sub: sentence(allowed.reason) }); allowed = null; } };
   events.forEach((e, i) => {
     // An allowed step waits for the browser action it allowed; in real sessions a model-turn event can arrive in between.
     if (['gate.allowed', 'gate.pending', 'gate.decided', 'task.end'].includes(e.type)) flush();
-    const add = (r) => rows.push({ key: i, t: e.t, lane: open.size > 0, ...r });
+    const add = (r) => rows.push({ key: `${e.agent ?? ''}:${i}`, t: e.t, lane: open.size > 0, ...r });
     switch (e.type) {
       case 'task.start': add({ kind: 'milestone', parts: ['Task started'] }); break;
       case 'navigate': add({ kind: 'step', parts: [el('span', { className: 'verb', textContent: 'Opened ' }), el('span', { className: 'target', textContent: hostOf(e.url) })] }); break;
@@ -205,7 +238,7 @@ function buildRows() {
         if (allowed && allowed.what === e.what) { rows.push({ kind: 'step', t: e.t, parts: whatNodes(e.what), sub: sentence(allowed.reason), lane: open.size > 0 }); allowed = null; }
         else { flush(); add({ kind: 'step', parts: whatNodes(e.what) }); }
         break;
-      case 'gate.pending': if (!raw) { open.add(e.id); rows.push({ kind: 'held', t: e.t, key: i, parts: [el('span', { className: 'state', textContent: 'Held for your decision ' }), ...whatNodes(e.what)] }); } break;
+      case 'gate.pending': if (!raw) { open.add(e.id); rows.push({ kind: 'held', t: e.t, key: `${e.agent ?? ''}:${i}`, parts: [el('span', { className: 'state', textContent: 'Held for your decision ' }), ...whatNodes(e.what)] }); } break;
       case 'gate.decided': {
         open.delete(e.id);
         const note = e.reflexive && !raw ? ' (answered in under a second)' : '';
@@ -220,9 +253,8 @@ function buildRows() {
   flush();
   return rows;
 }
-function renderTimeline() {
-  const ol = $('timeline'); ol.textContent = '';
-  const rows = buildRows();
+function drawRows(ol, rows) {
+  ol.textContent = '';
   for (const r of rows) {
     const li = el('li', { className: [r.kind, r.lane ? 'lane' : ''].filter(Boolean).join(' ') });
     li.append(el('time', { textContent: clock(r.t) }), el('span', { className: 'track' }));
@@ -238,7 +270,24 @@ function renderTimeline() {
     } else { body.append(...r.parts); if (r.sub) body.append(el('span', { className: 'sub', textContent: r.sub })); }
     li.append(body); ol.append(li);
   }
+}
+function renderTimeline() {
   const empty = $('timeline-empty'); empty.textContent = '';
+  if (multi()) {   // one lane per agent, each its own course
+    $('timeline').hidden = true; const box = $('lanes'); box.hidden = false; box.textContent = '';
+    const shown = agents.filter((a) => !focus || a.id === focus);
+    box.className = `lanes${shown.length > 1 ? ' side' : ''}`;
+    for (const a of shown) {
+      const st = agentState(a.id); const lane = el('section', { className: 'agent-lane' }); lane.dataset.hue = String(a.hue); lane.dataset.state = st.key; lane.dataset.agent = a.id;
+      const ask = request(a.id);
+      lane.append(el('header', { className: 'lane-head' }, chipEl(a.id), el('span', { className: 'lane-state', textContent: st.text }), ...(ask ? [el('p', { className: 'lane-ask', textContent: ask.length > 140 ? `${ask.slice(0, 137)}…` : ask })] : [])));
+      const ol = el('ol'); drawRows(ol, buildRows(evsOf(a.id))); lane.append(ol); box.append(lane);
+    }
+    if (!shown.length) empty.append(el('p', { textContent: 'Waiting for the agents. Their steps appear here as they work.' }));
+    return;
+  }
+  $('lanes').hidden = true; $('timeline').hidden = false;
+  const rows = buildRows(events); drawRows($('timeline'), rows);
   if (!rows.length) {
     empty.append(el('p', { textContent: meta.mode === 'replay' ? 'The recorded session begins when you press Start.' : 'Waiting for the agent. Its steps appear here as it works.' }));
     if (meta.mode !== 'replay') empty.append(el('code', { textContent: 'node src/cli.mjs run -- <your agent command>' }));
@@ -283,18 +332,27 @@ $('tlx-form').onsubmit = async (ev) => {
 
 // ---- receipt
 async function showReceipt() {
-  const r = await (await fetch('/api/receipt')).json(); const b = $('receipt-body'); b.textContent = '';
+  const all = await (await fetch('/api/receipt')).json(); const b = $('receipt-body'); b.textContent = '';
+  if (all.agents) {   // several agents: one section each (or just the one in focus)
+    b.append(el('h3', { id: 'receipt-h', textContent: 'Run receipt' }));
+    for (const a of all.agents.filter((x) => !focus || x.id === focus)) { const sec = el('section', { className: 'receipt-agent' }, el('h4', { className: 'receipt-agent-h' }, chipEl(a.id))); receiptBody(sec, a.receipt); b.append(sec); }
+    b.append(el('p', { className: 'why-note', textContent: `Not tracked in this version: ${all.agents[0]?.receipt.notTracked.join(', ')}.` }));
+    $('receipt').showModal(); return;
+  }
+  b.append(el('h3', { id: 'receipt-h', textContent: 'Run receipt' }));
+  receiptBody(b, all, true); $('receipt').showModal();
+}
+function receiptBody(b, r, solo = false) {
   const list = (items, empty) => { items = items.filter(Boolean); const u = el('ul'); if (!items.length) u.append(el('li', { textContent: empty })); for (const i of items) u.append(el('li', {}, ...(Array.isArray(i) ? i : [i]))); return u; };
   const num = (n) => el('b', { textContent: String(n) });
   const heldItems = r.held.map((h) => { const li = el('span', {}, ...whatNodes(h.what), ` – ${h.outcome}`); if (h.cause) li.append(el('span', { className: 'receipt-cause', textContent: `Page text: “${h.cause.slice(0, 120)}${h.cause.length > 120 ? '…' : ''}”` })); return li; });
-  b.append(el('h3', { id: 'receipt-h', textContent: 'Run receipt' }),
+  b.append(
     el('p', { className: 'receipt-summary' }, num(r.modelTurns), ` agent step${r.modelTurns === 1 ? '' : 's'}${r.modelErrors ? ` (${r.modelErrors} model request${r.modelErrors === 1 ? '' : 's'} failed)` : ''}. `, num(r.held.length), ' held for you, ', num(r.blocked), ' blocked.'),
     el('h4', { textContent: 'Blocked or held' }), list(heldItems, 'Nothing was held.'),
     el('h4', { textContent: 'Done in the browser' }), list(r.actionsExecuted.map((a) => whatNodes(a.what)), 'No browser actions recorded.'),
     el('h4', { textContent: 'Allowed without asking' }), list(r.allowedWithoutAsking.map((a) => [...whatNodes(a.what), ` – ${String(a.reason ?? '').toLowerCase()}`]), 'None.'),
     el('h4', { textContent: 'Pages visited' }), list(r.pagesVisited, 'None recorded.'),
-    el('p', { className: 'why-note', textContent: `Not tracked in this version: ${r.notTracked.join(', ')}.` }));
-  $('receipt').showModal();
+    ...(solo ? [el('p', { className: 'why-note', textContent: `Not tracked in this version: ${r.notTracked.join(', ')}.` })] : []));
 }
 $('receipt-btn').onclick = showReceipt;
 
@@ -304,7 +362,9 @@ async function onEvent(e) {
   if (e.type === 'study.declined') $('status-text').textContent = 'Session ended.';
   if (e.type === 'study.debrief') { $('debrief-text').textContent = e.text; $('debrief').showModal(); }
   if (e.type === 'study.ready') { await refreshMeta(); showIntro(e); }
-  if (e.type === 'task.start') { studyDone = false; events = []; confirmed = new Map(); decided = new Set(); openKeys.clear(); closeStopWindow(); $('pending').textContent = ''; }
+  if (e.type === 'agent.register') { if (!agentOf(e.agent)) agents.push({ id: e.agent, name: e.name, hue: e.hue }); }
+  if (e.type === 'task.start' && e.agent) events = events.filter((x) => (x.agent ?? null) !== e.agent || x.type === 'agent.register');   // one agent restarting leaves the others as they were
+  else if (e.type === 'task.start') { studyDone = false; events = []; confirmed = new Map(); decided = new Set(); openKeys.clear(); closeStopWindow(); $('pending').textContent = ''; }
   events.push(e);
   if (e.type === 'gate.decided') decided.add(e.id);
   if (e.type === 'gate.confirmed') { confirmed.set(e.id, e); setConfirmation(document.getElementById(`conf-${e.id}`), e.id); }
@@ -313,10 +373,10 @@ async function onEvent(e) {
   if (e.type === 'study.questionnaire') showTlx();
   if (e.type === 'study.done') studyDone = true;
   if (e.type === 'model.turn') setTask();
-  setStatus(); renderPending(); renderTimeline();
+  setStatus(); renderPending(); renderFleet(); renderTimeline();
 }
 await refreshMeta();
-setStatus(); renderPending(); renderTimeline();
+setStatus(); renderPending(); renderFleet(); renderTimeline();
 const es = new EventSource('/api/events');
 let chain = Promise.resolve();
 es.onopen = () => { connection = 'open'; setStatus(); };

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// helm run [options] -- <agent command...>
+// helm run [options] -- <agent command...>      (one agent)
+// helm fleet <fleet.json>                          (several agents in one interface; see src/fleet.mjs)
 // Starts Chrome (or attaches), both taps and the UI, then runs the agent with its model API and
 // browser pointed at Helm. Nothing about the agent changes except two environment variables.
 import { spawn } from 'node:child_process';
@@ -44,6 +45,7 @@ function parse(argv) {
   return o;
 }
 
+if (process.argv[2] === 'fleet') { await import('./fleet.mjs'); await new Promise(() => {}); }
 const o = parse(process.argv.slice(2));
 if (!o.cmd.length) { console.log(HELP); process.exit(2); }
 

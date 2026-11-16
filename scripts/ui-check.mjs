@@ -20,7 +20,7 @@ const open = async (url, opts = {}) => {
   const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 }, ...opts }); const page = await ctx.newPage(); const problems = [];
   page.on('console', (m) => { if (m.type() === 'error') problems.push(`console: ${m.text()}`); }); page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
   await page.addInitScript(() => document.addEventListener('securitypolicyviolation', (e) => console.error(`CSP violation: ${e.violatedDirective} ${e.blockedURI}`)));
-  await page.goto(url); await page.waitForSelector('.card', { timeout: 8000 }); await page.waitForTimeout(300);
+  await page.goto(url); await page.waitForSelector('.card', { timeout: 8000 }); await page.waitForTimeout(700);   // the card rises in over 450 ms; measure after it has settled
   return { ctx, page, problems };
 };
 const pending = (page) => page.locator('.card').count();
@@ -79,6 +79,28 @@ try {
     const names = await page.evaluate(() => [...document.querySelectorAll('button')].filter((b) => !(b.textContent || '').trim() && !b.getAttribute('aria-label')).length);
     ok('every button has a visible name', names === 0);
     await ctx.close();
+  });
+  await withPreview('fleet', async (url) => {   // several agents on one hub
+    const { ctx, page, problems } = await open(url);
+    ok('fleet: no console errors or CSP violations', problems.length === 0, problems.join(' | '));
+    ok('fleet: one chip per agent plus All', (await page.locator('#fleet .fleet-item').count()) === 4);
+    ok('fleet: one lane per agent', (await page.locator('.agent-lane').count()) === 3);
+    ok('fleet: the waiting agent says so, the others do not', (await page.locator('#fleet [data-agent="invoice-agent"]').innerText()).includes('Needs you') && !(await page.locator('#fleet [data-agent="inbox-triage"]').innerText()).includes('Needs you'));
+    ok('fleet: the decision card names its agent', (await page.locator('.card .chip-name').innerText()) === 'Invoice agent');
+    ok('fleet: header counts decisions across agents', (await page.title()) === '(1) Helm', await page.title());
+    await page.locator('#fleet [data-agent="research-agent"]').click();
+    ok('fleet: choosing an agent shows only its lane (the decision stays visible)', (await page.locator('.agent-lane').count()) === 1 && (await page.locator('.card').count()) === 1);
+    await page.locator('#fleet [data-agent=""]').click();
+    await page.locator('.card .block').click(); await page.waitForTimeout(500);
+    ok('fleet: blocking resolves it and only that agent\'s lane shows Blocked', (await pending(page)) === 0 && (await page.locator('.agent-lane[data-agent="invoice-agent"] li.blocked').count()) === 1 && (await page.locator('.agent-lane[data-agent="research-agent"] li.blocked').count()) === 0);
+    await page.locator('#receipt-btn').click(); await page.waitForSelector('#receipt[open]');
+    ok('fleet: the receipt has a section per agent', (await page.locator('.receipt-agent').count()) === 3);
+    await ctx.close();
+  });
+  await withPreview('fleet', async (url) => {
+    const { ctx, page } = await open(url, { viewport: { width: 375, height: 800 } });
+    const over = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    ok('no horizontal overflow: fleet at 375px', over <= 0, `${over}px`); await ctx.close();
   });
   await withPreview('idle', async (url) => {
     const ctx = await browser.newContext(); const page = await ctx.newPage(); await page.goto(url); await page.waitForTimeout(800);

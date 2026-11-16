@@ -19,6 +19,7 @@
   <p class="statusline" role="status" aria-live="polite"><span class="dot" aria-hidden="true"></span><span id="status-text">Connecting…</span><span id="status-count" class="count" hidden></span></p>
   <button id="receipt-btn" class="quiet" type="button" hidden>Receipt</button>
 </header>
+<nav id="fleet" class="fleet" aria-label="Agents" hidden></nav>
 <div id="stopbar" hidden>
   <div><strong>The agent is about to run:</strong> <code id="stop-cmd"></code></div>
   <div class="stoprow"><button id="stop-btn" class="block" type="button">Stop the agent</button><span id="stop-count"></span></div>
@@ -40,6 +41,7 @@
     <section class="course" aria-labelledby="h-timeline">
       <h2 id="h-timeline">The course</h2>
       <ol id="timeline"></ol>
+      <div id="lanes" class="lanes" hidden></div>
       <div id="timeline-empty" class="empty-course"></div>
     </section>
   </div>
