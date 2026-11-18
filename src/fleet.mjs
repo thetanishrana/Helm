@@ -11,6 +11,7 @@ import { Store } from './store.mjs';
 import { Approvals } from './approvals.mjs';
 import { startSession } from './session.mjs';
 import { startServer } from './server.mjs';
+import { claudeAsk } from './model/judge.mjs';
 
 const CHROME = process.env.HELM_CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const BASE = { tap: 8787, cdp: 9333, chrome: 9222 };
@@ -39,7 +40,7 @@ export async function launchFleet(spec, { log = (m) => console.error(m) } = {}) 
     const agent = store.register({ id: idOf(a.name, i, taken), name: a.name });
     const chrome = spawn(CHROME, [...(spec.headless ? ['--headless=new'] : []), `--remote-debugging-port=${ports.chrome}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'helm-chrome-'))}`, '--no-first-run', '--no-default-browser-check', 'about:blank'], { stdio: 'ignore' });
     for (let k = 0; k < 75; k++) { try { await fetch(`http://127.0.0.1:${ports.chrome}/json/version`); break; } catch { await new Promise((r) => setTimeout(r, 200)); } }
-    const session = await startSession({ store, approvals, agent, tapPort: ports.tap, cdpPort: ports.cdp, chromePort: ports.chrome, confirm: spec.confirm, upstream: spec.ollama ? { host: '127.0.0.1', port: 11434 } : null });
+    const session = await startSession({ store, approvals, agent, tapPort: ports.tap, cdpPort: ports.cdp, chromePort: ports.chrome, confirm: spec.confirm, judge: spec.judge ? { ask: claudeAsk(typeof spec.judge === 'string' ? spec.judge : undefined) } : null, upstream: spec.ollama ? { host: '127.0.0.1', port: 11434 } : null });
     const env = { ...process.env, ...(a.env || {}), ANTHROPIC_BASE_URL: `http://127.0.0.1:${ports.tap}`, HELM_CDP_URL: `http://127.0.0.1:${ports.cdp}`, PLAYWRIGHT_MCP_TIMEOUT_ACTION: process.env.PLAYWRIGHT_MCP_TIMEOUT_ACTION || '600000' };
     if (spec.ollama) Object.assign(env, { ANTHROPIC_AUTH_TOKEN: 'ollama', ANTHROPIC_DEFAULT_HAIKU_MODEL: spec.ollama, ANTHROPIC_DEFAULT_SONNET_MODEL: spec.ollama, ANTHROPIC_DEFAULT_OPUS_MODEL: spec.ollama, CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1' });
     const proc = spawn(a.cmd[0], a.cmd.slice(1), { stdio: 'inherit', env, cwd: a.cwd || process.cwd() });

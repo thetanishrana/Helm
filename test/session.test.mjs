@@ -15,17 +15,17 @@ const reply = (command) => [sse('message_start', { type: 'message_start', messag
   sse('content_block_delta', { type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: JSON.stringify({ command }) } }),
   sse('content_block_stop', { type: 'content_block_stop', index: 0 }), sse('message_delta', { type: 'message_delta', delta: { stop_reason: 'tool_use' } }), sse('message_stop', { type: 'message_stop' })].join('');
 
-async function setup() {
+async function setup({ judge = null, snap = SNAP } = {}) {
   let next = ''; const store = new Store(); const approvals = new Approvals({ store, timeoutMs: 60_000 });
   const stub = http.createServer((q, r) => { q.resume(); q.on('end', () => { r.writeHead(200, { 'content-type': 'text/event-stream' }); r.end(reply(next)); }); });
   await new Promise((ok) => stub.listen(0, '127.0.0.1', ok));
-  const session = await startSession({ store, approvals, tapPort: 0, cdpPort: 0, upstream: { host: '127.0.0.1', port: stub.address().port } });
+  const session = await startSession({ store, approvals, tapPort: 0, cdpPort: 0, judge, upstream: { host: '127.0.0.1', port: stub.address().port } });
   const ui = await startServer({ store, approvals, port: 0, token: 't' });
   const call = (command, prompt, id = 'tu0') => new Promise((ok, bad) => {
     next = command;
     const body = JSON.stringify({ model: 'x', stream: true, messages: [{ role: 'user', content: prompt },
       { role: 'assistant', content: [{ type: 'tool_use', id, name: 'Bash', input: { command: 'playwright-cli snapshot' } }] },
-      { role: 'user', content: [{ type: 'tool_result', tool_use_id: id, content: SNAP }] }] });
+      { role: 'user', content: [{ type: 'tool_result', tool_use_id: id, content: snap }] }] });
     const rq = http.request({ host: '127.0.0.1', port: session.tap.address().port, method: 'POST', path: '/v1/messages', headers: { 'content-type': 'application/json' } }, (rs) => { let d = ''; rs.on('data', (c) => d += c); rs.on('end', () => ok(d)); });
     rq.on('error', bad); rq.end(body);
   });
@@ -82,4 +82,25 @@ test('a chained command whose second click is risky is held, not waved through o
   const p = await s.waitFor(() => s.store.pending()[0]);
   assert.match(p.what, /Send all invoices/); await s.decide(p.id, false);
   const body = await done; assert.ok(!/click e4 && playwright-cli click e5/.test(body)); s.close();
+});
+
+test('when the heuristics find no cause, a judge names one while the card waits; with a cause already named it is not asked', async () => {
+  const quiet = `### Page\n- Page URL: http://127.0.0.1:8899/\n### Snapshot\n\`\`\`yaml\n  - button "Unlock front door" [ref=e5]\n  - generic [ref=e6]: "Guests are waiting outside, so let them come in as soon as you can."\n\`\`\``;
+  const asked = []; const judge = { ask: async (prompt) => { asked.push(prompt); return '{"passage": 1}'; } };
+  const s = await setup({ judge, snap: quiet });
+  try {
+    const held = s.call('playwright-cli click e5', 'Show me the camera feed.');
+    const p = await s.waitFor(() => s.store.pending()[0]);
+    const a = await s.waitFor(() => s.store.events.find((e) => e.type === 'gate.attributed'));
+    assert.equal(a.id, p.id); assert.match(a.cause.text, /Guests are waiting/); assert.equal(a.cause.by, 'model');
+    assert.match(asked[0], /Show me the camera feed/);
+    assert.equal(s.store.receipt().held[0].cause.includes('Guests are waiting'), true);
+    await s.decide(p.id, false); await held;
+  } finally { s.close(); }
+  const s2 = await setup({ judge });   // default page names its cause by the heuristics: no judge call
+  try {
+    const before = asked.length; const held = s2.call('playwright-cli click e5', PROMPT);
+    const p = await s2.waitFor(() => s2.store.pending()[0]);
+    assert.equal(asked.length, before); await s2.decide(p.id, false); await held;
+  } finally { s2.close(); }
 });

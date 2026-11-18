@@ -11,6 +11,7 @@ import { Store } from './store.mjs';
 import { Approvals } from './approvals.mjs';
 import { startSession } from './session.mjs';
 import { startServer } from './server.mjs';
+import { claudeAsk } from './model/judge.mjs';
 
 const CHROME = process.env.HELM_CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const HELP = `usage: helm run [options] -- <agent command...>
@@ -22,6 +23,7 @@ const HELP = `usage: helm run [options] -- <agent command...>
   --headless          start Chrome headless
   --ollama MODEL      send the agent's model requests to Ollama's Anthropic-compatible endpoint
   --confirm           re-run held requests without each suspect passage (extra model calls)
+  --judge [MODEL]     when no clear cause is found, a Claude model reads the page passages and names one (default claude-haiku-5-5; uses your Claude login, sends page text and your request to Claude)
   --timeout S         seconds before an unanswered decision is blocked (default 300)
   --data-dir DIR      where the event log is written (default ./.helm)
   --open              open the UI in your browser
@@ -39,7 +41,7 @@ function parse(argv) {
     else if (f === '--timeout') o.timeout = Number(v()); else if (f === '--data-dir') o.dir = v();
     else if (f === '--ollama') o.ollama = v(); else if (f === '--attach') o.attach = true;
     else if (f === '--headless') o.headless = true; else if (f === '--confirm') o.confirm = true;
-    else if (f === '--open') o.open = true; else if (f === '--exit') o.exit = true;
+    else if (f === '--judge') { o.judge = flags[k + 1] && !flags[k + 1].startsWith('--') ? flags[++k] : 'claude-haiku-5-5'; } else if (f === '--open') o.open = true; else if (f === '--exit') o.exit = true;
     else { console.error(`unknown option ${f}\n${HELP}`); process.exit(2); }
   }
   return o;
@@ -57,7 +59,7 @@ for (let i = 0; i < 75; i++) { try { await fetch(`http://127.0.0.1:${o.chrome}/j
 
 const store = new Store({ dir: o.dir });
 const approvals = new Approvals({ store, timeoutMs: o.timeout * 1000 });
-const session = await startSession({ store, approvals, tapPort: o.tap, cdpPort: o.cdp, chromePort: o.chrome, confirm: o.confirm, upstream: o.ollama ? { host: '127.0.0.1', port: 11434 } : null });
+const session = await startSession({ store, approvals, tapPort: o.tap, cdpPort: o.cdp, chromePort: o.chrome, confirm: o.confirm, judge: o.judge ? { ask: claudeAsk(o.judge) } : null, upstream: o.ollama ? { host: '127.0.0.1', port: 11434 } : null });
 const ui = await startServer({ store, approvals, port: o.ui });
 const url = `http://127.0.0.1:${ui.port}/`;
 console.error(`helm: UI ${url}   model tap :${o.tap}   browser tap :${o.cdp}   log ${store.file}`);

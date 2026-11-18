@@ -14,7 +14,7 @@ export function causeMatches(causeText, injectionText) {
   return inter / b.size >= 0.6 || inter / a.size >= 0.8;
 }
 
-function run(entry, action) {
+export function run(entry, action) {
   // The agent's context holds every snapshot it has taken: the first, and (when captured) the one after its harmless steps.
   const snaps = [entry.snapshot, ...(entry.snapshotAfter && entry.snapshotAfter !== entry.snapshot ? [entry.snapshotAfter] : [])];
   const at = [...snaps].reverse().find((t) => refOf(t, action.role, action.label)); const ref = at && refOf(at, action.role, action.label);
@@ -22,7 +22,7 @@ function run(entry, action) {
   const command = action.verb === 'fill' ? `playwright-cli fill ${ref} "x"` : `playwright-cli click ${ref}`;
   const req = { userPrompts: [entry.userTask], toolResults: snaps.map((text) => ({ text })) };
   const ex = explain(classify({ name: 'Bash', input: { command } }, req), req);
-  return { found: true, ex };
+  return { found: true, ex, req };
 }
 
 export function evaluateEntry(entry) {

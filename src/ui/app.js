@@ -3,6 +3,7 @@
 const token = document.querySelector('meta[name=helm-token]').content;
 const $ = (id) => document.getElementById(id);
 let agents = []; let focus = null;   // several agents: [{ id, name, hue }], and the one whose lane is shown (null = all)
+let attributed = new Map();   // decision id -> cause a model picked after the card appeared
 let events = []; let confirmed = new Map(); let decided = new Set(); let meta = {}; let studyDone = false; let connection = 'connecting';
 const openKeys = new Set();   // <details> the person opened, kept across redraws
 const HOLD_MS = 1200;         // hypothesis: pressing and holding to say "yes, I asked for this" discourages reflexive approval
@@ -115,6 +116,18 @@ function holdButton(btn, ms, done) {
   btn.addEventListener('click', (e) => { e.preventDefault(); if (!e.isTrusted) done(); });   // a script's click (the simulated participant) skips the hold; a person's does not
 }
 
+// The reasons list is redrawn when a model later names the passage that pushed the agent.
+function fillReasons(ul, p) {
+  const x = p.explanation || {}; const cause = attributed.get(p.id) ?? x.cause; ul.textContent = '';
+  if (cause) {
+    const host = hostOf(cause.page);
+    const lead = cause.by === 'model' ? `A model reading the page judged that this text on ${host} pushed the agent to do this:` : cause.weak ? `Text on ${host} is addressed to AI agents and gives orders, though it doesn’t name this control:` : `Text on ${host} told the agent to do this:`;
+    ul.append(el('li', {}, lead, el('figure', { className: 'page-text' }, el('figcaption', { textContent: 'Quoted from the page' }), el('blockquote', { textContent: cause.text }))));
+  } else if (!x.requested) ul.append(el('li', { textContent: 'The agent had read page content, but no single passage clearly told it to do this.' }));
+  if (x.risk?.why) ul.append(el('li', { textContent: sentence(x.risk.why) }));
+  if (x.emails?.length) ul.append(el('li', { textContent: `Involves ${x.emails.join(', ')}.` }));
+}
+
 function renderCard(p) {
   const x = p.explanation || {};
   const card = el('section', { className: `card${x.commandOnly ? ' plain' : ''}`, id: `card-${p.id}` });
@@ -139,15 +152,8 @@ function renderCard(p) {
   gap.append(el('div', { className: 'wants' }, el('dt', { textContent: 'Agent wants' }), el('dd', {}, ...whatNodes(p.what))));
   card.append(gap, el('p', { className: 'verdict', textContent: x.requested ? 'Your request mentions this control.' : 'That isn’t part of what you asked.' }));
 
-  const reasons = el('ul', { className: 'reasons' }); card.append(el('h4', { className: 'why-h', textContent: 'Why Helm held it' }));
-  if (x.cause) {
-    const host = hostOf(x.cause.page);
-    reasons.append(el('li', {}, x.cause.weak ? `Text on ${host} is addressed to AI agents and gives orders, though it doesn’t name this control:` : `Text on ${host} told the agent to do this:`,
-      el('figure', { className: 'page-text' }, el('figcaption', { textContent: 'Quoted from the page' }), el('blockquote', { textContent: x.cause.text }))));
-  } else if (!x.requested) reasons.append(el('li', { textContent: 'The agent had read page content, but no single passage clearly told it to do this.' }));
-  if (x.risk?.why) reasons.append(el('li', { textContent: sentence(x.risk.why) }));
-  if (x.emails?.length) reasons.append(el('li', { textContent: `Involves ${x.emails.join(', ')}.` }));
-  card.append(reasons);
+  const reasons = el('ul', { className: 'reasons', id: `reasons-${p.id}` }); card.append(el('h4', { className: 'why-h', textContent: 'Why Helm held it' }));
+  fillReasons(reasons, p); card.append(reasons);
 
   card.append(el('p', { className: 'check', id: `conf-${p.id}` }));
   const high = tier === 'high';
@@ -364,9 +370,10 @@ async function onEvent(e) {
   if (e.type === 'study.ready') { await refreshMeta(); showIntro(e); }
   if (e.type === 'agent.register') { if (!agentOf(e.agent)) agents.push({ id: e.agent, name: e.name, hue: e.hue }); }
   if (e.type === 'task.start' && e.agent) events = events.filter((x) => (x.agent ?? null) !== e.agent || x.type === 'agent.register');   // one agent restarting leaves the others as they were
-  else if (e.type === 'task.start') { studyDone = false; events = []; confirmed = new Map(); decided = new Set(); openKeys.clear(); closeStopWindow(); $('pending').textContent = ''; }
+  else if (e.type === 'task.start') { studyDone = false; events = []; confirmed = new Map(); attributed = new Map(); decided = new Set(); openKeys.clear(); closeStopWindow(); $('pending').textContent = ''; }
   events.push(e);
   if (e.type === 'gate.decided') decided.add(e.id);
+  if (e.type === 'gate.attributed') { attributed.set(e.id, e.cause); const p = events.find((x) => x.type === 'gate.pending' && x.id === e.id); const ul = document.getElementById(`reasons-${e.id}`); if (p && ul) fillReasons(ul, p); }
   if (e.type === 'gate.confirmed') { confirmed.set(e.id, e); setConfirmation(document.getElementById(`conf-${e.id}`), e.id); }
   if (e.type === 'stop.window') openStopWindow(e);
   if (e.type === 'agent.stopped' || e.type === 'task.end') closeStopWindow();

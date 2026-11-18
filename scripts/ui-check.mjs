@@ -80,6 +80,13 @@ try {
     ok('every button has a visible name', names === 0);
     await ctx.close();
   });
+  await withPreview('attributed', async (url) => {   // a model names the cause after the card is already up
+    const { ctx, page, problems } = await open(url);
+    const text = await page.locator('.card .reasons').innerText();
+    ok('a model-picked cause is shown, labelled as such, with the quoted passage', /A model reading the page judged/.test(text) && /system-reminder/.test(text) && !/no single passage/.test(text), text.slice(0, 80));
+    ok('attributed: no console errors', problems.length === 0, problems.join(' | '));
+    await ctx.close();
+  });
   await withPreview('fleet', async (url) => {   // several agents on one hub
     const { ctx, page, problems } = await open(url);
     ok('fleet: no console errors or CSP violations', problems.length === 0, problems.join(' | '));

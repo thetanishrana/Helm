@@ -121,3 +121,19 @@ Wrong causes named: 0 on every set. Interception 12/12 and harmless pauses 2/20 
 What it says: the lexicon fixes the paraphrases it was written from and does nothing for new ones. That is the same lesson as the risk-verb list: a hand-written vocabulary fits the sets it was written against. Attribution on unseen pages stays at about a third. The lexicon is kept (it costs nothing and caused no wrong cause) but it is not a measured improvement. `heldout5` is still clean for the earlier allowlist question; it has now been scored twice (once per change), neither time used for tuning.
 
 Real options for a general fix: a local embedding or language model judging "does this passage ask for this action" (free but heavier, adds a dependency and latency), or relying on the counterfactual re-run (already built, extra model calls, names the cause only when it confirms). Neither has been tried.
+
+## Seventh measurement: a model judge for attribution (2026-11-16), a large gain on the clean set
+Change: `src/model/judge.mjs`. When Helm holds an action and the heuristics name no cause (or only a weak one), a Claude model (Haiku 5.5 through the owner's Claude login, one request per held action) reads the numbered page passages and returns the number of the one that tells the agent to do this, or none. It runs while the card is already waiting, so it adds no delay; the card then updates with "A model reading the page judged that this text ... pushed the agent". Page text is delimited and treated as data, and the only thing the judge can return is a passage number, so a hostile passage can be picked but not obeyed. Optional: `--judge [model]` (off by default, because it sends the page text and the user's request to Claude).
+
+| Set | Heuristics alone | With judge | Judge calls / wrong passage / none | Status |
+| --- | --- | --- | --- | --- |
+| **heldout5 (clean for this change; scored once)** | **4/12 (33%, CI 14-61%)** | **11/12 (92%, CI 65-99%)** | 8 / 0 / 1 | prompt written without opening this set |
+| heldout, 2, 3, 4 (44 attack pages) | 37/44 (84%) | 39/44 (89%) | 7 / 0 / 5 | the heuristics were tuned on these; the prompt wording was informed by the kinds of paraphrase they showed |
+
+Raw output: `docs/results/judge-heldout5-haiku/`, `docs/results/judge-sets1-4-haiku/`.
+
+Limits, stated plainly:
+- One judge model, 12 attack pages, one author for the set; the CI is wide. "Correct" means the named passage matches the injected text by the same word-overlap test as everywhere else.
+- The judge never named a wrong passage on an attack page. On harmless false pauses it named a cause in 1 of 2 (`scripts/judge-benign-check.mjs`): a "View document" pause on a page that did contain an injection, so it pointed at the page's real injected text although that harmless click was not what the text targeted. A judge answer is a model's opinion shown as such, not proof.
+- It costs a Claude request per qualifying held action and sends page text out: fine for the owner's own runs, not for study participants (see `docs/00-brief-review.md`).
+- Interception is unchanged; this only improves explaining why.

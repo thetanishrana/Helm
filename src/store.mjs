@@ -75,7 +75,7 @@ export class Store extends EventEmitter {
     const decided = new Map(ev.filter((e) => e.type === 'gate.decided').map((e) => [e.id, e]));
     const held = ev.filter((e) => e.type === 'gate.pending').map((p) => {
       const d = decided.get(p.id);
-      return { id: p.id, what: p.what, cause: p.cause?.text ?? null, risk: p.risk, outcome: d ? (d.allow ? 'allowed' : 'blocked') : 'undecided', by: d?.by ?? null, latencyMs: d?.latencyMs ?? null, reflexive: Boolean(d?.reflexive), confirmed: ev.find((e) => e.type === 'gate.confirmed' && e.id === p.id)?.verdict ?? null };
+      return { id: p.id, what: p.what, cause: ev.find((e) => e.type === 'gate.attributed' && e.id === p.id)?.cause.text ?? p.cause?.text ?? null, risk: p.risk, outcome: d ? (d.allow ? 'allowed' : 'blocked') : 'undecided', by: d?.by ?? null, latencyMs: d?.latencyMs ?? null, reflexive: Boolean(d?.reflexive), confirmed: ev.find((e) => e.type === 'gate.confirmed' && e.id === p.id)?.verdict ?? null };
     });
     const executed = ev.filter((e) => e.type === 'action');
     const navs = [...new Set(ev.filter((e) => e.type === 'navigate').map((e) => e.host))];

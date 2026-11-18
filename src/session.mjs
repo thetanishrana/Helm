@@ -3,13 +3,14 @@ import { createHash } from 'node:crypto';
 import { startTap } from './model/tap.mjs';
 import { startProxy } from './cdp/proxy.mjs';
 import { classify } from './model/policy.mjs';
-import { explainAll, mostImportant } from './model/explain.mjs';
+import { explainAll, mostImportant, pageChunks } from './model/explain.mjs';
+import { judgeCause } from './model/judge.mjs';
 import { attribute } from './model/counterfactual.mjs';
 import { resolveSelectors } from './cdp/lookup.mjs';
 
 const short = (c) => (c || '').replace(/\s+/g, ' ').slice(0, 140);
 
-export async function startSession({ store, approvals, tapPort = 8787, cdpPort = 9333, chromePort = 9222, upstream = null, confirm = false, agent = null, log = () => {} }) {
+export async function startSession({ store, approvals, tapPort = 8787, cdpPort = 9333, chromePort = 9222, upstream = null, confirm = false, judge = null, agent = null, log = () => {} }) {
   // With several agents on one store, every event is tagged with the agent that caused it.
   const tag = agent ? { agent: agent.id } : {};
   const emit = (type, data = {}) => store.add(type, { ...tag, ...data });
@@ -32,6 +33,10 @@ export async function startSession({ store, approvals, tapPort = 8787, cdpPort =
         agent: agent?.id, key: ex.action.what, what: ex.action.what, cause: ex.cause, risk: ex.risk.tier, reason: ex.reason, card: ex.card,
         explanation: { action: { verb: ex.action.verb, label: ex.action.label, role: ex.action.role }, requested: ex.requested, cause: ex.cause, risk: ex.risk, reason: ex.reason, emails: ex.emails },
         onPending: (id) => {
+          // The heuristics found no clear cause: let a model read the passages while the person decides (no added wait).
+          if (judge && (!ex.cause || ex.cause.weak)) judgeCause({ what: ex.action.what, label: ex.action.label, userPrompts: req.userPrompts, chunks: pageChunks(req), ask: judge.ask })
+            .then((j) => { if (j) emit('gate.attributed', { id, cause: { text: j.passage.text, page: j.passage.page, role: j.passage.role, weak: false, by: 'model' } }); })
+            .catch(() => {});
           if (!confirm || !ctx?.body) { emit('gate.confirmed', { id, verdict: 'skipped' }); return; }
           const target = `${ex.action.verb}|${ex.action.label || ex.action.ref || ''}`;
           attribute({ body: ctx.body, target, resend: ctx.resend, heuristicCause: ex.cause })
