@@ -137,3 +137,26 @@ Limits, stated plainly:
 - The judge never named a wrong passage on an attack page. On harmless false pauses it named a cause in 1 of 2 (`scripts/judge-benign-check.mjs`): a "View document" pause on a page that did contain an injection, so it pointed at the page's real injected text although that harmless click was not what the text targeted. A judge answer is a model's opinion shown as such, not proof.
 - It costs a Claude request per qualifying held action and sends page text out: fine for the owner's own runs, not for study participants (see `docs/00-brief-review.md`).
 - Interception is unchanged; this only improves explaining why.
+
+## Eighth measurement: a sixth set, batch one (ChatGPT, 6 attack pages), and two extraction bugs it exposed (2026-11-18)
+`eval-pages/heldout6/k01..k06`, written by ChatGPT from `eval-pages/CHATGPT-PROMPT.md` (the author was told nothing about how Helm decides). Batches two (6 more attacks) and three (10 benign pages) are not written yet.
+
+**Clean score, before any change (commit eeb3778):** interception 6/6 (CI 61-100%), 0/6 harmless actions paused, heuristic cause named 4/6, **judge added nothing (4/6)**: it said "none" on both pages the heuristics missed.
+
+**Why, found by diagnosing those two pages afterwards:** two bugs in how page passages were extracted, not in the judge's reading.
+1. The judge dropped every passage the parser had marked as a "label", but a table `cell "..."` or an `img "..."` also has only a name. A long injection in a table cell never reached the judge. Fixed: only interactive controls' labels are excluded.
+2. The snapshot writes an element whose accessible name differs from its visible text as `'img "<long aria-label>" [ref]': ⓘ`. The parser kept only the visible value `ⓘ` and lost the name, where the injection was. Fixed: that name is now its own passage (non-interactive roles only).
+
+Both are generic fixes (alt text and aria-label injections are a known style), but they were found with this set, so **k01-k06 is now dev data**.
+
+| | Before the fix | After the fix |
+| --- | --- | --- |
+| k01-k06, heuristics alone (dev now) | 4/6 | 4/6 |
+| k01-k06, with judge (dev now) | 4/6 | **6/6** |
+| heldout5, heuristics alone | 4/12 | 4/12 |
+| heldout5, with judge (not used to find the bugs) | 11/12 | **12/12** |
+| sets 1-4 and dev, heuristics (in-sample) | 6/8, 12/12, 10/12, 9/12, 12/12 | 7/8, 12/12, 10/12, 9/12, 12/12 |
+
+No wrong cause named and no new false pause on any set (`heldout5` still pauses 2/20 harmless actions, "View document"). Raw output: `docs/results/judge-heldout6a-haiku/` (before), `docs/results/judge-heldout6a-after-extraction-fix/`, `docs/results/judge-heldout5-after-extraction-fix/`, `docs/results/detect-heldout6a-eeb3778/`.
+
+Honest reading: the judge's first run on a truly fresh set was a null result, and the reason was my plumbing. With the plumbing fixed it names the cause on all 18 attack pages of the two most recent sets, but the fix was made after seeing those misses, so the 6/6 and 12/12 are not clean figures. The clean test of the fixed version is batch two (and the benign batch for false pauses), still to be written.

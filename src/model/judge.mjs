@@ -4,6 +4,7 @@
 // The page text is untrusted, so it sits inside delimiters, the model is told to treat it as data, and the only
 // thing it can return is the NUMBER of a passage (or none): a hostile passage can at worst be picked, never obeyed.
 import { spawn } from 'node:child_process';
+import { INTERACTIVE } from './explain.mjs';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -14,7 +15,8 @@ export function candidatePassages(chunks, label) {
   const seen = new Set(); const out = [];
   for (const c of chunks) {
     const t = String(c.text || '').replace(/\s+/g, ' ').trim();
-    if (c.isLabel || t.length < 12 || seen.has(t) || t === label) continue;
+    // a control's own label is not a passage; a table cell, image name or heading that only has a name can be page content
+    if ((c.isLabel && INTERACTIVE.has(c.role)) || t.length < 12 || seen.has(t) || t === label) continue;
     seen.add(t); out.push({ ...c, text: t });
   }
   return out.slice(0, MAX_PASSAGES);

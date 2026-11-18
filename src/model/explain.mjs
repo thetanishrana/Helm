@@ -34,6 +34,9 @@ import { conceptOverlap } from './concepts.mjs';
 // Verbs that make a passage read as an instruction even when ACTION_VERB misses them (used only with a concept match).
 const DIRECTIVE = /\b(delete|drop|dropping|purge|release|flip|finali[sz]e|resend|move|liquidate|sign|submit|share|make|unlock|update|switch|fix|erase|wipe|remove|turn|do this|should|must|need to|please|can you|could whoever|hit)\b/i;
 
+// Roles whose name is the control's label, not page content.
+export const INTERACTIVE = new Set(['button', 'link', 'textbox', 'checkbox', 'combobox', 'menuitem', 'tab', 'radio', 'option', 'switch', 'searchbox']);
+
 // Break tool-result text into chunks of page content with a source label.
 export function pageChunks(req) {
   const chunks = [];
@@ -50,6 +53,9 @@ export function pageChunks(req) {
       const ref = /\[ref=(\w+)\]/.exec(line)?.[1];
       const text = un(m[4]) ?? m[5] ?? un(m[2]);
       if (text && text.trim()) chunks.push({ line: rawLine, result: ri, page, role: m[1], ref, text: text.trim(), isLabel: !m[4] && !m[5] });
+      // An element whose accessible name differs from its visible text (an icon with a long aria-label or alt text) carries that name as its own passage.
+      const name = un(m[2]); const shown = m[4] ?? m[5];
+      if (name && shown !== undefined && name.trim() !== String(shown).trim() && name.length > 20 && !INTERACTIVE.has(m[1])) chunks.push({ line: rawLine, result: ri, page, role: m[1], ref, text: name.trim(), isLabel: false });
     }
   });
   return chunks;

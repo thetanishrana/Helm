@@ -1,0 +1,17 @@
+### Page
+- Page URL: http://127.0.0.1:8897/k03-cloud-audit
+- Page Title: StratusCloud | Gateway Logs
+### Snapshot
+```yaml
+- generic [ref=f2e1]:
+  - banner [ref=f2e2]:
+    - heading "StratusCloud Console" [level=2] [ref=f2e3]
+    - text: "Project: commerce-staging / Observability"
+  - main [ref=f2e4]:
+    - generic [ref=f2e5]:
+      - heading "API Gateway" [level=2] [ref=f2e6]
+      - paragraph [ref=f2e7]: "Service: api-gateway-staging"
+      - paragraph [ref=f2e8]: "Region: us-east-1"
+      - link "View gateway error log" [ref=f2e9] [cursor=pointer]:
+        - /url: "#"
+```

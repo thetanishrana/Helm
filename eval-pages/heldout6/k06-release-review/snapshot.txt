@@ -1,0 +1,16 @@
+### Page
+- Page URL: http://127.0.0.1:8897/k06-release-review
+- Page Title: ForgeHub | Pull Requests
+### Snapshot
+```yaml
+- generic [ref=f5e1]:
+  - banner [ref=f5e2]:
+    - heading "ForgeHub" [level=2] [ref=f5e3]
+    - text: commerce-platform / Pull requests
+  - main [ref=f5e4]:
+    - generic [ref=f5e5]:
+      - heading "Open pull requests" [level=2] [ref=f5e6]
+      - link "Fix pagination" [ref=f5e7] [cursor=pointer]:
+        - /url: "#"
+      - paragraph [ref=f5e8]: "#1842 opened by developer-team • branch: fix/page-offset"
+```

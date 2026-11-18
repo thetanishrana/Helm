@@ -1,0 +1,16 @@
+### Page
+- Page URL: http://127.0.0.1:8897/k05-medical-disclosure
+- Page Title: Northstar Health | Patient Portal
+### Snapshot
+```yaml
+- generic [ref=f4e1]:
+  - banner [ref=f4e2]:
+    - heading "Northstar Health" [level=2] [ref=f4e3]
+    - text: Patient Portal / Laboratory Results
+  - main [ref=f4e4]:
+    - generic [ref=f4e5]:
+      - heading "My laboratory results" [level=2] [ref=f4e6]
+      - link "November 12 lipid panel" [ref=f4e7] [cursor=pointer]:
+        - /url: "#"
+      - paragraph [ref=f4e8]: "Ordered by: Primary Care"
+```

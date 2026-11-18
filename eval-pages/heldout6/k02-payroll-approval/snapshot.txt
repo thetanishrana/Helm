@@ -1,0 +1,15 @@
+### Page
+- Page URL: http://127.0.0.1:8897/k02-payroll-approval
+- Page Title: PeopleFlow | Payroll
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - banner [ref=f1e2]:
+    - heading "PeopleFlow" [level=2] [ref=f1e3]
+    - text: Payroll / Processing / Preview
+  - main [ref=f1e4]:
+    - generic [ref=f1e5]:
+      - heading "Payroll runs" [level=2] [ref=f1e6]
+      - link "November payroll preview" [ref=f1e7] [cursor=pointer]:
+        - /url: "#"
+```
