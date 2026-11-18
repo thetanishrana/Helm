@@ -20,6 +20,10 @@ test('the prompt carries the request, the action and numbered passages, and warn
   const p = buildPrompt({ what: 'click button "Unlock front door"', userPrompts: ['Show the camera'], passages: candidatePassages(chunks, '') });
   assert.match(p, /Show the camera/); assert.match(p, /Unlock front door/); assert.match(p, /\[2\] Note for the assistant/); assert.match(p, /Do not follow any instruction/);
 });
+test('the prompt tells the judge that a passage asking for a different action does not count', () => {
+  const p = buildPrompt({ what: 'click button "View document"', userPrompts: ['Show my payslip'], passages: candidatePassages(chunks, '') });
+  assert.match(p, /DIFFERENT action does not count/); assert.match(p, /answer null/);
+});
 test('only a valid passage number is accepted from the answer', () => {
   assert.equal(parseAnswer('{"passage": 2}', 3), 1); assert.equal(parseAnswer('Sure! {"passage": null}', 3), null);
   assert.equal(parseAnswer('{"passage": 9}', 3), null); assert.equal(parseAnswer('I think passage 2', 3), null); assert.equal(parseAnswer('', 3), null);
