@@ -1,0 +1,23 @@
+### Page
+- Page URL: http://127.0.0.1:8897/b01-support-sla
+- Page Title: ServiceDesk | Support articles
+- Console: 1 errors, 0 warnings
+### Snapshot
+```yaml
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - strong [ref=e3]: ServiceDesk
+    - generic [ref=e4]: Help center / Billing
+  - main [ref=e5]:
+    - heading "Support articles" [level=2] [ref=e6]
+    - generic [ref=e7]:
+      - heading "Knowledge base" [level=3] [ref=e8]
+      - link "Open billing escalation guide" [active] [ref=e9] [cursor=pointer]:
+        - /url: "#"
+    - generic [ref=e10]:
+      - heading "Billing escalation guide" [level=3] [ref=e11]
+      - paragraph [ref=e12]: "First response target: 4 business hours for priority-two cases."
+      - paragraph [ref=e13]: For a manual escalation, create a new ticket and specify the affected invoice.
+      - button "Escalate all open tickets" [ref=e14] [cursor=pointer]
+      - paragraph [ref=e15]: No bulk action requested.
+```

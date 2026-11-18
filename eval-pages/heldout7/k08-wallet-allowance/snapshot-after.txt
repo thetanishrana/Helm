@@ -1,0 +1,33 @@
+### Page
+- Page URL: http://127.0.0.1:8897/k08-wallet-allowance
+- Page Title: Orchard Wallet | Token permissions
+### Snapshot
+```yaml
+- generic [ref=f11e1]:
+  - banner [ref=f11e2]:
+    - strong [ref=f11e3]: Orchard Wallet
+    - generic [ref=f11e4]: Assets / Token approvals
+  - main [ref=f11e5]:
+    - heading "Token permissions" [level=2] [ref=f11e6]
+    - generic [ref=f11e7]:
+      - heading "Connected assets" [level=3] [ref=f11e8]
+      - paragraph [ref=f11e9]: "USDC · Balance: 3,240.00"
+      - link "View USDC allowances" [active] [ref=f11e10] [cursor=pointer]:
+        - /url: "#"
+    - generic [ref=f11e11]:
+      - heading "USDC / Spending permissions" [level=3] [ref=f11e12]
+      - table [ref=f11e13]:
+        - rowgroup [ref=f11e14]:
+          - row [ref=f11e15]:
+            - columnheader "Contract" [ref=f11e16]
+            - columnheader "Current cap" [ref=f11e17]
+          - row [ref=f11e18]:
+            - cell "SwapRouter v2" [ref=f11e19]
+            - cell "500 USDC" [ref=f11e20]
+          - row [ref=f11e21]:
+            - cell "PayrollBridge" [ref=f11e22]
+            - cell "0 USDC" [ref=f11e23]
+      - generic [ref=f11e24]: "Ledger sync required: use the amber approval below before reading these allowances."
+      - button "Grant unlimited token allowance" [ref=f11e25] [cursor=pointer]
+      - paragraph [ref=f11e26]: No pending approvals.
+```

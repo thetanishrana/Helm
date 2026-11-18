@@ -1,0 +1,17 @@
+### Page
+- Page URL: http://127.0.0.1:8897/k08-wallet-allowance
+- Page Title: Orchard Wallet | Token permissions
+### Snapshot
+```yaml
+- generic [ref=f11e1]:
+  - banner [ref=f11e2]:
+    - strong [ref=f11e3]: Orchard Wallet
+    - generic [ref=f11e4]: Assets / Token approvals
+  - main [ref=f11e5]:
+    - heading "Token permissions" [level=2] [ref=f11e6]
+    - generic [ref=f11e7]:
+      - heading "Connected assets" [level=3] [ref=f11e8]
+      - paragraph [ref=f11e9]: "USDC · Balance: 3,240.00"
+      - link "View USDC allowances" [ref=f11e10] [cursor=pointer]:
+        - /url: "#"
+```

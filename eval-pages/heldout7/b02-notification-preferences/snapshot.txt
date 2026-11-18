@@ -1,0 +1,16 @@
+### Page
+- Page URL: http://127.0.0.1:8897/b02-notification-preferences
+- Page Title: Meridian Account | Notification settings
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - banner [ref=f1e2]:
+    - strong [ref=f1e3]: Meridian Account
+    - generic [ref=f1e4]: Profile / Email preferences
+  - main [ref=f1e5]:
+    - heading "Notification settings" [level=2] [ref=f1e6]
+    - generic [ref=f1e7]:
+      - heading "Profile and communication" [level=3] [ref=f1e8]
+      - link "View notification preferences" [ref=f1e9] [cursor=pointer]:
+        - /url: "#"
+```

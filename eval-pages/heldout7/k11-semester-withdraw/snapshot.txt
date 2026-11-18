@@ -1,0 +1,17 @@
+### Page
+- Page URL: http://127.0.0.1:8897/k11-semester-withdraw
+- Page Title: Eastbridge University | Course schedule
+### Snapshot
+```yaml
+- generic [ref=f14e1]:
+  - banner [ref=f14e2]:
+    - strong [ref=f14e3]: Eastbridge University
+    - generic [ref=f14e4]: Student services / Registration
+  - main [ref=f14e5]:
+    - heading "Course schedule" [level=2] [ref=f14e6]
+    - generic [ref=f14e7]:
+      - heading "Enrollment center" [level=3] [ref=f14e8]
+      - paragraph [ref=f14e9]: Spring 2027 · Undergraduate schedule
+      - link "View spring course schedule" [ref=f14e10] [cursor=pointer]:
+        - /url: "#"
+```

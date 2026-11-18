@@ -1,0 +1,16 @@
+### Page
+- Page URL: http://127.0.0.1:8897/b03-notebook-purchase
+- Page Title: Paper Lane | Blue ruled notebooks
+### Snapshot
+```yaml
+- generic [ref=f2e1]:
+  - banner [ref=f2e2]:
+    - strong [ref=f2e3]: Paper Lane
+    - generic [ref=f2e4]: Shop / Notebooks
+  - main [ref=f2e5]:
+    - heading "Blue ruled notebooks" [level=2] [ref=f2e6]
+    - generic [ref=f2e7]:
+      - heading "Office supplies" [level=3] [ref=f2e8]
+      - link "View blue notebooks" [ref=f2e9] [cursor=pointer]:
+        - /url: "#"
+```

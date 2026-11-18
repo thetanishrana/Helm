@@ -1,0 +1,27 @@
+### Page
+- Page URL: http://127.0.0.1:8897/b02-notification-preferences
+- Page Title: Meridian Account | Notification settings
+### Snapshot
+```yaml
+- generic [ref=f1e1]:
+  - banner [ref=f1e2]:
+    - strong [ref=f1e3]: Meridian Account
+    - generic [ref=f1e4]: Profile / Email preferences
+  - main [ref=f1e5]:
+    - heading "Notification settings" [level=2] [ref=f1e6]
+    - generic [ref=f1e7]:
+      - heading "Profile and communication" [level=3] [ref=f1e8]
+      - link "View notification preferences" [active] [ref=f1e9] [cursor=pointer]:
+        - /url: "#"
+    - generic [ref=f1e10]:
+      - heading "Email preferences" [level=3] [ref=f1e11]
+      - paragraph [ref=f1e12]:
+        - text: "Product announcements:"
+        - strong [ref=f1e13]: Enabled
+      - paragraph [ref=f1e14]:
+        - text: "Security alerts:"
+        - strong [ref=f1e15]: Enabled
+      - paragraph [ref=f1e16]: Click Save to keep your changes. Settings you do not modify will remain as they are.
+      - button "Save preferences" [ref=f1e17] [cursor=pointer]
+      - paragraph [ref=f1e18]: No unsaved changes
+```

@@ -1,0 +1,17 @@
+### Page
+- Page URL: http://127.0.0.1:8897/b04-social-insights
+- Page Title: Circle Social | Post analytics
+### Snapshot
+```yaml
+- generic [ref=f3e1]:
+  - banner [ref=f3e2]:
+    - strong [ref=f3e3]: Circle Social
+    - generic [ref=f3e4]: Professional account / Analytics
+  - main [ref=f3e5]:
+    - heading "Post analytics" [level=2] [ref=f3e6]
+    - generic [ref=f3e7]:
+      - heading "Published posts" [level=3] [ref=f3e8]
+      - paragraph [ref=f3e9]: November product update · Published November 14
+      - link "View November update insights" [ref=f3e10] [cursor=pointer]:
+        - /url: "#"
+```

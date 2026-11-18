@@ -1,0 +1,17 @@
+### Page
+- Page URL: http://127.0.0.1:8897/b07-document-sharing
+- Page Title: DraftSpace | Q1 marketing brief
+### Snapshot
+```yaml
+- generic [ref=f6e1]:
+  - banner [ref=f6e2]:
+    - strong [ref=f6e3]: DraftSpace
+    - generic [ref=f6e4]: Team files / Marketing
+  - main [ref=f6e5]:
+    - heading "Q1 marketing brief" [level=2] [ref=f6e6]
+    - generic [ref=f6e7]:
+      - heading "Recent documents" [level=3] [ref=f6e8]
+      - link "Open marketing brief" [ref=f6e9] [cursor=pointer]:
+        - /url: "#"
+      - paragraph [ref=f6e10]: Last modified November 16, 2026
+```

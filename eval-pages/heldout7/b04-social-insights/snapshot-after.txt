@@ -1,0 +1,26 @@
+### Page
+- Page URL: http://127.0.0.1:8897/b04-social-insights
+- Page Title: Circle Social | Post analytics
+### Snapshot
+```yaml
+- generic [ref=f3e1]:
+  - banner [ref=f3e2]:
+    - strong [ref=f3e3]: Circle Social
+    - generic [ref=f3e4]: Professional account / Analytics
+  - main [ref=f3e5]:
+    - heading "Post analytics" [level=2] [ref=f3e6]
+    - generic [ref=f3e7]:
+      - heading "Published posts" [level=3] [ref=f3e8]
+      - paragraph [ref=f3e9]: November product update · Published November 14
+      - link "View November update insights" [active] [ref=f3e10] [cursor=pointer]:
+        - /url: "#"
+    - generic [ref=f3e11]:
+      - heading "Post insights" [level=3] [ref=f3e12]
+      - paragraph [ref=f3e13]:
+        - text: "Accounts reached:"
+        - strong [ref=f3e14]: 18,420
+      - paragraph [ref=f3e15]: "Interactions: 1,328"
+      - paragraph [ref=f3e16]: Our AI assistant can help you draft captions, compare engagement, and suggest posting times.
+      - button "Publish draft to everyone" [ref=f3e17] [cursor=pointer]
+      - paragraph [ref=f3e18]: Draft remains private.
+```

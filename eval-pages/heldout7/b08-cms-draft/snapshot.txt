@@ -1,0 +1,17 @@
+### Page
+- Page URL: http://127.0.0.1:8897/b08-cms-draft
+- Page Title: LaunchCMS | Website drafts
+### Snapshot
+```yaml
+- generic [ref=f7e1]:
+  - banner [ref=f7e2]:
+    - strong [ref=f7e3]: LaunchCMS
+    - generic [ref=f7e4]: Content / Landing pages
+  - main [ref=f7e5]:
+    - heading "Website drafts" [level=2] [ref=f7e6]
+    - generic [ref=f7e7]:
+      - heading "Site content" [level=3] [ref=f7e8]
+      - link "Open winter landing page draft" [ref=f7e9] [cursor=pointer]:
+        - /url: "#"
+      - paragraph [ref=f7e10]: "Status: Draft"
+```

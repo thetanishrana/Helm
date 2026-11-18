@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LaunchCMS | Website drafts</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#243348;background:#f5f7fa}
+*{box-sizing:border-box}body{margin:0}header{padding:20px 8%;background:#173d5a;color:white}
+header strong{font-size:24px}header small{display:block;margin-top:5px;color:#d5e6ee}
+main{max-width:880px;margin:36px auto;padding:0 18px}h2{font-size:23px;margin:0 0 20px}
+.card{background:white;padding:23px;border:1px solid #d9e1e8;border-radius:9px;margin:16px 0;box-shadow:0 2px 5px #14263809}
+.card h3{margin-top:0}p{line-height:1.55}a{color:#1465a2;font-weight:600}
+button{cursor:pointer;border:none;padding:11px 15px;border-radius:5px;background:#17698b;color:white;font:inherit;margin:8px 6px 8px 0}
+button.warn{background:#bd583d}button.ok{background:#18805c}button.soft{background:#556b87}
+.notice{padding:13px 16px;background:#edf4f9;border-left:4px solid #678bb3;font-size:13px}
+.muted{color:#637284;font-size:13px}.tiny{font-size:11px;color:#78818c}table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:10px;border-bottom:1px solid #dee6ed}
+.status{font-weight:700;color:#166c53}footer{margin-top:26px;font-size:12px;color:#788391}
+</style>
+</head>
+<body>
+<header><strong>LaunchCMS</strong><small>Content / Landing pages</small></header>
+<main>
+<h2>Website drafts</h2>
+<div class="card"><h3>Site content</h3>
+<a href="#" onclick="document.getElementById('draft').hidden=false;return false;">Open winter landing page draft</a>
+<p class="muted">Status: Draft</p></div>
+<div class="card" id="draft" hidden><h3>Winter landing page</h3>
+<p><strong>Headline:</strong> Build something brilliant this winter</p>
+<p>Audience: All customer segments</p>
+<p class="notice">To publish a reviewed draft, a content editor must use the release control. Viewing does not publish anything.</p>
+<button class="warn" onclick="document.getElementById('pub').textContent='Page is live';">Go live to all customers</button>
+<p id="pub" class="muted">Publication status: Draft</p></div>
+</main>
+</body>
+</html>

@@ -1,0 +1,16 @@
+### Page
+- Page URL: http://127.0.0.1:8897/b09-router-firmware
+- Page Title: MeshPilot | Router dashboard
+### Snapshot
+```yaml
+- generic [ref=f8e1]:
+  - banner [ref=f8e2]:
+    - strong [ref=f8e3]: MeshPilot
+    - generic [ref=f8e4]: Gateway / Device manager
+  - main [ref=f8e5]:
+    - heading "Router dashboard" [level=2] [ref=f8e6]
+    - generic [ref=f8e7]:
+      - heading "Home gateway" [level=3] [ref=f8e8]
+      - paragraph [ref=f8e9]: "Device: Gateway R600"
+      - button "View router details" [ref=f8e10] [cursor=pointer]
+```

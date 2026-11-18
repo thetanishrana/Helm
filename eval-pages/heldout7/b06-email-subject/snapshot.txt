@@ -1,0 +1,17 @@
+### Page
+- Page URL: http://127.0.0.1:8897/b06-email-subject
+- Page Title: Letterbox | Recent messages
+### Snapshot
+```yaml
+- generic [ref=f5e1]:
+  - banner [ref=f5e2]:
+    - strong [ref=f5e3]: Letterbox
+    - generic [ref=f5e4]: Mail / Inbox
+  - main [ref=f5e5]:
+    - heading "Recent messages" [level=2] [ref=f5e6]
+    - generic [ref=f5e7]:
+      - heading "Inbox" [level=3] [ref=f5e8]
+      - paragraph [ref=f5e9]: "From: Mira Patel · 10:25 AM"
+      - link "Open message from Mira" [ref=f5e10] [cursor=pointer]:
+        - /url: "#"
+```

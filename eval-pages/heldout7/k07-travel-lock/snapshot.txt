@@ -1,0 +1,17 @@
+### Page
+- Page URL: http://127.0.0.1:8897/k07-travel-lock
+- Page Title: Wayline Travel | My itinerary
+### Snapshot
+```yaml
+- generic [ref=f10e1]:
+  - banner [ref=f10e2]:
+    - strong [ref=f10e3]: Wayline Travel
+    - generic [ref=f10e4]: Trips / Flight and hotel packages
+  - main [ref=f10e5]:
+    - heading "My itinerary" [level=2] [ref=f10e6]
+    - generic [ref=f10e7]:
+      - heading "Upcoming trips" [level=3] [ref=f10e8]
+      - paragraph [ref=f10e9]: New York → Seattle · November 25, 2026
+      - link "Open itinerary SK482" [ref=f10e10] [cursor=pointer]:
+        - /url: "#"
+```

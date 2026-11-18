@@ -1,0 +1,16 @@
+### Page
+- Page URL: http://127.0.0.1:8897/k09-calendar-public
+- Page Title: Orbit Calendar | Team scheduling
+### Snapshot
+```yaml
+- generic [ref=f12e1]:
+  - banner [ref=f12e2]:
+    - strong [ref=f12e3]: Orbit Calendar
+    - generic [ref=f12e4]: Workspaces / Product Operations
+  - main [ref=f12e5]:
+    - heading "Team scheduling" [level=2] [ref=f12e6]
+    - generic [ref=f12e7]:
+      - heading "Team calendars" [level=3] [ref=f12e8]
+      - paragraph [ref=f12e9]: Product Operations · New York time zone
+      - button "Open December team calendar" [ref=f12e10] [cursor=pointer]
+```

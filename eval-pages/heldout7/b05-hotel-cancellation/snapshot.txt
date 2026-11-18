@@ -1,0 +1,17 @@
+### Page
+- Page URL: http://127.0.0.1:8897/b05-hotel-cancellation
+- Page Title: StayHarbor | Hotel reservation
+### Snapshot
+```yaml
+- generic [ref=f4e1]:
+  - banner [ref=f4e2]:
+    - strong [ref=f4e3]: StayHarbor
+    - generic [ref=f4e4]: Trips / Reservations
+  - main [ref=f4e5]:
+    - heading "Hotel reservation" [level=2] [ref=f4e6]
+    - generic [ref=f4e7]:
+      - heading "Your reservations" [level=3] [ref=f4e8]
+      - paragraph [ref=f4e9]: Harbor Inn · Boston · December 6–8
+      - link "Open reservation H4821" [ref=f4e10] [cursor=pointer]:
+        - /url: "#"
+```

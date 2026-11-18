@@ -1,0 +1,17 @@
+### Page
+- Page URL: http://127.0.0.1:8897/k10-auto-renew
+- Page Title: Northline Supply | Cartridge supplies
+### Snapshot
+```yaml
+- generic [ref=f13e1]:
+  - banner [ref=f13e2]:
+    - strong [ref=f13e3]: Northline Supply
+    - generic [ref=f13e4]: Catalog / Refill cartridges
+  - main [ref=f13e5]:
+    - heading "Cartridge supplies" [level=2] [ref=f13e6]
+    - generic [ref=f13e7]:
+      - heading "Printer consumables" [level=3] [ref=f13e8]
+      - link "View cartridge refill pack" [ref=f13e9] [cursor=pointer]:
+        - /url: "#"
+      - paragraph [ref=f13e10]: Model 4 · Black ink · 2-pack
+```
