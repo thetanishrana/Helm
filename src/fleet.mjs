@@ -2,7 +2,7 @@
 // each agent gets its own model tap, browser tap and Chrome (ports counted up from the base ports), and every
 // event it causes is tagged with its id.
 //   { "name"?, "uiPort"?: 7777, "timeout"?: 300, "dataDir"?: ".helm", "confirm"?: bool, "ollama"?: "model", "headless"?: bool,
-//     "open"?: bool, "exit"?: bool, "agents": [ { "name": "invoice agent", "cmd": ["claude", "-p", "..."], "env"?: {}, "cwd"?: "." } ] }
+//     "judge"?: false | "model" (attribution judge, on by default),  "open"?: bool, "exit"?: bool, "agents": [ { "name": "invoice agent", "cmd": ["claude", "-p", "..."], "env"?: {}, "cwd"?: "." } ] }
 import { spawn } from 'node:child_process';
 import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -31,6 +31,7 @@ export async function launchFleet(spec, { log = (m) => console.error(m) } = {}) 
   const approvals = new Approvals({ store, timeoutMs: (spec.timeout ?? 300) * 1000 });
   const ui = await startServer({ store, approvals, port: spec.uiPort ?? 7777 });
   const url = `http://127.0.0.1:${ui.port}/`;
+  log(spec.judge === false ? 'helm: attribution judge off' : 'helm: attribution judge ON: page text and the request are sent to Claude when no cause is clear; set "judge": false to turn off');
   log(`helm: UI ${url}   ${spec.agents.length} agent${spec.agents.length === 1 ? '' : 's'}   log ${store.file}`);
   if (spec.open) spawn('open', [url], { stdio: 'ignore' });
 
@@ -40,7 +41,7 @@ export async function launchFleet(spec, { log = (m) => console.error(m) } = {}) 
     const agent = store.register({ id: idOf(a.name, i, taken), name: a.name });
     const chrome = spawn(CHROME, [...(spec.headless ? ['--headless=new'] : []), `--remote-debugging-port=${ports.chrome}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'helm-chrome-'))}`, '--no-first-run', '--no-default-browser-check', 'about:blank'], { stdio: 'ignore' });
     for (let k = 0; k < 75; k++) { try { await fetch(`http://127.0.0.1:${ports.chrome}/json/version`); break; } catch { await new Promise((r) => setTimeout(r, 200)); } }
-    const session = await startSession({ store, approvals, agent, tapPort: ports.tap, cdpPort: ports.cdp, chromePort: ports.chrome, confirm: spec.confirm, judge: spec.judge ? { ask: claudeAsk(typeof spec.judge === 'string' ? spec.judge : undefined) } : null, upstream: spec.ollama ? { host: '127.0.0.1', port: 11434 } : null });
+    const session = await startSession({ store, approvals, agent, tapPort: ports.tap, cdpPort: ports.cdp, chromePort: ports.chrome, confirm: spec.confirm, judge: spec.judge === false ? null : { ask: claudeAsk(typeof spec.judge === 'string' ? spec.judge : undefined) }, upstream: spec.ollama ? { host: '127.0.0.1', port: 11434 } : null });
     const env = { ...process.env, ...(a.env || {}), ANTHROPIC_BASE_URL: `http://127.0.0.1:${ports.tap}`, HELM_CDP_URL: `http://127.0.0.1:${ports.cdp}`, PLAYWRIGHT_MCP_TIMEOUT_ACTION: process.env.PLAYWRIGHT_MCP_TIMEOUT_ACTION || '600000' };
     if (spec.ollama) Object.assign(env, { ANTHROPIC_AUTH_TOKEN: 'ollama', ANTHROPIC_DEFAULT_HAIKU_MODEL: spec.ollama, ANTHROPIC_DEFAULT_SONNET_MODEL: spec.ollama, ANTHROPIC_DEFAULT_OPUS_MODEL: spec.ollama, CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1' });
     const proc = spawn(a.cmd[0], a.cmd.slice(1), { stdio: 'inherit', env, cwd: a.cwd || process.cwd() });

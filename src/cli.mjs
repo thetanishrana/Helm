@@ -23,7 +23,9 @@ const HELP = `usage: helm run [options] -- <agent command...>
   --headless          start Chrome headless
   --ollama MODEL      send the agent's model requests to Ollama's Anthropic-compatible endpoint
   --confirm           re-run held requests without each suspect passage (extra model calls)
-  --judge [MODEL]     when no clear cause is found, a Claude model reads the page passages and names one (default claude-haiku-5-5; uses your Claude login, sends page text and your request to Claude)
+  --judge MODEL       model for the attribution judge (default claude-haiku-5-5). ON by default: when no clear cause is found, a Claude model
+                      reads the page passages and names one; this uses your Claude login and sends page text and your request to Claude
+  --no-judge          turn the judge off (nothing leaves the machine except what the agent itself sends)
   --timeout S         seconds before an unanswered decision is blocked (default 300)
   --data-dir DIR      where the event log is written (default ./.helm)
   --open              open the UI in your browser
@@ -41,7 +43,7 @@ function parse(argv) {
     else if (f === '--timeout') o.timeout = Number(v()); else if (f === '--data-dir') o.dir = v();
     else if (f === '--ollama') o.ollama = v(); else if (f === '--attach') o.attach = true;
     else if (f === '--headless') o.headless = true; else if (f === '--confirm') o.confirm = true;
-    else if (f === '--judge') { o.judge = flags[k + 1] && !flags[k + 1].startsWith('--') ? flags[++k] : 'claude-haiku-5-5'; } else if (f === '--open') o.open = true; else if (f === '--exit') o.exit = true;
+    else if (f === '--judge') o.judge = v(); else if (f === '--no-judge') o.judge = false; else if (f === '--open') o.open = true; else if (f === '--exit') o.exit = true;
     else { console.error(`unknown option ${f}\n${HELP}`); process.exit(2); }
   }
   return o;
@@ -49,6 +51,7 @@ function parse(argv) {
 
 if (process.argv[2] === 'fleet') { await import('./fleet.mjs'); await new Promise(() => {}); }
 const o = parse(process.argv.slice(2));
+if (o.judge === undefined) o.judge = 'claude-haiku-5-5';
 if (!o.cmd.length) { console.log(HELP); process.exit(2); }
 
 let chrome = null;
@@ -62,6 +65,7 @@ const approvals = new Approvals({ store, timeoutMs: o.timeout * 1000 });
 const session = await startSession({ store, approvals, tapPort: o.tap, cdpPort: o.cdp, chromePort: o.chrome, confirm: o.confirm, judge: o.judge ? { ask: claudeAsk(o.judge) } : null, upstream: o.ollama ? { host: '127.0.0.1', port: 11434 } : null });
 const ui = await startServer({ store, approvals, port: o.ui });
 const url = `http://127.0.0.1:${ui.port}/`;
+console.error(o.judge ? `helm: attribution judge ON (${o.judge}): page text and your request are sent to Claude when no cause is clear; --no-judge to turn off` : 'helm: attribution judge off');
 console.error(`helm: UI ${url}   model tap :${o.tap}   browser tap :${o.cdp}   log ${store.file}`);
 if (o.open) spawn('open', [url], { stdio: 'ignore' });
 
