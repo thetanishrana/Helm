@@ -1,6 +1,6 @@
 # Brief review: verified findings and corrections
 
-Reviewed 2026-10-26 against `research brief.md` (left unedited). Only sources actually opened are marked **verified**; everything else is marked as such. Success gates are in [00-success-criteria.md](00-success-criteria.md).
+Reviewed 2026-10-26 against the original project brief (a working document, not included in this repository). Only sources actually opened are marked **verified**; everything else is marked as such. Success gates are in [00-success-criteria.md](00-success-criteria.md).
 
 ## 1. Source checks
 

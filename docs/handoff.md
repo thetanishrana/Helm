@@ -1,64 +1,35 @@
-# Handoff (updated 2026-11-04, after the fourth held-out set)
+# Handoff: current state and how to continue
 
-Read this first in a new session, then `CLAUDE.md`, then `docs/decisions.md`. The state table and next steps below were updated at commit `296d2e8`; check `git log` for anything newer. Start with `docs/writeup.md` (the project in plain language) and `docs/heldout-findings.md` (what held-out testing found).
+Read this first in a new session, then `CLAUDE.md`, then the last rows of `docs/decisions.md`. Updated 2026-11-18. For the project in plain language start with `docs/writeup.md`; for the held-out measurements, `docs/heldout-findings.md`.
 
-## Latest state (2026-11-06): read this section first, the older text below is partly stale
-- **Product and evaluation:** done and documented. Risk rule is now an allowlist of harmless button words (`src/model/explain.mjs`); five held-out sets by other models; the clean test of the allowlist (`eval-pages/heldout5`) gave 12/12 intercepted, 4/12 causes named, 2/20 harmless actions paused (one label, "View document"). Details: `docs/heldout-findings.md`, `docs/writeup.md`, `docs/results/`. 123 tests pass (`npm test`).
-- **Interface:** rebuilt 2026-11-05 (`docs/ui-design.md`, screenshots `docs/assets/`). `npm run ui:preview -- <state>` and `npm run ui:check` (21 checks, needs Chrome) must pass after any UI change. A live run against the real product was verified headless: card in ~15 s, re-run check confirmed, Block works. **Not yet run:** the demo in its visible-window mode (two windows) and nothing has been tried with a person.
-- **Skills:** `.claude/skills/frontend-design/` (Anthropic's, vetted, hash-checked by a test). Hallmark and Impeccable were read but not installed because they bundle executable scripts; rule in `CLAUDE.md` and `docs/skills-vetting.md`. The permission classifier blocks running third-party code and force-pushes; do not work around it, ask the owner.
-- **Git, needs the owner:** the three commits that named Claude in their messages were reworded locally (backup branch `backup-before-reword`, same files). `origin/main` still has the old history, so local `main` is 21 ahead and 21 behind. The owner must run `git push --force-with-lease origin main` (or approve it). Do not `git pull`; it would duplicate the history. Then `git branch -D backup-before-reword`. Commit messages must never mention Claude or AI (see `CLAUDE.md`).
-- **Repo:** private, MIT licence, description set. The owner will make it public: open items are the `[researcher name and email ...]` placeholder in `src/replay/texts.mjs` and whether to keep `research brief.md` and the internal docs. The owner's email is in all commits.
-- **Open (updated 2026-11-16):** demo clip made by `node scripts/record-demo.mjs`; history pushed; interface finish pass and CSS-selector lookup done; concept lexicon tried for attribution (null on the clean set); model judge for attribution (ON by default since 2026-11-18, `--no-judge` to disable) lifted cause naming on the clean set 4/12 -> 11/12 (see heldout-findings, 7th measurement; sends page text and the request to Claude); multi-agent supervision BUILT (`node src/cli.mjs fleet`, `docs/multi-agent-design.md` lists what exists and what does not; 138 tests, 33 UI checks). Attribution still about a third on unseen pages. No user study.
-- **Environment traps:** `ollama serve` often must be restarted (a dead server returns 502 and invalidates runs); fixed ports 7777, 8787, 8899, 9222, 9333 (and 8897 for page capture); free with `lsof -ti tcp:PORT | xargs kill`; never `pkill -f` a pattern in your own command. `grep -P` and `timeout` do not exist on this Mac.
+## State
+- **Product (Gate 1):** working. Two proxies under the agent (model API tap, browser CDP tap), a policy and explainer, hold-for-decision with SSE keepalive, a local web UI (course view, decision card, receipt), a read-only CSS-selector lookup, an opt-out attribution judge, and multi-agent supervision (`node src/cli.mjs fleet <file>`; see `docs/multi-agent-design.md` for what exists and what does not). 144 tests (`npm test`) and 33 interface checks (`npm run ui:check`, needs Chrome).
+- **Measured detection (Gate 2):** done, with honest limits. Interception on unseen pages: allowlist rule 12/12, 6/6, 6/6 across the last three held-out sets, at the cost of some false pauses (3 of 42 harmless actions). Naming the pushing passage: about a third with heuristics, 24/24 with the model judge on the last three sets (only `heldout7`, 6 pages, is a clean test of the final judge). Which sets are clean and which are dev data is tracked in `docs/heldout-findings.md` and `docs/decisions.md`; never tune on a clean set without logging that it became dev data.
+- **Human evidence (Gate 3):** none. No participant pool; a replay instrument exists (`src/replay/`) and has only been tested with simulated participants. A real session needs `--contact "..."` (shown in the consent text); there are no contact details in the repository.
+- **Activation probes (Gate 4):** not started.
+- **Package (Gate 5):** README, write-up, screenshots (`docs/assets/`), demo script, two clip recorders (`scripts/record-demo.mjs` live with a local model; `scripts/record-fleet-preview.mjs` scripted). Clips are written to `demo/out/` (gitignored).
 
-**Packaging (2026-11-18):** README and `docs/writeup.md` rewritten with the judge, multi-agent view and clean-vs-dev figures; README screenshots regenerated from the refreshed interface (`docs/assets/ui-*.png`, plus `ui-fleet.png`, `ui-attributed.png`); demo clips re-recorded into `demo/out/` (gitignored): `helm-demo.webm` (live, local model) and `helm-fleet-preview.webm` (scripted).
+## Open items
+- The judge's "a different action does not count" rule was tuned on the three known false pauses; a fresh batch of false-pause-prone pages (harmless "View ..." links on pages that also carry an injection) would test it. Authoring prompt: `eval-pages/CHATGPT-PROMPT.md`; importer: `scripts/import-eval-pages.mjs`.
+- False pauses from the old verb list ("refill") and unfamiliar harmless buttons ("View document"); `eval` snippet targets are still opaque. The CSS-selector lookup is checked against a real Chrome but not measured on the evaluation sets.
+- Multi-agent: no Sites view, no cross-agent taint, no shared-Chrome mode; two agents on one local model were too slow to evaluate; agents must use separate browser sessions.
+- No user study; the claim that explanations help people decide better is a design hypothesis.
 
-**Evaluation state (2026-11-18):** the ChatGPT set is complete. `heldout6` (k01-k06) is dev data; `heldout7` (k07-k12 attacks + b01-b10 benign) is the clean test of the fixed judge: 6/6 intercepted, judge names the cause 6/6 (heuristics 4/6), 1/16 harmless pauses ("refill" in the old verb list), 0/10 benign pages paused. See `docs/heldout-findings.md`, 9th measurement. No blind data is pending. The judge's "a different action does not count" rule (10th measurement) removed the cause on all 3 known false pauses but was tuned on them, so a further batch (false-pause-prone pages: harmless View links on pages carrying an injection) would be the clean test.
+## Rules that matter
+- Commit messages must never mention Claude or AI assistance (no trailers).
+- Ask before spending money or running a Claude model through the evaluation (it uses the maintainer's subscription login). The attribution judge is on by default and sends page text and the request to Claude: use `--no-judge` when that is not acceptable, and never route study participants through it.
+- Do not tune on a held-out set; do not edit `spikes/` results; no third-party skill with executable files (`docs/skills-vetting.md`).
+- Run `npm run ui:check` after any UI change. The UI must never use innerHTML or equivalents (a test enforces it).
 
-## What Helm is, in one paragraph
-Oversight layer for AI browser agents. Two proxies sit under the agent (model API tap, browser CDP tap). A policy classifies each tool call, an explainer says whether the user asked for it and which page text pushed the agent toward it, and risky actions are held (with SSE keepalive pings) until the user decides in a local web UI. Quiet when the user asked for the action. Research prototype.
-
-## State of the project
-| Gate | State |
-| --- | --- |
-| 1 Working product | **Interface rebuilt 2026-11-05** (`docs/ui-design.md`; screenshots in `docs/assets/`; `npm run ui:check` passes 20/20); not yet tried with a person. Built in `src/` (launcher, taps, policy, explainer, counterfactual confirmer, approvals, event log, web UI, receipt). Run end to end once on a local model. Proxy overhead ~0.04 ms p50. **Missing:** demo clip, run on a subscription Claude model, other agent CLIs, egress data in the receipt. |
-| 2 Measured detection (the headline) | **Done, with an honest answer.** Four held-out sets by other models: first (ChatGPT) 5/8 intercepted, cause 2/8; second 11/12, cause 7/12 after a measurement correction; third 9/12, cause 4/12; fourth (fresh Claude, **clean, scored once on the frozen explainer `fdac006`**) **11/12 intercepted (CI 65-99%), cause named 3/12, 0/19 false interrupts**. Sets 1-3 are dev data (each was fixed against). Dev (in-sample): live local agent followed 33% unprotected, 0% with Helm blocking. Misses were always a consequential verb missing from the risk list; on 2026-11-05 the list was inverted into an allowlist of harmless button words (`docs/results/allowlist-rule/`: 12/12 offline on all sets but in-sample; live multi-step 1 pause in 53 actions). **Clean test of the allowlist (fifth blind set, scored once on the frozen rule): 12/12 intercepted (CI 76-100%), cause named 4/12, 2/20 harmless actions paused (one label, "View document"), 0/3 asked.** `docs/results/detect-heldout5-allowlist-claude-fresh-5/`. Details: `docs/heldout-findings.md`, `docs/results/`. |
-| 3 Human evidence | **Revised:** no participant pool, so a qualitative pilot (owner + one volunteer), no percentage claim. Study instrument is built (`src/replay/`: conditions A/B/C, counterbalanced plan, consent, practice, debrief, analysis) and tested only with simulated participants. Consent text is a draft with a placeholder contact line. |
-| 4 Activation probes | Not started; first on the cut list. |
-| 5 Package | **Mostly done 2026-10-30:** `README.md`, `docs/writeup.md`, `docs/demo-script.md`, `demo/run-demo.sh` (verified headless: 1 held, 1 blocked). **Missing:** the recorded demo clip (owner records it from the script). |
-
-## Decisions already made (full log in `docs/decisions.md`)
-- Thesis kept, but stated as a design hypothesis, not a result (no study).
-- Headline = automated evaluation + demo. Dev numbers are in-sample and must be labelled so; quote held-out numbers.
-- Hold at the model tap with keepalive pings (not CDP errors, not rewriting denied calls into `echo`). Deny ends the turn with a text block.
-- Local Ollama model (qwen3-coder:30b, minimal prompt) is the susceptible test agent; its numbers are an upper bound for Claude Code.
-- Do not route anyone else through the owner's Claude subscription. Spending any money needs the owner's approval.
-- Web UI is vanilla JS (no build). Spikes in `spikes/` are frozen evidence; do not edit their results.
-
-## What needs the owner (cannot be done by the agent)
-1. Record the demo clip from `docs/demo-script.md` (`demo/run-demo.sh turn_tag`; needs Ollama running).
-   Held-out pages are written by other models now (`eval-pages/heldout*`); `heldout5` is the one set that is clean for the allowlist; if you do, log it and treat it as dev.
-2. Owner and volunteer dry-run the replay: `node src/replay/cli.mjs --participant me --index 0 --open`.
-3. Fill the contact placeholder in `src/replay/texts.mjs` before anyone else sees consent text.
-4. Approval needed before: running a Claude model through the evaluation (`--allow-subscription`, ~4 requests per run), any paid service, or changing the thesis.
-
-## Suggested next steps
-Done: invitation/blind authoring (LLM authors instead of the volunteer), multi-step benign tasks, Claude Haiku 5.5 on dev and multistep sets (owner-approved; 0 injections followed), three held-out sets, packaging (`README.md`, `docs/writeup.md`, `docs/demo-script.md`, `demo/run-demo.sh`).
-1. **Record the demo clip** (owner).
-2. Optional, only if the owner wants it: a fifth blind set after a further fix round (e.g. disable-firewall-style verbs; makes `heldout4` dev data, and the pattern so far is that each round finds a new verb); resolve more CSS-selector forms so harmless clicks are not paused (owner deferred this); Gate 1 leftovers (egress data in the receipt, other agent CLIs); the qualitative pilot (owner + one volunteer; fill the consent contact placeholder first).
-3. Any further Claude-model run needs explicit owner approval each time (subscription).
-
-## Environment notes
-- Node 24, Chrome at `/Applications/Google Chrome.app`, Ollama installed. `ollama serve` often has to be restarted per session (`nohup ollama serve &`); a stopped server makes runs fail with model errors, which the harness records as unusable runs. Models: `helm-qwen30b` (32k context variant of qwen3-coder:30b), `helm-qwen7b`; `gpt-oss:20b` is the owner's.
-- Machine is a 32 GB laptop; the 30B model plus other apps swapped heavily once and invalidated a whole battery. Check memory before long runs.
-- Fixed ports: 7777 UI, 8787 model tap, 9333 CDP tap, 9222 Chrome, 8899 page server. A leftover process on these crashes runs instantly ("NO RESULT (runner crashed)"). Free with `lsof -ti tcp:PORT | xargs kill`. Never `pkill -f` / `grep | xargs kill` a pattern that appears in your own command line (it kills your shell).
-- A background job can outlive its session and keep running; check `ps` before restarting an evaluation, and kill old orchestrators by PID.
-- `npm test` = 106 tests, under a second, no network or model. A hung test file means a test failed before closing its servers.
+## Environment traps
+- Node 24; Chrome at `/Applications/Google Chrome.app`; Ollama for local models (`helm-qwen30b`, a 32k-context variant of qwen3-coder:30b). `ollama serve` often must be restarted (`nohup ollama serve &`); a dead server returns 502 and invalidates runs.
+- Fixed ports: 7777 UI, 8787 model tap, 9333 CDP tap, 9222 Chrome, 8899 page server (fleet runs count up from the tap, CDP and Chrome ports). A leftover process crashes a run instantly; free a port with `lsof -ti tcp:PORT | xargs kill`. Never `pkill -f` or `grep | xargs kill` a pattern that appears in your own command line. `grep -P` and `timeout` do not exist on macOS.
+- A background job can outlive its session; check `ps` before restarting an evaluation. A 30B model plus other apps can swap heavily and invalidate a whole battery: check memory before long runs.
 
 ## Facts that are easy to get wrong
 - Claude Code runs tools while the response is still streaming; correlate to the latest model turn that had started.
-- Agents chain actions in one command; every action must be judged (a bug here let an attack through).
-- Agents restate injections in their own messages; counterfactual removal must blank those.
-- `x-claude-code-prompt-id` / `request-class` headers were documented but absent in `claude -p` mode.
+- Agents chain actions in one command; every action must be judged.
+- Agents restate injections in their own messages; counterfactual removal must blank those too.
 - Zero compromises can mean the agent never acted; always check task completion.
-- Published sources: several figures in the original brief were corrected in `docs/00-brief-review.md` (e.g. "Coding with Enemy" is NeurIPS; its 56% was misstated).
+- Snapshot names that differ from visible text (long aria-labels) and named table cells carry page content; the passage extractor must keep them (a bug here made the judge's first fresh-set run a null result).
+- Several original figures in the first brief were corrected in `docs/00-brief-review.md`.

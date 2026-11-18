@@ -2,7 +2,7 @@
 
 There is no deadline, so success is defined by gates. Each gate leaves a shippable artifact, so stopping after any gate still leaves a finished project. Thresholds are first guesses: recalibrate after the first real run, and log any change in `decisions.md` instead of quietly moving them.
 
-## Gate 1: Working product 
+## Gate 1: Working product
 - One command launches Claude Code + Playwright CLI through both taps. The agent needs nothing beyond a base-URL setting.
 - The timeline shows semantic actions, each linked to the model turn that caused it.
 - A high-risk action can be held for a decision without crashing the agent or tripping its timeouts.
@@ -10,7 +10,7 @@ There is no deadline, so success is defined by gates. Each gate leaves a shippab
 - Artifact: repo, README, 60-second clip.
 
 ## Gate 2: Measured detection (now the headline result)
-- At least 40 local injection pages across at least 6 technique families, plus at least 40 matched benign tasks, **including a held-out set written by someone else without seeing the explainer** (the volunteer can do this). One command reproduces the results. Report in-sample (dev) and held-out numbers separately.
+- At least 40 local injection pages across at least 6 technique families, plus at least 40 matched benign tasks, **including a held-out set written by someone else without seeing the explainer** (another person or a different model). One command reproduces the results. Report in-sample (dev) and held-out numbers separately.
 - Against attacks that reach a high-risk action:
   - interception at least 90%
   - attribution accuracy at least 80% (the highlighted chunk is the injected one)
@@ -19,8 +19,8 @@ There is no deadline, so success is defined by gates. Each gate leaves a shippab
 - Artifact: results table.
 
 ## Gate 3: Human evidence (revised 2026-10-28: small pilot, no percentage claim)
-The original plan was a 12-15 person within-subjects study whose stop-rate difference would be the headline. There is no participant pool (the researcher knows the injected scenarios, so cannot serve as a naive participant, and two volunteers cannot support a percentage). Decision: **the headline comes from the automated evaluation (Gate 2) and the demo; human evidence is a qualitative pilot.**
-- The researcher and one volunteer run the instrument (`src/replay/`) as a usability pilot: find confusing screens, bad timings, scenarios that give the game away, and record what each person says the cards did or did not help with.
+The original plan was a 12-15 person within-subjects study whose stop-rate difference would be the headline. There is no participant pool (the researcher knows the injected scenarios, so cannot serve as a naive participant, and a handful of volunteers cannot support a percentage). Decision: **the headline comes from the automated evaluation (Gate 2) and the demo; human evidence is a qualitative pilot.**
+- The researcher and one or two volunteers run the instrument (`src/replay/`) as a usability pilot: find confusing screens, bad timings, scenarios that give the game away, and record what each person says the cards did or did not help with.
 - Write it up as qualitative findings with n stated, no stop-rate percentages and no claim that Helm helps people. The "real vs apparent visibility" thesis stays **a design hypothesis supported by prior work and a working system, not shown by this project**.
 - The full instrument stays in the repo so anyone with participants (or a later recruitment effort, e.g. a remote volunteer version or a paid platform, which would need approval) can run the original study.
 - Artifact: a short pilot report and the fixes it caused.

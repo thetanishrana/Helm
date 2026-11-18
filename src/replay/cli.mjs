@@ -17,6 +17,8 @@ const HELP = `usage: helm replay --condition A|B|C --participant ID [options]
   --out-dir DIR       result files (default ./study-data)
   --ui-port N         web UI port (default 7777)
   --fast              shorten the agent's pauses (for trying it out, not for the study)
+  --contact TEXT      how participants reach the researcher (shown in the consent and debrief text). Required for a real
+                      session: without it only a --fast dry run is allowed
   --open              open the UI in your browser
   --index N           run the whole counterbalanced session for participant number N (consent, practice,
                       three condition blocks, debrief); ignores --condition and --scenarios
@@ -31,9 +33,10 @@ for (let i = 0; i < a.length; i++) {
   else if (f === '--scenarios') o.scenarios = v(); else if (f === '--order') o.order = v();
   else if (f === '--stop-window') o.stopWindow = Number(v()); else if (f === '--timeout') o.timeout = Number(v());
   else if (f === '--out-dir') o.outDir = v(); else if (f === '--ui-port') o.ui = Number(v());
-  else if (f === '--fast') o.fast = true; else if (f === '--open') o.open = true; else if (f === '--index') o.index = Number(v());
+  else if (f === '--contact') o.contact = v(); else if (f === '--fast') o.fast = true; else if (f === '--open') o.open = true; else if (f === '--index') o.index = Number(v());
   else { console.error(`unknown option ${f}\n${HELP}`); process.exit(2); }
 }
+if (!o.fast && !o.contact) { console.error('A real session needs --contact "<how participants reach you>" (it appears in the consent text); use --fast for a dry run.'); process.exit(2); }
 if (!o.participant || (o.index === undefined && !CONDITIONS[o.condition])) { console.error(HELP); process.exit(2); }
 
 const all = loadScenarios(fileURLToPath(new URL('../../scenarios/', import.meta.url)));
@@ -60,7 +63,7 @@ if (o.open) spawn('open', [url], { stdio: 'ignore' });
 let results;
 if (o.index !== undefined) {
   const plan = planFor(o.index, all); console.error(`plan: conditions ${plan.order.join(' -> ')}; ${plan.blocks.map((b) => `${b.condition}: ${b.scenarios.join(', ')}`).join(' | ')}`);
-  const r = await runStudySession({ plan, participant: o.participant, scenarios: all, store, approvals, outDir: o.outDir, stopWindowMs: o.stopWindow * 1000, sleep: sleepFn, hooks });
+  const r = await runStudySession({ plan, participant: o.participant, scenarios: all, store, approvals, outDir: o.outDir, stopWindowMs: o.stopWindow * 1000, sleep: sleepFn, hooks, contact: o.contact });
   if (r.declined) { console.error('participant declined consent; nothing recorded.'); process.exit(0); }
   results = r.results.filter((x) => !x.practice);
 } else results = await runner.run();

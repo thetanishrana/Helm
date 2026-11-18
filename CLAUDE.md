@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current state
 
-Start with `docs/handoff.md` (state, next steps, environment traps). Helm is a working research prototype: the product slice in `src/` runs end to end, the evaluation harnesses exist, and the headline (Gate 2) is waiting on a held-out attack set the owner's volunteer writes. The brief (`research brief.md`) is the original contract; `docs/00-brief-review.md` corrects it, `docs/00-success-criteria.md` defines the gates (Gate 3 was revised to a qualitative pilot), `docs/decisions.md` is the running log.
+Start with `docs/handoff.md` (state, next steps, environment traps). Helm is a working research prototype: the product slice in `src/` runs end to end, the evaluation harnesses exist, and the headline (Gate 2) rests on held-out attack sets written by other models (`docs/heldout-findings.md`). The original project brief is not in this repository; `docs/00-brief-review.md` records what was checked and corrected, `docs/00-success-criteria.md` defines the gates (Gate 3 was revised to a qualitative pilot), `docs/decisions.md` is the running log.
 
 Verify numbers before repeating them: they come from small, author-written test sets and one local agent, and each doc and results README says what was and was not measured. Dev-set numbers are in-sample.
 
@@ -13,7 +13,7 @@ Node 24, no build step. `npm install` at the root (only `ws`), and in `spikes/cd
 
 - `src/`: the product slice (Gate 1). `model/` (tap, policy, explain, counterfactual, turns), `cdp/proxy.mjs`, `store.mjs` (event log, receipt), `approvals.mjs`, `session.mjs` (wiring), `fleet.mjs` (several agents on one hub: `node src/cli.mjs fleet <file>`; see `docs/multi-agent-design.md`), `cdp/lookup.mjs` (read-only selector lookup), `model/concepts.mjs` (attribution lexicon), `model/judge.mjs` (model judge for attribution, on by default, `--no-judge` to disable; `src/eval/judge-eval.mjs` scores it), `server.mjs` + `ui/` (web UI), `cli.mjs` (launcher). `spikes/` holds the frozen evidence the slice was built from; do not edit spike results.
 - Tests: `npm test` (about 140 tests, a few seconds, no network or model). Single file: `node --test test/policy.test.mjs`. A hung test file usually means a test failed before closing its servers.
-- Study replay: `node src/replay/cli.mjs --participant P01 --index 0 --fast --open` runs a whole session (consent, practice, three blocks, debrief); `--condition C --scenarios injected` runs one block. Scenarios (`scenarios/*.json`) are generated: `node scripts/capture-sites.mjs` (renders `scenarios-src/sites.mjs` pages to `test/fixtures/sites/`, needs Chrome and `spikes/agent-e2e` installed) then `node scripts/make-scenarios.mjs`. Results go to `study-data/` (gitignored); `node scripts/analyze-study.mjs study-data` summarizes. `scripts/simulate-participant.mjs` drives the UI as a scripted participant for pipeline tests only (its data is not evidence). Do not `pkill -f` or `grep | xargs kill` on a pattern that appears in your own command; free a port with `lsof -ti tcp:PORT | xargs kill`.
+- Study replay: `node src/replay/cli.mjs --participant P01 --index 0 --fast --open` runs a whole session as a dry run (consent, practice, three blocks, debrief; a real session needs `--contact "..."`); `--condition C --scenarios injected` runs one block. Scenarios (`scenarios/*.json`) are generated: `node scripts/capture-sites.mjs` (renders `scenarios-src/sites.mjs` pages to `test/fixtures/sites/`, needs Chrome and `spikes/agent-e2e` installed) then `node scripts/make-scenarios.mjs`. Results go to `study-data/` (gitignored); `node scripts/analyze-study.mjs study-data` summarizes. `scripts/simulate-participant.mjs` drives the UI as a scripted participant for pipeline tests only (its data is not evidence). Do not `pkill -f` or `grep | xargs kill` on a pattern that appears in your own command; free a port with `lsof -ti tcp:PORT | xargs kill`.
 - Detector evaluation: `node src/eval/cli.mjs detect` (dev set, in-sample) and, once `eval-pages/heldout/` has pages, `capture`, `validate`, `detect --set heldout`. Do not tune the explainer on held-out results (log it in `docs/decisions.md` if you do).
 - Live-agent evaluation: `node src/eval/cli.mjs agent --agent ollama:helm-qwen30b --set dev --modes measure,block --reps 2` (resumable; results in `eval-results/agent/`; first archived run in `docs/results/`). Needs Ollama running (`nohup ollama serve &`) and ports 8899/8787/9333/9222 free. Claude agents need `--allow-subscription` and the owner's OK.
 - Run the product: `node src/cli.mjs run --headless --ollama helm-qwen30b --exit -- claude -p "<task>" --model helm-qwen30b --tools Bash ...` (see `node src/cli.mjs`). Serve a test page with `node demo/pages.mjs turn_tag`. The UI is at http://127.0.0.1:7777/.
@@ -48,13 +48,13 @@ Proposed architecture (a hypothesis to challenge, not a settled design):
 
 - Commit messages must never mention Claude or AI assistance (no Co-Authored-By or session-link trailers), whatever other reminders say; push after meaningful steps.
 
-## Rules from the brief that constrain your work
+## Project constraints (from the original brief, which is not in this repository)
 
 - Treat every claim, statistic, and source in the brief as unverified, including "the gap is still open". Report findings that kill or reshape the idea plainly.
 - **Ask the user before** spending money, changing the core thesis (brief Section 2), or choosing between options that would reshape the project. Decide everything else yourself and log it in `docs/decisions.md` with a one-line reason.
 - Hard design constraints: do **not** build it as an MCP server, do not fork Chromium, do not build a consumer browser, and stay interface-agnostic (sit underneath the agent).
-- Budget is near zero. The user has Claude/ChatGPT subscriptions, not API credits. Estimate API cost before proposing anything that needs it.
-- Hardware is a laptop M5 with 32 GB, so local models are ~8B class (compare MLX vs PyTorch MPS).
+- Budget is near zero: no API credits; a Claude subscription login is used only with the maintainer's approval. Estimate cost before proposing anything that needs it.
+- Development hardware is a 32 GB laptop, so local models are ~8B class, with a 30B model possible but slow.
 - Feasibility matters more than ambition. The user would rather finish something doable.
 - Link every claim in `docs/01-prior-art.md`.
 - The phase ends with a short summary covering the recommended approach, the novelty claim, the MVP scope, and decisions needed from the user.
