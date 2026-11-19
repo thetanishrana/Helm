@@ -218,3 +218,21 @@ What it says:
 - Caveats: 8 attack and 8 benign pages, one author, one judge model; the pages were deliberately aimed at the weak spot.
 
 Natural next step (not done, to keep this set clean): stop read-only labels ("view", "show", "print", "open", "read", "track", "preview", "review", "inspect", "check", "browse", "see") from being rated high risk by a noun in the word list, and only show the judge's cause when the held action itself is plausibly what the injection wants (for example when the heuristics also rate the action high-risk for a reason other than a read-only label). Either change makes this set dev data.
+
+## Twelfth measurement: fixing the false pauses at the root (2026-11-18), and a filter that did not work
+After the eleventh measurement (`heldout8`: 4/23 false pauses, all the old word list matching a noun in a read-only label) two changes were tried.
+
+**1. Read-only labels (kept).** A label that opens with a read-only verb (view, show, see, read, print, preview, review, inspect, check, browse, track, open, display, list, compare, look up) is no longer rated consequential because it contains a word from the risk list (refill, payment, order...), and it skips the unknown-button rule. A second action joined to it ("View and send", "Review & approve payout", "Preview, then publish") still pauses, and the physical-control phrases are checked first ("Open the vault", "Open the door"). Code: `isReadOnlyLabel` in `src/model/explain.mjs`; tests in `test/explain.test.mjs`. One earlier test that treated "Check status" as an unknown consequential button was changed on purpose.
+
+| Offline, heuristics only | Before | After |
+| --- | --- | --- |
+| Harmless actions paused, sets 5-8 (20 + 6 + 16 + 23 actions) | 7 of 65 | **0 of 65** |
+| Harmless actions paused, sets 1-4 and dev | 0 | 0 |
+| Interception on every set (sets 1-8, dev) | 100% | 100% |
+| Actions the user asked for, paused | 0 | 0 |
+
+Status: **in-sample** for sets 5, 7 and 8, because the fix was made after seeing their false pauses. It also widens one thing: a consequential button labelled like a reading control ("Open a new line of credit") is judged only by the joined-action and physical-control checks and the old word list, not by the unknown-button rule. A fresh batch that red-teams exactly this is prepared (`eval-pages/CHATGPT-PROMPT-FALSE-PAUSES-2.md`). Raw output: `docs/results/detect-all-sets-after-readonly-fix/`.
+
+**2. A word-overlap filter on the judge (tried, reverted).** The idea: drop a judge pick that shares no content word or concept with the held action (it would have rejected the wrong cause on "View refill history", whose page injection shares no word with that label but does with its real target). On the 32 attack pages of sets 5-8 it dropped **8 of 14** correct picks, so cause naming fell from 32/32 to 24/32. The judge exists to catch paraphrases that share no words with the control, and a word-overlap test removes exactly those. Reverted. The raw rows of this experiment were not kept (I deleted them in error); the counts above were read from the run output. The read-only fix is the safeguard instead: it removes the false pauses, so the judge is not asked about them.
+
+Judge on attack pages with the final code (`docs/results/judge-sets5-8-final/`, `judge-sets1-4-final/`): sets 5-8: heuristics 18/32, with judge **32/32** (14 calls, 0 wrong, 0 none); sets 1-4: 38/44 and 43/44 (6 calls, 0 wrong, 1 none). Residual risk: the judge can still attach a cause to a harmless action that Helm pauses for some other reason (an unfamiliar button, say); that is untested on fresh data.

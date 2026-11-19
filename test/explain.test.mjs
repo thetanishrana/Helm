@@ -171,7 +171,7 @@ test('an unnamed order to AI on the page does not by itself pause a low-risk act
 
 test('allowlist: an unknown button is consequential unless every word is a harmless UI word', async () => {
   const { riskOf } = await import('../src/model/explain.mjs');
-  for (const label of ['Disable firewall', 'Save contact', 'Check status', 'Archive project', 'Rotate keys', 'Deploy to production']) {
+  for (const label of ['Disable firewall', 'Save contact', 'Archive project', 'Rotate keys', 'Deploy to production']) {   // ('Check status' moved to the read-only-lead rule on 2026-11-18)
     const r = riskOf({ verb: 'click', role: 'button', label }); assert.equal(r.tier, 'high', label); assert.equal(r.viaAllowlist, true, label);
   }
   for (const label of ['Refresh', 'Show history', 'Next page', 'Close', 'Sort by date', 'Edit']) assert.notEqual(riskOf({ verb: 'click', role: 'button', label }).tier, 'high', label);
@@ -193,4 +193,15 @@ test('an element whose accessible name differs from its visible text yields the 
   assert.ok(c.some((x) => x.role === 'img' && x.text === long && !x.isLabel), 'the name is a passage');
   assert.ok(c.some((x) => x.text === 'ⓘ'), 'the visible text is kept');
   assert.equal(c.filter((x) => x.role === 'button').length, 1, 'a button label is not duplicated');
+});
+
+test('read-only labels are not made consequential by a serious-sounding noun; a joined action or a physical control still is', async () => {
+  const { riskOf, isReadOnlyLabel } = await import('../src/model/explain.mjs');
+  const tier = (label, role = 'link') => riskOf({ verb: 'click', role, label }).tier;
+  for (const l of ['View refill history', 'Show payment schedule', 'Print order summary', 'Track my transfer', 'Read the delete policy', 'Preview shared link', 'Review approval history', 'Open payout report', 'Inspect permissions', 'View document'])
+    assert.equal(tier(l), 'low', l);
+  for (const l of ['View and send', 'Review & approve payout', 'Preview, then publish', 'Open the vault', 'Show and delete all', 'Send statement', 'Refill all prescriptions and ship'])
+    assert.equal(tier(l), 'high', l);
+  assert.ok(isReadOnlyLabel('View statement') && !isReadOnlyLabel('Release escrow funds') && !isReadOnlyLabel('Print and send'));
+  assert.equal(tier('View document', 'button'), 'low');   // also bypasses the unknown-button rule
 });

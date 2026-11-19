@@ -65,15 +65,24 @@ export function pageChunks(req) {
 const SAFE_UI = new Set('refresh reload next previous prev back search find filter sort show hide more less expand collapse close open view views details detail history menu help settings cancel ok okay dismiss edit reply compose new change rename toggle tab page pages list grid table sidebar print dark light mode language zoom top bottom up down left right date name price rating newest oldest relevance recent popular save apply done continue update'.split(' '));
 const isSafeUiLabel = (label) => { const w = (String(label).toLowerCase().match(/[a-z]+/g) || []); return w.length > 0 && w.every((t) => SAFE_UI.has(t) || STOP.has(t) || t.length < 2); };
 
+// A label that opens with a read-only verb ("View refill history", "Print order summary", "Track my transfer") only shows or
+// opens something, so a serious-sounding noun later in it (refill, payment, order) does not make it consequential. A second
+// action joined to it ("View and send", "Review & approve payout") still does, and the physical-control phrases below are
+// checked first, so "Open the vault" is unaffected.
+const READ_LEAD = /^\s*(view|show|see|read|print|preview|review|inspect|check|browse|track|open|display|list|compare|look up)\b/i;
+const ACTION_AFTER = /(\band\b|\bthen\b|&|\+|,|;|\bor\b|\bto\b)\s*(the\s+)?(send|pay|transfer|wire|purchase|buy|order|checkout|delete|remove|erase|submit|post|publish|share|forward|confirm|approve|authori[sz]e|grant|invite|unsubscribe|deactivate|reset|export|download|ship|renew|subscribe|upgrade|withdraw|refund|charge|release|disable|turn off|cancel|revoke|unlock|disarm|enable|sign|accept)\b/i;
+export const isReadOnlyLabel = (label) => READ_LEAD.test(String(label)) && !ACTION_AFTER.test(String(label));
+
 export function riskOf(a) {
   const label = a.label || a.selector || a.detail || '';
   if (a.risk === 'opaque') return { tier: 'high', why: 'runs code the proxy cannot inspect' };
   if (a.cli === 'curl' || a.verb === 'send') return { tier: 'high', why: 'sends data off the machine' };
   if (['fill', 'type'].includes(a.verb) && SECRET_FIELD.test(label)) return { tier: 'high', why: 'types into a sensitive field' };
-  if (HIGH_VERBS.test(label) || HIGH_PHRASES.some((r) => r.test(label))) return { tier: 'high', why: `the control says "${label}", which changes something outside the page` };
+  const readOnly = a.verb === 'click' && isReadOnlyLabel(label);
+  if ((HIGH_VERBS.test(label) && !readOnly) || HIGH_PHRASES.some((r) => r.test(label))) return { tier: 'high', why: `the control says "${label}", which changes something outside the page` };
   if (['fill', 'type', 'press', 'select', 'upload', 'check', 'uncheck'].includes(a.verb)) return { tier: 'medium', why: 'enters or changes data on the page' };
   // Allowlist, not denylist: a named button or menu item is consequential unless every word of its label is a known harmless UI word.
-  if (a.verb === 'click' && ['button', 'menuitem'].includes(a.role) && a.label && !isSafeUiLabel(a.label)) return { tier: 'high', why: `the ${a.role} "${a.label}" is not a known harmless control, so it could change something`, viaAllowlist: true };
+  if (a.verb === 'click' && ['button', 'menuitem'].includes(a.role) && a.label && !readOnly && !isSafeUiLabel(a.label)) return { tier: 'high', why: `the ${a.role} "${a.label}" is not a known harmless control, so it could change something`, viaAllowlist: true };
   return { tier: 'low', why: 'looks like navigation or a harmless control' };
 }
 
