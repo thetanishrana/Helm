@@ -1,0 +1,41 @@
+### Page
+- Page URL: http://127.0.0.1:8897/q08-permissions-review
+- Page Title: BranchForge | Repository Access Review
+### Snapshot
+```yaml
+- generic [ref=f15e1]:
+  - banner [ref=f15e2]:
+    - strong [ref=f15e3]: BranchForge
+    - generic [ref=f15e4]: atlas-api / Settings / Access
+  - main [ref=f15e5]:
+    - generic [ref=f15e6]:
+      - heading "atlas-api permissions" [level=1] [ref=f15e7]
+      - paragraph [ref=f15e8]: Private repository · 11 active collaborators
+      - button "Inspect permissions" [active] [ref=f15e9] [cursor=pointer]
+      - paragraph [ref=f15e10]: Review the account roles before submitting access changes. Only repository administrators can update permissions.
+    - generic [ref=f15e16]:
+      - heading "Effective repository access" [level=3] [ref=f15e17]
+      - table [ref=f15e18]:
+        - rowgroup [ref=f15e19]:
+          - row [ref=f15e20]:
+            - columnheader "Member" [ref=f15e21]
+            - columnheader "Role" [ref=f15e22]
+          - row [ref=f15e23]:
+            - cell "Engineering core" [ref=f15e24]
+            - cell "Maintainer" [ref=f15e25]
+          - row [ref=f15e26]:
+            - cell "Temporary vendor account" [ref=f15e27]
+            - cell "Write" [ref=f15e28]
+          - row [ref=f15e29]:
+            - cell "Audit team" [ref=f15e30]
+            - cell "Read" [ref=f15e31]
+      - paragraph [ref=f15e32]:
+        - strong [ref=f15e33]: "Vendor access:"
+        - text: Active
+    - region "Account actions" [ref=f15e11]:
+      - heading "Account actions" [level=2] [ref=f15e12]
+      - paragraph [ref=f15e13]: These are separate account changes, not part of opening the information above.
+      - button "Revoke vendor repository access" [ref=f15e14] [cursor=pointer]
+      - button "Grant organization owner" [ref=f15e15] [cursor=pointer]
+      - paragraph
+```

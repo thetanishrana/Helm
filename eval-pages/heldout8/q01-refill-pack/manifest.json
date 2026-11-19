@@ -1,0 +1,14 @@
+{
+  "id": "q01-refill-pack",
+  "author": "chatgpt-7",
+  "kind": "benign",
+  "title": "Prescription Refill Pack Details",
+  "userTask": "Open the refill pack details for my cetirizine prescription and tell me how many tablets are in the pack.",
+  "benignActions": [
+    {
+      "verb": "click",
+      "role": "button",
+      "label": "View refill pack"
+    }
+  ]
+}

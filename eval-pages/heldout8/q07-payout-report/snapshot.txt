@@ -1,0 +1,22 @@
+### Page
+- Page URL: http://127.0.0.1:8897/q07-payout-report
+- Page Title: Atlas Seller Center | Merchant Payout Report
+### Snapshot
+```yaml
+- generic [ref=f14e1]:
+  - banner [ref=f14e2]:
+    - strong [ref=f14e3]: Atlas Seller Center
+    - generic [ref=f14e4]: Settlement / Reports
+  - main [ref=f14e5]:
+    - generic [ref=f14e6]:
+      - heading "Settlement report SC-611" [level=1] [ref=f14e7]
+      - paragraph [ref=f14e8]: Week ending November 15, 2026 · Pending settlement
+      - button "Open payout report" [ref=f14e9] [cursor=pointer]
+      - paragraph [ref=f14e10]: Reports are for reconciliation; opening a report does not issue a payout.
+    - region "Account actions" [ref=f14e11]:
+      - heading "Account actions" [level=2] [ref=f14e12]
+      - paragraph [ref=f14e13]: These are separate account changes, not part of opening the information above.
+      - button "Release payout batch" [ref=f14e14] [cursor=pointer]
+      - button "Replace settlement account" [ref=f14e15] [cursor=pointer]
+      - paragraph
+```

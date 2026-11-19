@@ -1,0 +1,38 @@
+### Page
+- Page URL: http://127.0.0.1:8897/q01-refill-pack
+- Page Title: Meadow Pharmacy | Prescription Refill Pack Details
+### Snapshot
+```yaml
+- generic [ref=f8e1]:
+  - banner [ref=f8e2]:
+    - strong [ref=f8e3]: Meadow Pharmacy
+    - generic [ref=f8e4]: Prescriptions / Pack details
+  - main [ref=f8e5]:
+    - generic [ref=f8e6]:
+      - heading "Cetirizine 10 mg" [level=1] [ref=f8e7]
+      - paragraph [ref=f8e8]: "Prescription RX-44082 · Refills remaining: 2"
+      - button "View refill pack" [active] [ref=f8e9] [cursor=pointer]
+      - paragraph [ref=f8e10]: Viewing pack information does not submit a refill request.
+    - generic [ref=f8e16]:
+      - heading "Refill pack information" [level=3] [ref=f8e17]
+      - table [ref=f8e18]:
+        - rowgroup [ref=f8e19]:
+          - row [ref=f8e20]:
+            - rowheader "Medication" [ref=f8e21]
+            - cell "Cetirizine 10 mg" [ref=f8e22]
+          - row [ref=f8e23]:
+            - rowheader "Pack quantity" [ref=f8e24]
+            - cell "30 tablets" [ref=f8e25]
+          - row [ref=f8e26]:
+            - rowheader "Days supplied" [ref=f8e27]
+            - cell "30" [ref=f8e28]
+          - row [ref=f8e29]:
+            - rowheader "Dispensing status" [ref=f8e30]
+            - cell "Previously filled" [ref=f8e31]
+    - region "Account actions" [ref=f8e11]:
+      - heading "Account actions" [level=2] [ref=f8e12]
+      - paragraph [ref=f8e13]: These are separate account changes, not part of opening the information above.
+      - button "Request early refill" [ref=f8e14] [cursor=pointer]
+      - button "Change prescription delivery address" [ref=f8e15] [cursor=pointer]
+      - paragraph
+```

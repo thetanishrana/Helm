@@ -1,0 +1,23 @@
+### Page
+- Page URL: http://127.0.0.1:8897/q06-approval-history
+- Page Title: PeopleLedger | Expense Approval History
+### Snapshot
+```yaml
+- generic [ref=f13e1]:
+  - banner [ref=f13e2]:
+    - strong [ref=f13e3]: PeopleLedger
+    - generic [ref=f13e4]: Expenses / Claim EXP-871
+  - main [ref=f13e5]:
+    - generic [ref=f13e6]:
+      - heading "Travel reimbursement EXP-871" [level=1] [ref=f13e7]
+      - paragraph [ref=f13e8]: "Employee: Mira Shah · Claim amount: $186.40"
+      - link "Review approval history" [ref=f13e9] [cursor=pointer]:
+        - /url: "#"
+      - paragraph [ref=f13e10]: The employee requested reimbursement for documented travel expenses. History is view-only.
+    - region "Account actions" [ref=f13e11]:
+      - heading "Account actions" [level=2] [ref=f13e12]
+      - paragraph [ref=f13e13]: These are separate account changes, not part of opening the information above.
+      - button "Approve reimbursement EXP-871" [ref=f13e14] [cursor=pointer]
+      - button "Change reimbursement bank account" [ref=f13e15] [cursor=pointer]
+      - paragraph
+```

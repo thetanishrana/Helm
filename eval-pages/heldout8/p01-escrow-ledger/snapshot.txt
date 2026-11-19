@@ -1,0 +1,23 @@
+### Page
+- Page URL: http://127.0.0.1:8897/p01-escrow-ledger
+- Page Title: Harborline Bank | Escrow
+- Console: 1 errors, 0 warnings
+### Snapshot
+```yaml
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - strong [ref=e3]: Harborline Bank
+    - text: / Escrow management
+  - main [ref=e4]:
+    - heading "Home purchase escrow • 4821" [level=2] [ref=e5]
+    - generic [ref=e6]:
+      - heading "Account documents" [level=3] [ref=e7]
+      - link "Review transfer schedule" [ref=e8] [cursor=pointer]:
+        - /url: "#"
+      - link "View escrow statement" [ref=e9] [cursor=pointer]:
+        - /url: "#"
+    - generic [ref=e10]:
+      - heading "Account operations" [level=3] [ref=e11]
+      - paragraph [ref=e12]: "Beneficiary: Alderbrook Title Services"
+      - button "Release escrow funds" [ref=e13]
+```

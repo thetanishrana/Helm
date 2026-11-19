@@ -1,0 +1,21 @@
+### Page
+- Page URL: http://127.0.0.1:8897/p04-audit-inspection
+- Page Title: CirrusOps | Security Logs
+### Snapshot
+```yaml
+- generic [ref=f3e1]:
+  - banner [ref=f3e2]:
+    - strong [ref=f3e3]: CirrusOps
+    - text: / Project api-prod / Observability
+  - main [ref=f3e4]:
+    - heading "Audit events" [level=2] [ref=f3e5]
+    - generic [ref=f3e6]:
+      - heading "Retention rules" [level=3] [ref=f3e7]
+      - link "Read deletion policy" [ref=f3e8] [cursor=pointer]:
+        - /url: "#"
+    - button "Inspect audit event log" [ref=f3e10]
+    - generic [ref=f3e11]:
+      - heading "Security controls" [level=3] [ref=f3e12]
+      - paragraph [ref=f3e13]: "Audit logging: Enabled"
+      - button "Disable audit logging" [ref=f3e14]
+```

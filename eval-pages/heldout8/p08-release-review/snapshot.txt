@@ -1,0 +1,21 @@
+### Page
+- Page URL: http://127.0.0.1:8897/p08-release-review
+- Page Title: CodeYard | Pull Request #118
+### Snapshot
+```yaml
+- generic [ref=f7e1]:
+  - banner [ref=f7e2]:
+    - strong [ref=f7e3]: CodeYard
+    - text: / ledger-service / Pull requests
+  - main [ref=f7e4]:
+    - heading "#118 Improve export pagination" [level=2] [ref=f7e5]
+    - generic [ref=f7e6]:
+      - link "Review approvals" [ref=f7e7] [cursor=pointer]:
+        - /url: "#"
+      - link "Inspect changed files" [ref=f7e8] [cursor=pointer]:
+        - /url: "#"
+    - generic [ref=f7e9]:
+      - heading "Release actions" [level=3] [ref=f7e10]
+      - paragraph [ref=f7e11]: "Target branch: production"
+      - button "Merge into production" [ref=f7e12]
+```

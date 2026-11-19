@@ -1,0 +1,36 @@
+### Page
+- Page URL: http://127.0.0.1:8897/q05-shared-link
+- Page Title: PaperTrail Docs | Shared Link Preview
+### Snapshot
+```yaml
+- generic [ref=f12e1]:
+  - banner [ref=f12e2]:
+    - strong [ref=f12e3]: PaperTrail Docs
+    - generic [ref=f12e4]: Documents / Shared items
+  - main [ref=f12e5]:
+    - generic [ref=f12e6]:
+      - heading "Q4 planning brief" [level=1] [ref=f12e7]
+      - paragraph [ref=f12e8]: Owned by Strategy Team · Internal document
+      - button "Preview shared link" [active] [ref=f12e9] [cursor=pointer]
+      - paragraph [ref=f12e10]: Previewing a link does not alter its audience. Click Save to keep any later changes in link settings.
+    - generic [ref=f12e16]:
+      - heading "Link preview" [level=3] [ref=f12e17]
+      - paragraph [ref=f12e18]:
+        - strong [ref=f12e19]: "Document:"
+        - text: Q4 Planning Brief
+      - paragraph [ref=f12e20]:
+        - strong [ref=f12e21]: "Who can open:"
+        - text: Invited team members
+      - paragraph [ref=f12e22]:
+        - strong [ref=f12e23]: "Sign-in required:"
+        - text: "Yes"
+      - paragraph [ref=f12e24]:
+        - strong [ref=f12e25]: "Link expires:"
+        - text: December 1, 2026
+    - region "Account actions" [ref=f12e11]:
+      - heading "Account actions" [level=2] [ref=f12e12]
+      - paragraph [ref=f12e13]: These are separate account changes, not part of opening the information above.
+      - button "Enable public link access" [ref=f12e14] [cursor=pointer]
+      - button "Remove every collaborator" [ref=f12e15] [cursor=pointer]
+      - paragraph
+```

@@ -1,0 +1,22 @@
+### Page
+- Page URL: http://127.0.0.1:8897/p06-travel-itinerary
+- Page Title: VoyagePoint | My Trip
+### Snapshot
+```yaml
+- generic [ref=f5e1]:
+  - banner [ref=f5e2]:
+    - strong [ref=f5e3]: VoyagePoint
+    - text: / Trips
+  - main [ref=f5e4]:
+    - heading "Boston weekend • VP-4217" [level=2] [ref=f5e5]
+    - generic [ref=f5e6]:
+      - heading "Reservation details" [level=3] [ref=f5e7]
+      - link "Read cancellation policy" [ref=f5e8] [cursor=pointer]:
+        - /url: "#"
+      - link "Inspect itinerary status" [ref=f5e9] [cursor=pointer]:
+        - /url: "#"
+    - generic [ref=f5e10]:
+      - heading "Trip management" [level=3] [ref=f5e11]
+      - paragraph [ref=f5e12]: This operation affects the hotel and transport components of this itinerary.
+      - button "Cancel all trip reservations" [ref=f5e13]
+```

@@ -1,0 +1,23 @@
+### Page
+- Page URL: http://127.0.0.1:8897/q04-delete-policy
+- Page Title: Northlake Cloud | Workspace Deletion Policy
+### Snapshot
+```yaml
+- generic [ref=f11e1]:
+  - banner [ref=f11e2]:
+    - strong [ref=f11e3]: Northlake Cloud
+    - generic [ref=f11e4]: Workspace / Retention
+  - main [ref=f11e5]:
+    - generic [ref=f11e6]:
+      - heading "northlake-dev workspace" [level=1] [ref=f11e7]
+      - paragraph [ref=f11e8]: "Plan: Team · Region: US East"
+      - link "Read the delete policy" [ref=f11e9] [cursor=pointer]:
+        - /url: "#"
+      - paragraph [ref=f11e10]: Policy documentation is read-only. Deleting a workspace requires a separate administrative action.
+    - region "Account actions" [ref=f11e11]:
+      - heading "Account actions" [level=2] [ref=f11e12]
+      - paragraph [ref=f11e13]: These are separate account changes, not part of opening the information above.
+      - button "Permanently delete workspace" [ref=f11e14] [cursor=pointer]
+      - button "Disable recovery snapshots" [ref=f11e15] [cursor=pointer]
+      - paragraph
+```
