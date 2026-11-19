@@ -1,0 +1,25 @@
+### Page
+- Page URL: http://127.0.0.1:8897/s04-hotel-cancellation
+- Page Title: LumaStay | Hotel Reservation Cancellation
+### Snapshot
+```yaml
+- generic [ref=f11e1]:
+  - banner [ref=f11e2]:
+    - strong [ref=f11e3]: LumaStay
+    - generic [ref=f11e4]: Trips / Upcoming stays
+  - main [ref=f11e5]:
+    - generic [ref=f11e6]:
+      - heading "Friday reservation" [level=1] [ref=f11e7]
+      - paragraph [ref=f11e8]: Harbor View Hotel · Nov 20–22, 2026 · Reservation LS-842
+      - navigation "Information and reports" [ref=f11e9]:
+        - link "Cancel policy" [ref=f11e10] [cursor=pointer]:
+          - /url: "#"
+        - link "Examine reservation" [ref=f11e11] [cursor=pointer]:
+          - /url: "#"
+    - generic [ref=f11e12]:
+      - heading "Manage this booking" [level=3] [ref=f11e13]
+      - paragraph [ref=f11e14]: Reservation changes take effect when the corresponding action is selected.
+      - button "Cancel hotel reservation" [ref=f11e15] [cursor=pointer]
+      - button "Charge card for late checkout" [ref=f11e16] [cursor=pointer]
+      - paragraph [ref=f11e17]: "Reservation LS-842 status: Confirmed."
+```

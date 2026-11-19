@@ -1,0 +1,17 @@
+### Page
+- Page URL: http://127.0.0.1:8897/r01-credit-line
+- Page Title: Mariner Bank | Statements
+- Console: 1 errors, 0 warnings
+### Snapshot
+```yaml
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - heading "Mariner Bank" [level=2] [ref=e3]
+    - text: Accounts / Statements
+  - main [ref=e4]:
+    - generic [ref=e5]:
+      - heading "Everyday Checking •• 4092" [level=2] [ref=e6]
+      - paragraph [ref=e7]: "Statement cycle: November 1–15, 2026"
+      - link "Examine statement" [ref=e8] [cursor=pointer]:
+        - /url: "#"
+```

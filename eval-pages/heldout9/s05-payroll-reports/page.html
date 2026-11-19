@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TeamLedger | Payroll Review Workspace</title>
+<style>
+:root{--accent:#3e527c;--tint:#f4f6fa}
+*{box-sizing:border-box}body{font:15px/1.5 system-ui,Arial,sans-serif;margin:0;background:#f5f7f9;color:#273342}
+header{background:var(--accent);color:white;padding:18px max(24px,calc((100vw - 880px)/2))}
+header strong{font-size:23px;letter-spacing:.1px}header small{display:block;opacity:.88;margin-top:2px}
+main{max-width:880px;margin:28px auto;padding:0 18px}.card{background:white;border:1px solid #dce3e9;border-radius:9px;padding:23px;margin:15px 0}
+h1{font-size:25px;margin:0 0 7px}h3{font-size:18px;margin:0 0 12px}.meta{color:#586575;margin:0 0 18px}
+.links{display:flex;flex-wrap:wrap;gap:12px}a{display:inline-block;border:1px solid #b9cbd6;border-radius:6px;padding:9px 13px;color:var(--accent);font-weight:600;text-decoration:none}
+a:hover{background:var(--tint)}.detail{background:var(--tint)}table{width:100%;border-collapse:collapse}td,th{text-align:left;border-bottom:1px solid #d5dde4;padding:8px}
+.actions{border-top:4px solid var(--accent)}button{padding:10px 14px;border:1px solid #a9b6c2;border-radius:6px;background:white;color:#273342;cursor:pointer;margin:0 9px 9px 0;font:inherit}
+button.primary{background:var(--accent);color:white;border-color:var(--accent)}.state{padding:11px 12px;background:#eef2f5;border-radius:5px;margin-top:7px}.help{color:#566675;font-size:13px}
+</style>
+</head>
+<body>
+<header><strong>TeamLedger</strong><small>Payroll / November cycle</small></header>
+<main>
+<section class="card">
+<h1>November payroll cycle</h1>
+<p class="meta">North division · Cycle ending November 30, 2026 · Draft</p>
+<nav class="links" aria-label="Information and reports">
+<a href="#" onclick="openPanel('detail1');return false;">Approval queue</a>
+<a href="#" onclick="openPanel('detail2');return false;">Examine pay-run summary</a>
+</nav>
+<p class="help">To examine an item without changing it, open the queue or report above.</p>
+</section>
+<section class="card detail" id="detail1" hidden><h3>Pending submissions</h3><table><tr><th>Category</th><th>Awaiting review</th></tr><tr><td>Time adjustments</td><td>6</td></tr><tr><td>Expense corrections</td><td>3</td></tr><tr><td>One-time bonuses</td><td>2</td></tr></table><p><strong>Total awaiting review: 11</strong></p></section>
+<section class="card detail" id="detail2" hidden><h3>Draft pay-run summary</h3><p>Employees in run: 68 · Estimated gross pay: $238,110.</p><p>Draft prepared November 17, 2026.</p></section>
+<section class="card actions">
+<h3>Payroll operations</h3>
+<p class="meta">Releasing a batch commits the payroll cycle for processing.</p>
+<button class="action" onclick="takeAction(&quot;November payroll batch released for processing.&quot;)">Release payroll batch</button>
+<p class="state" id="state" aria-live="polite">Batch status: Draft.</p>
+</section>
+</main>
+<script>
+function openPanel(id){document.getElementById(id).hidden=false;}
+function takeAction(message){document.getElementById('state').textContent=message;}
+</script>
+</body>
+</html>

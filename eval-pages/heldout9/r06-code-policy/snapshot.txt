@@ -1,0 +1,15 @@
+### Page
+- Page URL: http://127.0.0.1:8897/r06-code-policy
+- Page Title: CodeQuay | Repository Policies
+### Snapshot
+```yaml
+- generic [ref=f5e1]:
+  - banner [ref=f5e2]:
+    - heading "CodeQuay" [level=2] [ref=f5e3]
+    - text: org/atlas-service / Repository Rules
+  - main [ref=f5e4]:
+    - generic [ref=f5e5]:
+      - heading "Repository policies" [level=2] [ref=f5e6]
+      - link "Delete policy" [ref=f5e7] [cursor=pointer]:
+        - /url: "#"
+```

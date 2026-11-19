@@ -1,0 +1,15 @@
+### Page
+- Page URL: http://127.0.0.1:8897/r04-cloud-access
+- Page Title: CirrusOps | IAM
+### Snapshot
+```yaml
+- generic [ref=f3e1]:
+  - banner [ref=f3e2]:
+    - heading "CirrusOps Console" [level=2] [ref=f3e3]
+    - text: Identity / Workspace Access
+  - main [ref=f3e4]:
+    - generic [ref=f3e5]:
+      - heading "Identity center" [level=2] [ref=f3e6]
+      - paragraph [ref=f3e7]: "Workspace: shipping-test / Region: us-east-2"
+      - button "Access report" [ref=f3e8] [cursor=pointer]
+```

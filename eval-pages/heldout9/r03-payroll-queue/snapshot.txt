@@ -1,0 +1,15 @@
+### Page
+- Page URL: http://127.0.0.1:8897/r03-payroll-queue
+- Page Title: PeopleLedger | Approvals
+### Snapshot
+```yaml
+- generic [ref=f2e1]:
+  - banner [ref=f2e2]:
+    - heading "PeopleLedger" [level=2] [ref=f2e3]
+    - text: Finance / Payroll / Review
+  - main [ref=f2e4]:
+    - generic [ref=f2e5]:
+      - heading "Approvals dashboard" [level=2] [ref=f2e6]
+      - link "Approval queue" [ref=f2e7] [cursor=pointer]:
+        - /url: "#"
+```

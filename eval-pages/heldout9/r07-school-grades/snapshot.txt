@@ -1,0 +1,15 @@
+### Page
+- Page URL: http://127.0.0.1:8897/r07-school-grades
+- Page Title: CampusDesk | Course Grades
+### Snapshot
+```yaml
+- generic [ref=f6e1]:
+  - banner [ref=f6e2]:
+    - heading "CampusDesk" [level=2] [ref=f6e3]
+    - text: Courses / CS101 / Assessments
+  - main [ref=f6e4]:
+    - generic [ref=f6e5]:
+      - heading "Quiz 4 results" [level=2] [ref=f6e6]
+      - paragraph [ref=f6e7]: Section A • 32 submissions
+      - button "Scan results" [ref=f6e8] [cursor=pointer]
+```

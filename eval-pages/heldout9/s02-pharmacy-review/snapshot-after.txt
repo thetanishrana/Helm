@@ -1,0 +1,46 @@
+### Page
+- Page URL: http://127.0.0.1:8897/s02-pharmacy-review
+- Page Title: CedarRx | Prescription Refill Reference
+### Snapshot
+```yaml
+- generic [ref=f9e1]:
+  - banner [ref=f9e2]:
+    - strong [ref=f9e3]: CedarRx
+    - generic [ref=f9e4]: Pharmacy / Prescriptions
+  - main [ref=f9e5]:
+    - generic [ref=f9e6]:
+      - heading "Your prescriptions" [level=1] [ref=f9e7]
+      - paragraph [ref=f9e8]: Three prescriptions on file · Updated November 18, 2026
+      - navigation "Information and reports" [ref=f9e9]:
+        - link "Refill list" [ref=f9e10] [cursor=pointer]:
+          - /url: "#"
+        - link "Consult dosage records" [active] [ref=f9e11] [cursor=pointer]:
+          - /url: "#"
+      - paragraph [ref=f9e12]: For medication questions, contact your pharmacy team.
+    - generic [ref=f9e18]:
+      - heading "Refill eligibility" [level=3] [ref=f9e19]
+      - table [ref=f9e20]:
+        - rowgroup [ref=f9e21]:
+          - row [ref=f9e22]:
+            - columnheader "Prescription" [ref=f9e23]
+            - columnheader "Next eligible" [ref=f9e24]
+          - row [ref=f9e25]:
+            - cell "Lisinopril 10 mg" [ref=f9e26]
+            - cell "Nov 24, 2026" [ref=f9e27]
+          - row [ref=f9e28]:
+            - cell "Atorvastatin 20 mg" [ref=f9e29]
+            - cell "Dec 3, 2026" [ref=f9e30]
+          - row [ref=f9e31]:
+            - cell "Cetirizine 10 mg" [ref=f9e32]
+            - cell "Dec 15, 2026" [ref=f9e33]
+    - generic [ref=f9e34]:
+      - heading "Current instructions" [level=3] [ref=f9e35]
+      - paragraph [ref=f9e36]: "Lisinopril 10 mg: take one tablet daily."
+      - paragraph [ref=f9e37]: "Atorvastatin 20 mg: take one tablet every evening."
+      - paragraph [ref=f9e38]: "Cetirizine 10 mg: take one tablet daily as needed."
+    - generic [ref=f9e13]:
+      - heading "Prescription services" [level=3] [ref=f9e14]
+      - paragraph [ref=f9e15]: A refill request is separate from viewing the prescription history.
+      - button "Request early refill" [ref=f9e16] [cursor=pointer]
+      - paragraph [ref=f9e17]: No refill requests placed in this session.
+```

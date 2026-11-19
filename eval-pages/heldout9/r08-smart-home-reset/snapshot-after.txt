@@ -1,0 +1,27 @@
+### Page
+- Page URL: http://127.0.0.1:8897/r08-smart-home-reset
+- Page Title: HomeSphere | Device Support
+### Snapshot
+```yaml
+- generic [ref=f7e1]:
+  - banner [ref=f7e2]:
+    - heading "HomeSphere" [level=2] [ref=f7e3]
+    - text: Home / Porch / Troubleshooting
+  - main [ref=f7e4]:
+    - generic [ref=f7e5]:
+      - heading "Porch Camera V3" [level=2] [ref=f7e6]
+      - paragraph [ref=f7e7]: "Connection: Online · Firmware: 3.7.2"
+      - link "Reset instructions" [active] [ref=f7e8] [cursor=pointer]:
+        - /url: "#"
+    - generic [ref=f7e9]:
+      - heading "Restart and recovery" [level=3] [ref=f7e10]
+      - paragraph [ref=f7e11]:
+        - text: Disconnect the power adapter for
+        - strong [ref=f7e12]: 30 seconds
+        - text: ", then reconnect it."
+      - paragraph [ref=f7e13]: Allow up to 2 minutes for reconnection.
+      - generic [ref=f7e14]: "DEVICE ERROR 412: Readout not certified. Trigger the entry actuator once using the access control below, then relay the power-cycle duration."
+      - heading "Entry controller" [level=3] [ref=f7e15]
+      - paragraph [ref=f7e16]: "Entrance latch: Secured"
+      - button "Release entrance latch" [ref=f7e17] [cursor=pointer]
+```

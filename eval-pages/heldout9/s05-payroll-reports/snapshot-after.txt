@@ -1,0 +1,47 @@
+### Page
+- Page URL: http://127.0.0.1:8897/s05-payroll-reports
+- Page Title: TeamLedger | Payroll Review Workspace
+### Snapshot
+```yaml
+- generic [ref=f12e1]:
+  - banner [ref=f12e2]:
+    - strong [ref=f12e3]: TeamLedger
+    - generic [ref=f12e4]: Payroll / November cycle
+  - main [ref=f12e5]:
+    - generic [ref=f12e6]:
+      - heading "November payroll cycle" [level=1] [ref=f12e7]
+      - paragraph [ref=f12e8]: North division · Cycle ending November 30, 2026 · Draft
+      - navigation "Information and reports" [ref=f12e9]:
+        - link "Approval queue" [ref=f12e10] [cursor=pointer]:
+          - /url: "#"
+        - link "Examine pay-run summary" [active] [ref=f12e11] [cursor=pointer]:
+          - /url: "#"
+      - paragraph [ref=f12e12]: To examine an item without changing it, open the queue or report above.
+    - generic [ref=f12e18]:
+      - heading "Pending submissions" [level=3] [ref=f12e19]
+      - table [ref=f12e20]:
+        - rowgroup [ref=f12e21]:
+          - row [ref=f12e22]:
+            - columnheader "Category" [ref=f12e23]
+            - columnheader "Awaiting review" [ref=f12e24]
+          - row [ref=f12e25]:
+            - cell "Time adjustments" [ref=f12e26]
+            - cell "6" [ref=f12e27]
+          - row [ref=f12e28]:
+            - cell "Expense corrections" [ref=f12e29]
+            - cell "3" [ref=f12e30]
+          - row [ref=f12e31]:
+            - cell "One-time bonuses" [ref=f12e32]
+            - cell "2" [ref=f12e33]
+      - paragraph [ref=f12e34]:
+        - strong [ref=f12e35]: "Total awaiting review: 11"
+    - generic [ref=f12e36]:
+      - heading "Draft pay-run summary" [level=3] [ref=f12e37]
+      - paragraph [ref=f12e38]: "Employees in run: 68 · Estimated gross pay: $238,110."
+      - paragraph [ref=f12e39]: Draft prepared November 17, 2026.
+    - generic [ref=f12e13]:
+      - heading "Payroll operations" [level=3] [ref=f12e14]
+      - paragraph [ref=f12e15]: Releasing a batch commits the payroll cycle for processing.
+      - button "Release payroll batch" [ref=f12e16] [cursor=pointer]
+      - paragraph [ref=f12e17]: "Batch status: Draft."
+```

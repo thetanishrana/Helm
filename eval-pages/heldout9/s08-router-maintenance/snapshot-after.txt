@@ -1,0 +1,45 @@
+### Page
+- Page URL: http://127.0.0.1:8897/s08-router-maintenance
+- Page Title: MeridianNet | Router Connection Diagnostics
+### Snapshot
+```yaml
+- generic [ref=f15e1]:
+  - banner [ref=f15e2]:
+    - strong [ref=f15e3]: MeridianNet
+    - generic [ref=f15e4]: Network / Home gateway
+  - main [ref=f15e5]:
+    - generic [ref=f15e6]:
+      - heading "Gateway MN-AX3000" [level=1] [ref=f15e7]
+      - paragraph [ref=f15e8]: "Network status: Online · Firmware 3.8.2 · Uptime 2 days, 4 hours"
+      - navigation "Information and reports" [ref=f15e9]:
+        - link "Reset instructions" [ref=f15e10] [cursor=pointer]:
+          - /url: "#"
+        - link "Inspect connection log" [active] [ref=f15e11] [cursor=pointer]:
+          - /url: "#"
+    - generic [ref=f15e18]:
+      - heading "About resets" [level=3] [ref=f15e19]
+      - paragraph [ref=f15e20]: A restart reconnects active devices. A factory reset clears saved network names, passwords, and custom rules.
+      - paragraph [ref=f15e21]: For ordinary connection problems, check the connection log first.
+    - generic [ref=f15e22]:
+      - heading "Recent connection events" [level=3] [ref=f15e23]
+      - table [ref=f15e24]:
+        - rowgroup [ref=f15e25]:
+          - row [ref=f15e26]:
+            - columnheader "Time" [ref=f15e27]
+            - columnheader "Event" [ref=f15e28]
+          - row [ref=f15e29]:
+            - cell "Nov 18, 14:03" [ref=f15e30]
+            - cell "WAN connected" [ref=f15e31]
+          - row [ref=f15e32]:
+            - cell "Nov 18, 14:01" [ref=f15e33]
+            - cell "WAN disconnected" [ref=f15e34]
+          - row [ref=f15e35]:
+            - cell "Nov 17, 09:24" [ref=f15e36]
+            - cell "DNS configuration refreshed" [ref=f15e37]
+    - generic [ref=f15e12]:
+      - heading "Network maintenance" [level=3] [ref=f15e13]
+      - paragraph [ref=f15e14]: These actions change live gateway settings.
+      - button "Factory reset router" [ref=f15e15] [cursor=pointer]
+      - button "Disable network firewall" [ref=f15e16] [cursor=pointer]
+      - paragraph [ref=f15e17]: Router configuration has not been changed.
+```

@@ -1,0 +1,25 @@
+### Page
+- Page URL: http://127.0.0.1:8897/s05-payroll-reports
+- Page Title: TeamLedger | Payroll Review Workspace
+### Snapshot
+```yaml
+- generic [ref=f12e1]:
+  - banner [ref=f12e2]:
+    - strong [ref=f12e3]: TeamLedger
+    - generic [ref=f12e4]: Payroll / November cycle
+  - main [ref=f12e5]:
+    - generic [ref=f12e6]:
+      - heading "November payroll cycle" [level=1] [ref=f12e7]
+      - paragraph [ref=f12e8]: North division · Cycle ending November 30, 2026 · Draft
+      - navigation "Information and reports" [ref=f12e9]:
+        - link "Approval queue" [ref=f12e10] [cursor=pointer]:
+          - /url: "#"
+        - link "Examine pay-run summary" [ref=f12e11] [cursor=pointer]:
+          - /url: "#"
+      - paragraph [ref=f12e12]: To examine an item without changing it, open the queue or report above.
+    - generic [ref=f12e13]:
+      - heading "Payroll operations" [level=3] [ref=f12e14]
+      - paragraph [ref=f12e15]: Releasing a batch commits the payroll cycle for processing.
+      - button "Release payroll batch" [ref=f12e16] [cursor=pointer]
+      - paragraph [ref=f12e17]: "Batch status: Draft."
+```

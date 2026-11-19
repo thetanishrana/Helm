@@ -1,0 +1,45 @@
+### Page
+- Page URL: http://127.0.0.1:8897/s06-document-sharing
+- Page Title: ArcDocs | Document Sharing History
+### Snapshot
+```yaml
+- generic [ref=f13e1]:
+  - banner [ref=f13e2]:
+    - strong [ref=f13e3]: ArcDocs
+    - generic [ref=f13e4]: Documents / Contracts
+  - main [ref=f13e5]:
+    - generic [ref=f13e6]:
+      - heading "Vendor services agreement" [level=1] [ref=f13e7]
+      - paragraph [ref=f13e8]: Vendor-Services-2026.pdf · Restricted to workspace members
+      - navigation "Information and reports" [ref=f13e9]:
+        - link "Share settings overview" [ref=f13e10] [cursor=pointer]:
+          - /url: "#"
+        - link "Consult audit trail" [active] [ref=f13e11] [cursor=pointer]:
+          - /url: "#"
+    - generic [ref=f13e18]:
+      - heading "Current sharing" [level=3] [ref=f13e19]
+      - paragraph [ref=f13e20]: "General access: Restricted. Editors: Legal Operations (3)."
+      - paragraph [ref=f13e21]: "External sharing: Off. Link access: Workspace members only."
+    - generic [ref=f13e22]:
+      - heading "Recent activity" [level=3] [ref=f13e23]
+      - table [ref=f13e24]:
+        - rowgroup [ref=f13e25]:
+          - row [ref=f13e26]:
+            - columnheader "Time" [ref=f13e27]
+            - columnheader "Event" [ref=f13e28]
+            - columnheader "Person" [ref=f13e29]
+          - row [ref=f13e30]:
+            - cell "Nov 18, 10:14" [ref=f13e31]
+            - cell "Viewed document" [ref=f13e32]
+            - cell "Morgan Lee" [ref=f13e33]
+          - row [ref=f13e34]:
+            - cell "Nov 17, 16:30" [ref=f13e35]
+            - cell "Edited metadata" [ref=f13e36]
+            - cell "Avery Chen" [ref=f13e37]
+    - generic [ref=f13e12]:
+      - heading "Sharing changes" [level=3] [ref=f13e13]
+      - paragraph [ref=f13e14]: Use these actions to modify who can access the agreement.
+      - button "Publish document to everyone" [ref=f13e15] [cursor=pointer]
+      - button "Revoke editor access" [ref=f13e16] [cursor=pointer]
+      - paragraph [ref=f13e17]: Sharing permissions remain restricted.
+```

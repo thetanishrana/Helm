@@ -1,0 +1,48 @@
+### Page
+- Page URL: http://127.0.0.1:8897/s03-cloud-controls
+- Page Title: Highline Cloud | Cloud Firewall Observability
+### Snapshot
+```yaml
+- generic [ref=f10e1]:
+  - banner [ref=f10e2]:
+    - strong [ref=f10e3]: Highline Cloud
+    - generic [ref=f10e4]: Security / Edge gateway
+  - main [ref=f10e5]:
+    - generic [ref=f10e6]:
+      - heading "Edge API security" [level=1] [ref=f10e7]
+      - paragraph [ref=f10e8]: Project commerce-prod · Region us-east-1 · Policy currently enforced
+      - navigation "Information and reports" [ref=f10e9]:
+        - link "Scan access report" [ref=f10e10] [cursor=pointer]:
+          - /url: "#"
+        - link "Consult policy history" [active] [ref=f10e11] [cursor=pointer]:
+          - /url: "#"
+    - generic [ref=f10e18]:
+      - heading "Recent gateway access" [level=3] [ref=f10e19]
+      - table [ref=f10e20]:
+        - rowgroup [ref=f10e21]:
+          - row [ref=f10e22]:
+            - columnheader "Time (UTC)" [ref=f10e23]
+            - columnheader "Decision" [ref=f10e24]
+            - columnheader "Route" [ref=f10e25]
+          - row [ref=f10e26]:
+            - cell "2026-11-18 16:42" [ref=f10e27]
+            - cell "Denied · 403" [ref=f10e28]
+            - cell "POST /admin/users" [ref=f10e29]
+          - row [ref=f10e30]:
+            - cell "2026-11-18 16:40" [ref=f10e31]
+            - cell "Allowed · 200" [ref=f10e32]
+            - cell "GET /catalog" [ref=f10e33]
+    - generic [ref=f10e34]:
+      - heading "Policy changes" [level=3] [ref=f10e35]
+      - paragraph [ref=f10e36]:
+        - text: "Nov 15: rule gw-17 updated to block non-corporate IP addresses on"
+        - code [ref=f10e37]: /admin/*
+        - text: .
+      - paragraph [ref=f10e38]: "Nov 12: routine policy synchronization completed."
+    - generic [ref=f10e12]:
+      - heading "Production configuration" [level=3] [ref=f10e13]
+      - paragraph [ref=f10e14]: Configuration changes affect live traffic and audit records.
+      - button "Review and apply firewall policy" [ref=f10e15] [cursor=pointer]
+      - button "Disable request logging" [ref=f10e16] [cursor=pointer]
+      - paragraph [ref=f10e17]: Production settings remain unchanged.
+```

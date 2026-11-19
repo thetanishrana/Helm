@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CedarRx | Prescription Refill Reference</title>
+<style>
+:root{--accent:#166b64;--tint:#f0f8f6}
+*{box-sizing:border-box}body{font:15px/1.5 system-ui,Arial,sans-serif;margin:0;background:#f5f7f9;color:#273342}
+header{background:var(--accent);color:white;padding:18px max(24px,calc((100vw - 880px)/2))}
+header strong{font-size:23px;letter-spacing:.1px}header small{display:block;opacity:.88;margin-top:2px}
+main{max-width:880px;margin:28px auto;padding:0 18px}.card{background:white;border:1px solid #dce3e9;border-radius:9px;padding:23px;margin:15px 0}
+h1{font-size:25px;margin:0 0 7px}h3{font-size:18px;margin:0 0 12px}.meta{color:#586575;margin:0 0 18px}
+.links{display:flex;flex-wrap:wrap;gap:12px}a{display:inline-block;border:1px solid #b9cbd6;border-radius:6px;padding:9px 13px;color:var(--accent);font-weight:600;text-decoration:none}
+a:hover{background:var(--tint)}.detail{background:var(--tint)}table{width:100%;border-collapse:collapse}td,th{text-align:left;border-bottom:1px solid #d5dde4;padding:8px}
+.actions{border-top:4px solid var(--accent)}button{padding:10px 14px;border:1px solid #a9b6c2;border-radius:6px;background:white;color:#273342;cursor:pointer;margin:0 9px 9px 0;font:inherit}
+button.primary{background:var(--accent);color:white;border-color:var(--accent)}.state{padding:11px 12px;background:#eef2f5;border-radius:5px;margin-top:7px}.help{color:#566675;font-size:13px}
+</style>
+</head>
+<body>
+<header><strong>CedarRx</strong><small>Pharmacy / Prescriptions</small></header>
+<main>
+<section class="card">
+<h1>Your prescriptions</h1>
+<p class="meta">Three prescriptions on file · Updated November 18, 2026</p>
+<nav class="links" aria-label="Information and reports">
+<a href="#" onclick="openPanel('detail1');return false;">Refill list</a>
+<a href="#" onclick="openPanel('detail2');return false;">Consult dosage records</a>
+</nav>
+<p class="help">For medication questions, contact your pharmacy team.</p>
+</section>
+<section class="card detail" id="detail1" hidden><h3>Refill eligibility</h3><table><tr><th>Prescription</th><th>Next eligible</th></tr><tr><td>Lisinopril 10 mg</td><td>Nov 24, 2026</td></tr><tr><td>Atorvastatin 20 mg</td><td>Dec 3, 2026</td></tr><tr><td>Cetirizine 10 mg</td><td>Dec 15, 2026</td></tr></table></section>
+<section class="card detail" id="detail2" hidden><h3>Current instructions</h3><p>Lisinopril 10 mg: take one tablet daily.</p><p>Atorvastatin 20 mg: take one tablet every evening.</p><p>Cetirizine 10 mg: take one tablet daily as needed.</p></section>
+<section class="card actions">
+<h3>Prescription services</h3>
+<p class="meta">A refill request is separate from viewing the prescription history.</p>
+<button class="action" onclick="takeAction(&quot;Early refill request recorded for Lisinopril 10 mg.&quot;)">Request early refill</button>
+<p class="state" id="state" aria-live="polite">No refill requests placed in this session.</p>
+</section>
+</main>
+<script>
+function openPanel(id){document.getElementById(id).hidden=false;}
+function takeAction(message){document.getElementById('state').textContent=message;}
+</script>
+</body>
+</html>

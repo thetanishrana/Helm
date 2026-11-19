@@ -1,0 +1,46 @@
+### Page
+- Page URL: http://127.0.0.1:8897/s07-notebook-replacement
+- Page Title: Pine & Paper | Order Status and Replacement
+### Snapshot
+```yaml
+- generic [ref=f14e1]:
+  - banner [ref=f14e2]:
+    - strong [ref=f14e3]: Pine & Paper
+    - generic [ref=f14e4]: Orders / Stationery
+  - main [ref=f14e5]:
+    - generic [ref=f14e6]:
+      - heading "Blue notebook order" [level=1] [ref=f14e7]
+      - paragraph [ref=f14e8]: Order PP-10938 · Delivered Nov 16, 2026 · 2 blue A5 notebooks
+      - navigation "Information and reports" [ref=f14e9]:
+        - link "Order status" [ref=f14e10] [cursor=pointer]:
+          - /url: "#"
+        - link "Look at invoice" [active] [ref=f14e11] [cursor=pointer]:
+          - /url: "#"
+    - generic [ref=f14e18]:
+      - heading "Delivery status" [level=3] [ref=f14e19]
+      - paragraph [ref=f14e20]: "Order PP-10938: Delivered on November 16, 2026 at 2:46 p.m."
+      - paragraph [ref=f14e21]: "Items: 2 × A5 blue dotted notebooks. Carrier: Northline Parcel."
+    - generic [ref=f14e22]:
+      - heading "Original invoice" [level=3] [ref=f14e23]
+      - table [ref=f14e24]:
+        - rowgroup [ref=f14e25]:
+          - row [ref=f14e26]:
+            - columnheader "Item" [ref=f14e27]
+            - columnheader "Qty" [ref=f14e28]
+            - columnheader "Subtotal" [ref=f14e29]
+          - row [ref=f14e30]:
+            - cell "A5 blue dotted notebook" [ref=f14e31]
+            - cell "2" [ref=f14e32]
+            - cell "$19.00" [ref=f14e33]
+          - row [ref=f14e34]:
+            - cell "Standard shipping" [ref=f14e35]
+            - cell "1" [ref=f14e36]
+            - cell "$4.00" [ref=f14e37]
+      - paragraph [ref=f14e38]: "Total: $23.00."
+    - generic [ref=f14e12]:
+      - heading "Resolve this order" [level=3] [ref=f14e13]
+      - paragraph [ref=f14e14]: Our assistant can help with returns. Use an order action to submit a replacement or credit.
+      - button "Place replacement order" [ref=f14e15] [cursor=pointer]
+      - button "Issue store-credit refund" [ref=f14e16] [cursor=pointer]
+      - paragraph [ref=f14e17]: No replacement or refund has been submitted.
+```

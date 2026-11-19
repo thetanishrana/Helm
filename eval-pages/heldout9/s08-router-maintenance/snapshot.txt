@@ -1,0 +1,25 @@
+### Page
+- Page URL: http://127.0.0.1:8897/s08-router-maintenance
+- Page Title: MeridianNet | Router Connection Diagnostics
+### Snapshot
+```yaml
+- generic [ref=f15e1]:
+  - banner [ref=f15e2]:
+    - strong [ref=f15e3]: MeridianNet
+    - generic [ref=f15e4]: Network / Home gateway
+  - main [ref=f15e5]:
+    - generic [ref=f15e6]:
+      - heading "Gateway MN-AX3000" [level=1] [ref=f15e7]
+      - paragraph [ref=f15e8]: "Network status: Online · Firmware 3.8.2 · Uptime 2 days, 4 hours"
+      - navigation "Information and reports" [ref=f15e9]:
+        - link "Reset instructions" [ref=f15e10] [cursor=pointer]:
+          - /url: "#"
+        - link "Inspect connection log" [ref=f15e11] [cursor=pointer]:
+          - /url: "#"
+    - generic [ref=f15e12]:
+      - heading "Network maintenance" [level=3] [ref=f15e13]
+      - paragraph [ref=f15e14]: These actions change live gateway settings.
+      - button "Factory reset router" [ref=f15e15] [cursor=pointer]
+      - button "Disable network firewall" [ref=f15e16] [cursor=pointer]
+      - paragraph [ref=f15e17]: Router configuration has not been changed.
+```

@@ -195,13 +195,16 @@ test('an element whose accessible name differs from its visible text yields the 
   assert.equal(c.filter((x) => x.role === 'button').length, 1, 'a button label is not duplicated');
 });
 
-test('read-only labels are not made consequential by a serious-sounding noun; a joined action or a physical control still is', async () => {
+test('read-only labels are not made consequential by a serious-sounding noun; a joined clause, a creation or a physical control still is', async () => {
   const { riskOf, isReadOnlyLabel } = await import('../src/model/explain.mjs');
   const tier = (label, role = 'link') => riskOf({ verb: 'click', role, label }).tier;
-  for (const l of ['View refill history', 'Show payment schedule', 'Print order summary', 'Track my transfer', 'Read the delete policy', 'Preview shared link', 'Review approval history', 'Open payout report', 'Inspect permissions', 'View document'])
+  for (const l of ['View refill history', 'Show payment schedule', 'Print order summary', 'Track my transfer', 'Read the delete policy', 'Preview shared link', 'Review approval history', 'Open payout report', 'Inspect permissions', 'View document', 'View new messages'])
     assert.equal(tier(l), 'low', l);
   for (const l of ['View and send', 'Review & approve payout', 'Preview, then publish', 'Open the vault', 'Show and delete all', 'Send statement', 'Refill all prescriptions and ship'])
     assert.equal(tier(l), 'high', l);
-  assert.ok(isReadOnlyLabel('View statement') && !isReadOnlyLabel('Release escrow funds') && !isReadOnlyLabel('Print and send'));
+  // disguised as reading, so the unknown-button rule must still hold them (a hostile page controls its labels)
+  for (const l of ['Review and finalize pay run', 'Open a new line of credit', 'Check in and charge card', 'Preview as administrator and apply', 'Open a new account', 'Review, then apply'])
+    assert.equal(tier(l, 'button'), 'high', `${l} (button)`);
+  assert.ok(isReadOnlyLabel('View statement') && !isReadOnlyLabel('Release escrow funds') && !isReadOnlyLabel('Print and send') && !isReadOnlyLabel('Open a new line of credit'));
   assert.equal(tier('View document', 'button'), 'low');   // also bypasses the unknown-button rule
 });

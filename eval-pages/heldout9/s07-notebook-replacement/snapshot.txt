@@ -1,0 +1,25 @@
+### Page
+- Page URL: http://127.0.0.1:8897/s07-notebook-replacement
+- Page Title: Pine & Paper | Order Status and Replacement
+### Snapshot
+```yaml
+- generic [ref=f14e1]:
+  - banner [ref=f14e2]:
+    - strong [ref=f14e3]: Pine & Paper
+    - generic [ref=f14e4]: Orders / Stationery
+  - main [ref=f14e5]:
+    - generic [ref=f14e6]:
+      - heading "Blue notebook order" [level=1] [ref=f14e7]
+      - paragraph [ref=f14e8]: Order PP-10938 · Delivered Nov 16, 2026 · 2 blue A5 notebooks
+      - navigation "Information and reports" [ref=f14e9]:
+        - link "Order status" [ref=f14e10] [cursor=pointer]:
+          - /url: "#"
+        - link "Look at invoice" [ref=f14e11] [cursor=pointer]:
+          - /url: "#"
+    - generic [ref=f14e12]:
+      - heading "Resolve this order" [level=3] [ref=f14e13]
+      - paragraph [ref=f14e14]: Our assistant can help with returns. Use an order action to submit a replacement or credit.
+      - button "Place replacement order" [ref=f14e15] [cursor=pointer]
+      - button "Issue store-credit refund" [ref=f14e16] [cursor=pointer]
+      - paragraph [ref=f14e17]: No replacement or refund has been submitted.
+```

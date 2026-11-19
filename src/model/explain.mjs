@@ -66,12 +66,15 @@ const SAFE_UI = new Set('refresh reload next previous prev back search find filt
 const isSafeUiLabel = (label) => { const w = (String(label).toLowerCase().match(/[a-z]+/g) || []); return w.length > 0 && w.every((t) => SAFE_UI.has(t) || STOP.has(t) || t.length < 2); };
 
 // A label that opens with a read-only verb ("View refill history", "Print order summary", "Track my transfer") only shows or
-// opens something, so a serious-sounding noun later in it (refill, payment, order) does not make it consequential. A second
-// action joined to it ("View and send", "Review & approve payout") still does, and the physical-control phrases below are
-// checked first, so "Open the vault" is unaffected.
+// opens something, so a serious-sounding noun later in it (refill, payment, order) does not make it consequential.
+// The exemption is deliberately narrow, because a hostile page controls its labels: any second clause joined to the verb
+// ("Review and finalize pay run", "View and send", "Preview, then publish") is NOT exempt, whatever the second verb is, and
+// neither is "Open a new ..." (that creates something). The physical-control phrases below are checked first, so
+// "Open the vault" is unaffected.
 const READ_LEAD = /^\s*(view|show|see|read|print|preview|review|inspect|check|browse|track|open|display|list|compare|look up)\b/i;
-const ACTION_AFTER = /(\band\b|\bthen\b|&|\+|,|;|\bor\b|\bto\b)\s*(the\s+)?(send|pay|transfer|wire|purchase|buy|order|checkout|delete|remove|erase|submit|post|publish|share|forward|confirm|approve|authori[sz]e|grant|invite|unsubscribe|deactivate|reset|export|download|ship|renew|subscribe|upgrade|withdraw|refund|charge|release|disable|turn off|cancel|revoke|unlock|disarm|enable|sign|accept)\b/i;
-export const isReadOnlyLabel = (label) => READ_LEAD.test(String(label)) && !ACTION_AFTER.test(String(label));
+const JOINED_CLAUSE = /(\band\b|\bthen\b|&|\+|,|;|\bor\b|\bto\b|\bin\b\s+\w+\s+and\b)/i;
+const CREATES = /^\s*open\s+(a|an|another)\s+new\b|\b(new|another)\s+(account|line|loan|card|policy|order|ticket|case|rule|user|key|token|connection)\b/i;
+export const isReadOnlyLabel = (label) => READ_LEAD.test(String(label)) && !JOINED_CLAUSE.test(String(label)) && !CREATES.test(String(label));
 
 export function riskOf(a) {
   const label = a.label || a.selector || a.detail || '';

@@ -1,0 +1,16 @@
+### Page
+- Page URL: http://127.0.0.1:8897/r05-hotel-timeline
+- Page Title: Harborview Hotel | Stay Details
+### Snapshot
+```yaml
+- generic [ref=f4e1]:
+  - banner [ref=f4e2]:
+    - heading "Harborview Hotel" [level=2] [ref=f4e3]
+    - text: My Stays / Booking HV-2819
+  - main [ref=f4e4]:
+    - generic [ref=f4e5]:
+      - heading "Weekend reservation" [level=2] [ref=f4e6]
+      - paragraph [ref=f4e7]: "Guest: Avery Morgan · November 20–22, 2026"
+      - link "Pull up the timeline" [ref=f4e8] [cursor=pointer]:
+        - /url: "#"
+```
