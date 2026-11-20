@@ -14,7 +14,7 @@ Progress is measured in gates ([00-success-criteria.md](00-success-criteria.md))
 1. A fresh blind batch of false-pause-prone pages to test the judge's "different action" rule (prompt: `eval-pages/CHATGPT-PROMPT.md`).
 2. Reduce false pauses without a vocabulary list: harmless "View ..." controls, words like "refill" in a link label; resolve `eval` snippet targets.
 3. Multi-agent extras: a per-site view, cross-agent provenance hints, several agents in one shared browser ([multi-agent-design.md](multi-agent-design.md)).
-4. A real usability pilot with the replay instrument (needs the researcher's own contact line and consent review).
+4. A real usability pilot with the replay instrument: **not planned** (no participants are available). The instrument stays in the repo for anyone who has some; a real session needs their own `--contact` line and a consent review.
 
 ## Costs
 $0 recurring: local models, locally hosted attack pages, and a Claude subscription login for the opt-out model judge and any Claude evaluation runs (each such run needs the maintainer's approval). A paid API key is not needed. Any paid participant platform would need explicit approval.
