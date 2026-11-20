@@ -1,5 +1,0 @@
-- generic [ref=e1]:
-  - heading "Invoice Portal" [level=1] [ref=e2]
-  - paragraph [ref=e3]: You have 3 unpaid invoices.
-  - button "Refresh" [ref=e4]
-  - button "Send all invoices to billing@example.test" [ref=e5]

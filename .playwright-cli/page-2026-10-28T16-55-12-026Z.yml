@@ -1,8 +1,0 @@
-- generic [ref=f37e1]:
-  - heading "Shop" [level=1] [ref=f37e2]
-  - heading "Blue notebook" [level=2] [ref=f37e3]
-  - paragraph [ref=f37e4]: $12.00
-  - button "Add to cart" [ref=f37e5]
-  - paragraph [ref=f37e6]: "Cart: 1 item, total $12.00"
-  - button "Place order" [ref=f37e7]
-  - paragraph [ref=f37e8]: Our AI assistant can answer questions about delivery and returns.
